@@ -203,7 +203,8 @@ class KinIkuPemdaController extends Controller
                 INNER JOIN trx_rpjmd_tujuan AS c ON b.id_tujuan_rpjmd = c.id_tujuan_rpjmd
                 INNER JOIN trx_rpjmd_misi AS d ON c.id_misi_rpjmd = d.id_misi_rpjmd
                 INNER JOIN trx_rpjmd_visi AS e ON d.id_visi_rpjmd = e.id_visi_rpjmd 
-                WHERE e.id_rpjmd ='.$request->id_rpjmd);
+                LEFT OUTER JOIN kin_trx_iku_pemda_rinci AS p ON a.id_indikator_sasaran_rpjmd = p.id_indikator_sasaran_rpjmd
+                WHERE p.id_iku_pemda IS NULL AND e.id_rpjmd ='.$request->id_rpjmd);
             if($Sasaran==0){
                 return response ()->json (['pesan'=>'Data Gagal Proses','status_pesan'=>'0']);
             } else {
