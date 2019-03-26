@@ -217,7 +217,8 @@ class KinIkuOpdController extends Controller
                 INNER JOIN trx_renstra_tujuan AS c ON b.id_tujuan_renstra = c.id_tujuan_renstra
                 INNER JOIN trx_renstra_misi AS d ON c.id_misi_renstra = d.id_misi_renstra
                 INNER JOIN trx_renstra_visi AS e ON d.id_visi_renstra = e.id_visi_renstra
-                WHERE e.id_unit = '.$request->id_unit.' AND e.id_renstra = '.$request->id_renstra);
+                LEFT OUTER JOIN kin_trx_iku_opd_sasaran AS p ON a.id_indikator_sasaran_renstra = p.id_indikator_sasaran_renstra
+                WHERE p.id_iku_opd_sasaran IS NULL AND e.id_unit = '.$request->id_unit.' AND e.id_renstra = '.$request->id_renstra);
             if($Sasaran==0){
                 return response ()->json (['pesan'=>'Data Gagal Proses (0)','status_pesan'=>'0']);
             } else {
@@ -226,9 +227,11 @@ class KinIkuOpdController extends Controller
                     SELECT DISTINCT p.id_iku_opd_sasaran, a.id_indikator_program_renstra, a.id_program_renstra, a.kd_indikator, 0, 0 , 0  
                     FROM trx_renstra_program_indikator AS a
                     INNER JOIN trx_renstra_program AS f ON a.id_program_renstra = f.id_program_renstra
-                    INNER JOIN (SELECT min(id_iku_opd_sasaran) AS id_iku_opd_sasaran, id_dokumen, id_sasaran_renstra FROM kin_trx_iku_opd_sasaran GROUP BY id_dokumen, id_sasaran_renstra) AS p ON f.id_sasaran_renstra = p.id_sasaran_renstra
+                    INNER JOIN (SELECT min(id_iku_opd_sasaran) AS id_iku_opd_sasaran, id_dokumen, id_sasaran_renstra FROM kin_trx_iku_opd_sasaran 
+                    GROUP BY id_dokumen, id_sasaran_renstra) AS p ON f.id_sasaran_renstra = p.id_sasaran_renstra
                     INNER JOIN kin_trx_iku_opd_dok AS q ON p.id_dokumen = q.id_dokumen
-                    WHERE q.id_dokumen = '.$request->id_dokumen.' AND q.id_unit = '.$request->id_unit.' AND q.id_renstra = '.$request->id_renstra);
+                    LEFT OUTER JOIN kin_trx_iku_opd_program AS x ON a.id_indikator_program_renstra = x.id_indikator_program_renstra
+                    WHERE x.id_iku_opd_program IS NULL AND q.id_dokumen = '.$request->id_dokumen.' AND q.id_unit = '.$request->id_unit.' AND q.id_renstra = '.$request->id_renstra);
                 if($Program==0){
                     return response ()->json (['pesan'=>'Data Gagal Proses (1)','status_pesan'=>'0']);
                 } else {
@@ -237,10 +240,13 @@ class KinIkuOpdController extends Controller
                         SELECT r.id_iku_opd_program, a.id_indikator_kegiatan_renstra, a.id_kegiatan_renstra, a.kd_indikator, 0, 0 , 0  
                         FROM trx_renstra_kegiatan_indikator AS a
                         INNER JOIN trx_renstra_kegiatan AS g ON a.id_kegiatan_renstra = g.id_kegiatan_renstra
-                        INNER JOIN (SELECT min(id_iku_opd_program) AS id_iku_opd_program, id_iku_opd_sasaran, id_program_renstra FROM kin_trx_iku_opd_program GROUP BY id_iku_opd_sasaran, id_program_renstra)  AS r ON g.id_program_renstra = r.id_program_renstra
-                        INNER JOIN (SELECT min(id_iku_opd_sasaran) AS id_iku_opd_sasaran, id_dokumen, id_sasaran_renstra FROM kin_trx_iku_opd_sasaran GROUP BY id_dokumen, id_sasaran_renstra) AS p ON r.id_iku_opd_sasaran = p.id_iku_opd_sasaran
+                        INNER JOIN (SELECT min(id_iku_opd_program) AS id_iku_opd_program, id_iku_opd_sasaran, id_program_renstra FROM kin_trx_iku_opd_program 
+                        GROUP BY id_iku_opd_sasaran, id_program_renstra)  AS r ON g.id_program_renstra = r.id_program_renstra
+                        INNER JOIN (SELECT min(id_iku_opd_sasaran) AS id_iku_opd_sasaran, id_dokumen, id_sasaran_renstra FROM kin_trx_iku_opd_sasaran 
+                        GROUP BY id_dokumen, id_sasaran_renstra) AS p ON r.id_iku_opd_sasaran = p.id_iku_opd_sasaran
                         INNER JOIN kin_trx_iku_opd_dok AS q ON p.id_dokumen = q.id_dokumen
-                        WHERE q.id_dokumen = '.$request->id_dokumen.' AND q.id_unit = '.$request->id_unit.' AND q.id_renstra = '.$request->id_renstra);
+                        LEFT OUTER JOIN kin_trx_iku_opd_kegiatan AS x ON a.id_indikator_kegiatan_renstra = x.id_indikator_kegiatan_renstra
+                        WHERE x.id_iku_opd_kegiatan IS NULL AND q.id_dokumen = '.$request->id_dokumen.' AND q.id_unit = '.$request->id_unit.' AND q.id_renstra = '.$request->id_renstra);
                     if($Kegiatan==0){
                         return response ()->json (['pesan'=>'Data Gagal Proses (2)','status_pesan'=>'0']);
                     } else {
