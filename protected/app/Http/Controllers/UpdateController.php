@@ -273,11 +273,15 @@ class UpdateController extends Controller
                 $update=DB::unprepared($source); 
                 if($update != 0) {
                    $getJmlTable=DB::SELECT('SELECT (SELECT COUNT(b.TABLE_NAME) FROM (SELECT y.TABLE_NAME FROM temp_table_info AS y WHERE y.FLAG = 0 GROUP BY y.TABLE_NAME) b) AS jml_table1, 
-                        (SELECT COUNT(x.TABLE_NAME) FROM (SELECT TABLE_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA="'.env('DB_DATABASE', 'forge').'" 
-                        GROUP BY TABLE_NAME) x) AS jml_table0, 
+                        (SELECT COUNT(x.TABLE_NAME) FROM (SELECT a.TABLE_NAME FROM INFORMATION_SCHEMA.COLUMNS AS a
+                            INNER JOIN INFORMATION_SCHEMA.TABLES AS b ON a.TABLE_SCHEMA=b.TABLE_SCHEMA AND a.TABLE_NAME = b.TABLE_NAME 
+                            WHERE a.TABLE_SCHEMA="'.env('DB_DATABASE', 'forge').'" 
+                            AND b.TABLE_TYPE <> "VIEW" GROUP BY a.TABLE_NAME, a.TABLE_SCHEMA, b.TABLE_TYPE) x) AS jml_table0, 
                         (SELECT COUNT(b.COLUMN_NAME) AS jml_table1 FROM temp_table_info b WHERE b.FLAG = 0 GROUP BY b.TABLE_SCHEMA) AS jml_kolom1, 
-                        (SELECT COUNT(COLUMN_NAME) FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA="'.env('DB_DATABASE', 'forge').'" 
-                        GROUP BY TABLE_SCHEMA ) AS jml_kolom0, 
+                        (SELECT COUNT(a.COLUMN_NAME) FROM INFORMATION_SCHEMA.COLUMNS AS a
+                            INNER JOIN INFORMATION_SCHEMA.TABLES AS b ON a.TABLE_SCHEMA=b.TABLE_SCHEMA AND a.TABLE_NAME = b.TABLE_NAME 
+                            WHERE a.TABLE_SCHEMA="'.env('DB_DATABASE', 'forge').'"  AND b.TABLE_TYPE LIKE "%TABLE%" 
+                            GROUP BY a.TABLE_SCHEMA, b.TABLE_TYPE ) AS jml_kolom0, 
                         (SELECT SUM((SELECT COUNT(COLUMN_NAME) FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA="'.env('DB_DATABASE', 'forge').'" AND TABLE_NAME = a.TABLE_NAME 
                         AND COLUMN_NAME = a.COLUMN_NAME AND (COLUMN_TYPE <> a.COLUMN_TYPE OR IS_NULLABLE <> a.IS_NULLABLE))) 
                         AS column_modif FROM temp_table_info a WHERE a.FLAG = 0) AS column_modif,
@@ -302,7 +306,7 @@ class UpdateController extends Controller
 
         $query = DB::SELECT('SELECT a.TBL_INDEX, a.TABLE_NAME 
             FROM (SELECT x.TBL_INDEX, x.TABLE_NAME FROM temp_table_info x WHERE x.FLAG = 0 GROUP BY x.TBL_INDEX, x.TABLE_NAME ORDER BY x.TBL_INDEX ASC) a 
-            AND a.TABLE_NAME NOT IN (SELECT TABLE_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA="'.env('DB_DATABASE', 'forge').'" 
+            WHERE a.TABLE_NAME NOT IN (SELECT TABLE_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA="'.env('DB_DATABASE', 'forge').'" 
             GROUP BY TABLE_NAME) GROUP BY a.TBL_INDEX, a.TABLE_NAME ORDER BY a.TBL_INDEX ASC');
 
         if(count($query)>0){
@@ -391,33 +395,76 @@ class UpdateController extends Controller
     public function BuatForeignKey(Request $request)
     {
         // $tabel = parse_ini_file(base_path().'/app/update/update1a');
-        $buatKey = parse_ini_file(base_path().'/app/update/update4');
+         $query1 =DB::SELECT('SELECT CONCAT( "UPDATE ", a.TABLE_NAME, " SET ", a.COLUMN_NAME, "=NOW() WHERE ",a.COLUMN_NAME,"=0;" ) AS query_update 
+            FROM INFORMATION_SCHEMA.COLUMNS AS a
+            INNER JOIN INFORMATION_SCHEMA.TABLES AS b ON a.TABLE_SCHEMA=b.TABLE_SCHEMA AND a.TABLE_NAME = b.TABLE_NAME 
+            WHERE a.TABLE_SCHEMA = "'.env('DB_DATABASE', 'forge').'"  AND a.COLUMN_NAME = "updated_at"  AND b.TABLE_TYPE <> "VIEW"
+            AND a.TABLE_NAME NOT IN ( "users", "migrations", "password_resets", "ref_group" )');
+        
+        if(count($query1)>0){
+            foreach ($query1 as $qa) {
+                $update1=DB::unprepared($qa->query_update);      
+            };        
+            if($update1 != 0) {
+                $buatKey = parse_ini_file(base_path().'/app/update/update4');
+                $query = DB::SELECT('SELECT TABLE_NAME, CONSTRAINT_NAME, CONCAT("ALTER TABLE ", TABLE_NAME, " DROP FOREIGN KEY ", CONSTRAINT_NAME, ";") AS Query_Script
+                    FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE WHERE CONSTRAINT_NAME <> "PRIMARY" AND REFERENCED_TABLE_NAME IS NOT NULL AND CONSTRAINT_SCHEMA="'.env('DB_DATABASE', 'forge').'"
+                    GROUP BY TABLE_NAME, CONSTRAINT_NAME');
 
-        $query = DB::SELECT('SELECT TABLE_NAME, CONSTRAINT_NAME, CONCAT("ALTER TABLE ", TABLE_NAME, " DROP FOREIGN KEY ", CONSTRAINT_NAME, ";") AS Query_Script
-        FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE WHERE CONSTRAINT_NAME <> "PRIMARY" AND REFERENCED_TABLE_NAME IS NOT NULL AND CONSTRAINT_SCHEMA="'.env('DB_DATABASE', 'forge').'"
-        GROUP BY TABLE_NAME, CONSTRAINT_NAME');
-
-        if(count($query)>0){
-            foreach ($query as $q) {
-                $test = $q->Query_Script;
-                $Kosong=DB::unprepared($test);
-            };            
-            $source = $buatKey['tambahKey'];
-            $update=DB::unprepared($source);
-            if($update != 0) {
-                return response ()->json(['pesan'=>'Sejumlah ForeignKey Telah Berhasil Ditambahkan','status_pesan'=>'1']);   
+                    if(count($query)>0){
+                        foreach ($query as $q) {
+                            $test = $q->Query_Script;
+                            $Kosong=DB::unprepared($test);
+                        };            
+                        $source = $buatKey['tambahKey'];
+                        $update=DB::unprepared($source);
+                        if($update != 0) {
+                            return response ()->json(['pesan'=>'Sejumlah ForeignKey Telah Berhasil Ditambahkan','status_pesan'=>'1']);   
+                        } else {
+                            return response ()->json(['pesan'=>'Sejumlah ForeignKey Gagal Ditambahkan','status_pesan'=>'0']); 
+                        }
+                    } else {
+                        $source = $buatKey['tambahKey'];
+                        $update=DB::unprepared($source);
+                        if($update != 0) {
+                            return response ()->json(['pesan'=>'Sejumlah ForeignKey Telah Berhasil Ditambahkan','status_pesan'=>'1']);   
+                        } else {
+                            return response ()->json(['pesan'=>'Sejumlah ForeignKey Gagal Ditambahkan','status_pesan'=>'0']); 
+                        }
+                    };
             } else {
-                return response ()->json(['pesan'=>'Sejumlah ForeignKey Gagal Ditambahkan','status_pesan'=>'0']); 
+                return response ()->json(['pesan'=>'Finalisasi Normalisasi Tanggal Tidak Berhasil (Gagal) ','status_pesan'=>'0']); 
             }
         } else {
-            $source = $buatKey['tambahKey'];
-            $update=DB::unprepared($source);
-            if($update != 0) {
-                return response ()->json(['pesan'=>'Sejumlah ForeignKey Telah Berhasil Ditambahkan','status_pesan'=>'1']);   
-            } else {
-                return response ()->json(['pesan'=>'Sejumlah ForeignKey Gagal Ditambahkan','status_pesan'=>'0']); 
-            }
+            
+                $buatKey = parse_ini_file(base_path().'/app/update/update4');
+                $query = DB::SELECT('SELECT TABLE_NAME, CONSTRAINT_NAME, CONCAT("ALTER TABLE ", TABLE_NAME, " DROP FOREIGN KEY ", CONSTRAINT_NAME, ";") AS Query_Script
+                    FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE WHERE CONSTRAINT_NAME <> "PRIMARY" AND REFERENCED_TABLE_NAME IS NOT NULL AND CONSTRAINT_SCHEMA="'.env('DB_DATABASE', 'forge').'"
+                    GROUP BY TABLE_NAME, CONSTRAINT_NAME');
+
+                    if(count($query)>0){
+                        foreach ($query as $q) {
+                            $test = $q->Query_Script;
+                            $Kosong=DB::unprepared($test);
+                        };            
+                        $source = $buatKey['tambahKey'];
+                        $update=DB::unprepared($source);
+                        if($update != 0) {
+                            return response ()->json(['pesan'=>'Sejumlah ForeignKey Telah Berhasil Ditambahkan','status_pesan'=>'1']);   
+                        } else {
+                            return response ()->json(['pesan'=>'Sejumlah ForeignKey Gagal Ditambahkan','status_pesan'=>'0']); 
+                        }
+                    } else {
+                        $source = $buatKey['tambahKey'];
+                        $update=DB::unprepared($source);
+                        if($update != 0) {
+                            return response ()->json(['pesan'=>'Sejumlah ForeignKey Telah Berhasil Ditambahkan','status_pesan'=>'1']);   
+                        } else {
+                            return response ()->json(['pesan'=>'Sejumlah ForeignKey Gagal Ditambahkan','status_pesan'=>'0']); 
+                        }
+                    };
         };
+        
     }
 
     public function BuatKolom(Request $request)
@@ -451,27 +498,63 @@ class UpdateController extends Controller
     {
         // $tabel = parse_ini_file(base_path().'/app/update/update1a');
 
-        $query = DB::SELECT('SELECT b.TABLE_SCHEMA, b.TABLE_NAME, b.COLUMN_NAME, b.COLUMN_TYPE AS tipe_tujuan, a.COLUMN_TYPE AS tipe_asal, b.IS_NULLABLE AS null_tujuan, 
-            a.IS_NULLABLE AS null_asal, b.COLUMN_KEY AS key_tujuan, a.COLUMN_KEY AS key_asal,            
-            CONCAT("ALTER TABLE ", b.TABLE_NAME, " MODIFY COLUMN ", b.COLUMN_NAME, " ", a.COLUMN_TYPE,  " ",
-            IF(a.IS_NULLABLE = "YES", "NULL", CONCAT("NOT NULL DEFAULT ", a.COLUMN_DEFAULT)), ";") AS Query_Script
-            FROM (SELECT x.* FROM temp_table_info x WHERE x.FLAG = 0) a 
-            INNER JOIN (SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA="'.env('DB_DATABASE', 'forge').'") b ON b.TABLE_NAME = a.TABLE_NAME AND b.COLUMN_NAME = a.COLUMN_NAME 
-            WHERE (b.COLUMN_TYPE <> a.COLUMN_TYPE OR b.IS_NULLABLE <> a.IS_NULLABLE)');
 
-        if(count($query)>0){
-            foreach ($query as $q) {
-                $test = $q->Query_Script;
-                $update=DB::unprepared($test);
+        $query1 = DB::SELECT('SELECT CONCAT( "ALTER TABLE ", a.TABLE_NAME, " MODIFY COLUMN `updated_at` datetime(0) NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP(0); " ) AS query_update 
+            FROM INFORMATION_SCHEMA.COLUMNS AS a
+            INNER JOIN INFORMATION_SCHEMA.TABLES AS b ON a.TABLE_SCHEMA=b.TABLE_SCHEMA AND a.TABLE_NAME = b.TABLE_NAME 
+            WHERE a.TABLE_SCHEMA = "'.env('DB_DATABASE', 'forge').'"  AND a.COLUMN_NAME = "updated_at"  AND b.TABLE_TYPE <> "VIEW"');
+
+        if(count($query1)>0){
+            foreach ($query1 as $q1) {
+                $test1 = $q1->query_update;
+                $update1=DB::unprepared($test1);
             };
-            if($update != 0) {
-                return response ()->json(['pesan'=>'Sejumlah Atribut Telah Berhasil Dimodifikasi','status_pesan'=>'1']); 
+            if($update1 != 0) {
+                $query = DB::SELECT('SELECT b.TABLE_SCHEMA, b.TABLE_NAME, b.COLUMN_NAME, b.COLUMN_TYPE AS tipe_tujuan, a.COLUMN_TYPE AS tipe_asal, b.IS_NULLABLE AS null_tujuan, 
+                    a.IS_NULLABLE AS null_asal, b.COLUMN_KEY AS key_tujuan, a.COLUMN_KEY AS key_asal,            
+                    CONCAT("ALTER TABLE ", b.TABLE_NAME, " MODIFY COLUMN ", b.COLUMN_NAME, " ", a.COLUMN_TYPE,  " ",
+                    IF(a.IS_NULLABLE = "YES", "NULL", CONCAT("NOT NULL DEFAULT ", IF(LENGTH(a.COLUMN_DEFAULT)< 1, 0,a.COLUMN_DEFAULT ))), ";") AS Query_Script
+                    FROM (SELECT x.* FROM temp_table_info x WHERE x.FLAG = 0) a 
+                    INNER JOIN (SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA="'.env('DB_DATABASE', 'forge').'") b ON b.TABLE_NAME = a.TABLE_NAME AND b.COLUMN_NAME = a.COLUMN_NAME 
+                    WHERE (b.COLUMN_TYPE <> a.COLUMN_TYPE OR b.IS_NULLABLE <> a.IS_NULLABLE)');
+                if(count($query)>0){
+                    foreach ($query as $q) {
+                        $test = $q->Query_Script;
+                        $update=DB::unprepared($test);
+                    };
+                    if($update != 0) {
+                        return response ()->json(['pesan'=>'Sejumlah Atribut (1) Telah Berhasil Dimodifikasi','status_pesan'=>'1']); 
+                    } else {
+                        return response ()->json(['pesan'=>'Sejumlah Atribut (1) Gagal Dimodifikasi','status_pesan'=>'0']); 
+                    }
+                } else {
+                    return response ()->json(['pesan'=>'Tidak Ada Script Modifikasi Atribut  (1) Yang Dijalankan','status_pesan'=>'0']);
+                };
             } else {
-                return response ()->json(['pesan'=>'Sejumlah Atribut Gagal Dimodifikasi','status_pesan'=>'0']); 
+                return response ()->json(['pesan'=>'Sejumlah Atribut (0) Gagal Dimodifikasi','status_pesan'=>'0']); 
             }
         } else {
-            return response ()->json(['pesan'=>'Tidak Ada Script Modifikasi Atribut Yang Dijalankan','status_pesan'=>'0']);
-        };
+                $query = DB::SELECT('SELECT b.TABLE_SCHEMA, b.TABLE_NAME, b.COLUMN_NAME, b.COLUMN_TYPE AS tipe_tujuan, a.COLUMN_TYPE AS tipe_asal, b.IS_NULLABLE AS null_tujuan, 
+                    a.IS_NULLABLE AS null_asal, b.COLUMN_KEY AS key_tujuan, a.COLUMN_KEY AS key_asal,            
+                    CONCAT("ALTER TABLE ", b.TABLE_NAME, " MODIFY COLUMN ", b.COLUMN_NAME, " ", a.COLUMN_TYPE,  " ",
+                    IF(a.IS_NULLABLE = "YES", "NULL", CONCAT("NOT NULL DEFAULT ", IF(LENGTH(a.COLUMN_DEFAULT)< 1, 0,a.COLUMN_DEFAULT ))), ";") AS Query_Script
+                    FROM (SELECT x.* FROM temp_table_info x WHERE x.FLAG = 0) a 
+                    INNER JOIN (SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA="'.env('DB_DATABASE', 'forge').'") b ON b.TABLE_NAME = a.TABLE_NAME AND b.COLUMN_NAME = a.COLUMN_NAME 
+                    WHERE (b.COLUMN_TYPE <> a.COLUMN_TYPE OR b.IS_NULLABLE <> a.IS_NULLABLE)');
+                if(count($query)>0){
+                    foreach ($query as $q) {
+                        $test = $q->Query_Script;
+                        $update=DB::unprepared($test);
+                    };
+                    if($update != 0) {
+                        return response ()->json(['pesan'=>'Sejumlah Atribut (1) Telah Berhasil Dimodifikasi','status_pesan'=>'1']); 
+                    } else {
+                        return response ()->json(['pesan'=>'Sejumlah Atribut (1) Gagal Dimodifikasi','status_pesan'=>'0']); 
+                    }
+                } else {
+                    return response ()->json(['pesan'=>'Tidak Ada Script Modifikasi Atribut  (1) Yang Dijalankan','status_pesan'=>'0']);
+                };
+        }
     }
 
     public function TambahAtributUnik(Request $request)
@@ -482,9 +565,9 @@ class UpdateController extends Controller
             CONCAT("ALTER TABLE ",a.TBL_INDEX," DROP INDEX ",a.INDEX_NAME,"; ALTER TABLE ",a.TBL_INDEX," ADD UNIQUE INDEX ", a.INDEX_NAME," (",a.name_column,");") AS Query_Drop,
             CONCAT("ALTER TABLE ",a.TBL_INDEX," ADD UNIQUE INDEX ", a.INDEX_NAME," (", a.name_column,");") AS Query_Script
             FROM (SELECT x.TBL_INDEX, x.INDEX_NAME,  COUNT(x.COLUMN_NAME) AS jml_column_max, GROUP_CONCAT(x.COLUMN_NAME) AS name_column
-            FROM (SELECT x.* FROM temp_table_info x WHERE x.FLAG = 1) AS x GROUP BY x.TBL_INDEX, x.INDEX_NAME) AS a
+            FROM (SELECT x.* FROM temp_table_info x WHERE x.FLAG = 1 AND x.NON_UNIQUE = 0 AND x.INDEX_NAME = "PRIMARY") AS x GROUP BY x.TBL_INDEX, x.INDEX_NAME) AS a
             LEFT OUTER JOIN (SELECT y.TABLE_NAME, y.INDEX_NAME, COUNT(y.COLUMN_NAME) AS jml_column_min
-            FROM INFORMATION_SCHEMA.STATISTICS AS y WHERE y.TABLE_SCHEMA = "'.env('DB_DATABASE', 'forge').'" AND y.NON_UNIQUE = 0 AND y.INDEX_NAME <> "PRIMARY"
+            FROM INFORMATION_SCHEMA.STATISTICS AS y WHERE y.TABLE_SCHEMA = "'.env('DB_DATABASE', 'forge').'" AND y.NON_UNIQUE = 0 AND y.INDEX_NAME = "PRIMARY"
             GROUP BY y.TABLE_NAME, y.INDEX_NAME) AS b 
             ON a.TBL_INDEX = b.TABLE_NAME AND a.INDEX_NAME = b.INDEX_NAME
             WHERE COALESCE(b.jml_column_min,0)=0');
@@ -515,9 +598,10 @@ class UpdateController extends Controller
 
         $query = DB::SELECT('SELECT a.TBL_INDEX, a.INDEX_NAME,COALESCE(b.COLUMN_NAME,0) AS COLUMN_NAME,
             CONCAT("ALTER TABLE ",a.TBL_INDEX," DROP INDEX ",a.INDEX_NAME,"; ALTER TABLE ",a.TBL_INDEX," ADD UNIQUE INDEX ", a.INDEX_NAME," (", GROUP_CONCAT(a.COLUMN_NAME),");") AS Query_Script
-            FROM (SELECT x.* FROM temp_table_info x WHERE x.FLAG = 1)  AS a
+            FROM (SELECT x.* FROM temp_table_info x WHERE x.FLAG = 1 AND x.NON_UNIQUE = 0 AND x.INDEX_NAME = "PRIMARY")  AS a
             LEFT OUTER JOIN (SELECT a.TABLE_NAME, a.INDEX_NAME, a.SEQ_IN_INDEX, a.COLUMN_NAME, a.NON_UNIQUE
-            FROM INFORMATION_SCHEMA.STATISTICS AS a WHERE a.TABLE_SCHEMA = "'.env('DB_DATABASE', 'forge').'" AND a.NON_UNIQUE = 0 AND a.INDEX_NAME <> "PRIMARY" ) AS b 
+            FROM INFORMATION_SCHEMA.STATISTICS AS a WHERE a.TABLE_SCHEMA = "'.env('DB_DATABASE', 'forge').'" 
+            AND a.NON_UNIQUE = 0 AND a.INDEX_NAME = "PRIMARY" ) AS b 
             ON a.TBL_INDEX = b.TABLE_NAME AND a.INDEX_NAME = b.INDEX_NAME AND a.COLUMN_NAME = b.COLUMN_NAME
             WHERE b.COLUMN_NAME IS NULL 
             GROUP BY a.TBL_INDEX, a.INDEX_NAME, b.COLUMN_NAME;');
@@ -555,9 +639,11 @@ class UpdateController extends Controller
 
     public function UpdateEnter(Request $request)
     {
-        $query =DB::SELECT('SELECT CONCAT( "UPDATE ", TABLE_NAME, " SET ", COLUMN_NAME, "= GantiEnter(", COLUMN_NAME, ");" ) AS query_update 
-            FROM INFORMATION_SCHEMA.COLUMNS 
-            WHERE TABLE_SCHEMA = "'.env('DB_DATABASE', 'forge').'"  AND DATA_TYPE = "VARCHAR"  AND TABLE_NAME NOT IN ( "users", "migrations", "password_resets", "ref_group" )');
+        $query =DB::SELECT('SELECT b.TABLE_TYPE, CONCAT( "UPDATE ", a.TABLE_NAME, " SET ", a.COLUMN_NAME, "= GantiEnter(", a.COLUMN_NAME, ");" ) AS query_update 
+            FROM INFORMATION_SCHEMA.COLUMNS AS a
+            INNER JOIN INFORMATION_SCHEMA.TABLES AS b ON a.TABLE_SCHEMA=b.TABLE_SCHEMA AND a.TABLE_NAME = b.TABLE_NAME 
+            WHERE a.TABLE_SCHEMA = "'.env('DB_DATABASE', 'forge').'"  AND a.DATA_TYPE = "VARCHAR"  AND b.TABLE_TYPE <> "VIEW"
+            AND a.TABLE_NAME NOT IN ( "users", "migrations", "password_resets", "ref_group" )');
         
         if(count($query)>0){
             foreach ($query as $q) {
@@ -570,6 +656,27 @@ class UpdateController extends Controller
             }
         } else {
             return response ()->json(['pesan'=>'Tidak Ada Finalisasi Update Database  Yang Dijalankan','status_pesan'=>'0']);
+        };
+    }
+
+    public function NormalisasiTanggal(Request $request)
+    {
+        $query =DB::SELECT('SELECT CONCAT( "UPDATE ", TABLE_NAME, " SET ", COLUMN_NAME, "=NOW() WHERE ",COLUMN_NAME,"=0;" ) AS query_update 
+            FROM INFORMATION_SCHEMA.COLUMNS 
+            WHERE TABLE_SCHEMA = "'.env('DB_DATABASE', 'forge').'"  AND COLUMN_NAME = "updated_at" 
+            AND TABLE_NAME NOT IN ( "users", "migrations", "password_resets", "ref_group" )');
+        
+        if(count($query)>0){
+            foreach ($query as $q) {
+                $update=DB::unprepared($q->query_update);      
+            };        
+            if($update != 0) {
+                return response ()->json(['pesan'=>'Finalisasi Normalisasi Tanggal Sukses ','status_pesan'=>'1']); 
+            } else {
+                return response ()->json(['pesan'=>'Finalisasi Normalisasi Tanggal Tidak Berhasil (Gagal) ','status_pesan'=>'0']); 
+            }
+        } else {
+            return response ()->json(['pesan'=>'Tidak Ada Normalisasi Tanggal Database  Yang Dijalankan','status_pesan'=>'0']);
         };
     }
 
