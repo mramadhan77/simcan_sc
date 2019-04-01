@@ -498,7 +498,6 @@ class UpdateController extends Controller
     {
         // $tabel = parse_ini_file(base_path().'/app/update/update1a');
 
-
         $query1 = DB::SELECT('SELECT CONCAT( "ALTER TABLE ", a.TABLE_NAME, " MODIFY COLUMN `updated_at` datetime(0) NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP(0); " ) AS query_update 
             FROM INFORMATION_SCHEMA.COLUMNS AS a
             INNER JOIN INFORMATION_SCHEMA.TABLES AS b ON a.TABLE_SCHEMA=b.TABLE_SCHEMA AND a.TABLE_NAME = b.TABLE_NAME 
