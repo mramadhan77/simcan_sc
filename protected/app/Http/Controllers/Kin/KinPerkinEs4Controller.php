@@ -196,12 +196,13 @@ class KinPerkinEs4Controller extends Controller
             END AS pangkat_display 
             FROM ref_pegawai AS a
             INNER JOIN (SELECT a.id_pegawai, a.id_unit, a.id_sotk, a.nama_jabatan, a.tmt_unit
-            FROM ref_pegawai_unit AS a WHERE a.tmt_unit = (SELECT MAX(tmt_unit) FROM ref_pegawai_unit AS b WHERE a.id_sotk = b.id_sotk
-            AND b.tingkat_eselon=2 AND b.id_sotk='.$id_pegawai.') ) AS b ON a.id_pegawai = b.id_pegawai
+            FROM ref_pegawai_unit AS a WHERE a.tmt_unit = (SELECT MAX(tmt_unit) FROM ref_pegawai_unit AS b WHERE b.tingkat_eselon=2 AND b.id_sotk='.$id_pegawai.') 
+            AND a.tingkat_eselon=2 AND a.id_sotk='.$id_pegawai.' ) AS b ON a.id_pegawai = b.id_pegawai
             INNER JOIN (SELECT a.id_pangkat, a.id_pegawai, a.pangkat_pegawai, a.tmt_pangkat
             FROM ref_pegawai_pangkat AS a WHERE a.tmt_pangkat = (SELECT MAX(tmt_pangkat) FROM ref_pegawai_pangkat AS b WHERE a.id_pegawai = b.id_pegawai)
             ) AS c ON a.id_pegawai = c.id_pegawai
             WHERE b.id_sotk ='.$id_pegawai);
+        
         return json_encode($getPegawai);
     }
 

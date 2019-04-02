@@ -244,10 +244,10 @@ class RefSshPerkadaController extends Controller
                               <a class="delete-zona dropdown-item" data-no_perkada="'.$perkadazona->no_perkada.'" data-id_zona_perkada="'.$perkadazona->id_zona_perkada.'" data-keterangan_zona="'.$perkadazona->ur_zona.'"><i class="fa fa-trash fa-fw fa-lg"></i> Hapus Data Zona</a>
                           </li>  
                           <li>
-                              <a class="copy-item dropdown-item" data-no_perkada="'.$perkadazona->no_perkada.'" data-id_zona_perkada="'.$perkadazona->id_zona_perkada.'" data-keterangan_zona="'.$perkadazona->ur_zona.'"><i class="fa fa-files-o fa-fw fa-lg"></i> Copy Data Item SSH</a>
+                              <a class="btncopy-item dropdown-item"><i class="fa fa-files-o fa-fw fa-lg"></i> Copy Data Item SSH</a>
                           </li>                             
                           <li>
-                              <a class="tambah-item dropdown-item" data-no_perkada="'.$perkadazona->no_perkada.'" data-id_zona_perkada="'.$perkadazona->id_zona_perkada.'" data-keterangan_zona="'.$perkadazona->ur_zona.'"><i class="fa fa-plus fa-fw fa-lg"></i> Tambah Item SSH</a>
+                              <a class="btntambah-item dropdown-item"><i class="fa fa-plus fa-fw fa-lg"></i> Tambah Item SSH</a>
                           </li>                          
                       </ul>
                       </div>

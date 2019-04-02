@@ -162,9 +162,8 @@ class KinRealEs2Controller extends Controller
 
     public function getPejabat($id_pegawai)
     {
-        $getPegawai=DB::SELECT('SELECT (@id:=@id+1) AS urut, a.id_pangkat, a.id_pegawai, a.pangkat_pegawai, 
-            a.tmt_pangkat, a.created_at, a.updated_at, b.nama_pegawai, b.nip_pegawai,
-            CASE a.pangkat_pegawai
+        $getPegawai=DB::SELECT('SELECT a.id_pegawai, a.nama_pegawai, a.nip_pegawai, b.nama_jabatan, c.pangkat_pegawai, b.id_unit, b.id_sotk,
+            CASE c.pangkat_pegawai
                 WHEN  9 THEN "Penata Muda (III/a)"
                 WHEN 10 THEN "Penata Muda Tk.I (III/b)"
                 WHEN 11 THEN "Penata (III/c)" 
@@ -174,10 +173,15 @@ class KinRealEs2Controller extends Controller
                 WHEN 15 THEN "Pembina Utama Muda (IV/c)"
                 WHEN 16 THEN "Pembina Utama Madya (IV/d)"
                 WHEN 17 THEN "Pembina Utama (IV/e)"
-            END AS pangkat_display
-            FROM ref_pegawai_pangkat AS a
-            INNER JOIN ref_pegawai AS b ON a.id_pegawai=b.id_pegawai,(SELECT @id:=0) x
-            WHERE a.id_pegawai ='.$id_pegawai.' LIMIT 1');
+            END AS pangkat_display 
+            FROM ref_pegawai AS a
+            INNER JOIN (SELECT a.id_pegawai, a.id_unit, a.id_sotk, a.nama_jabatan, a.tmt_unit
+            FROM ref_pegawai_unit AS a WHERE a.tmt_unit = (SELECT MAX(tmt_unit) FROM ref_pegawai_unit AS b WHERE b.tingkat_eselon=0 AND b.id_sotk='.$id_pegawai.') 
+            AND a.tingkat_eselon=0 AND a.id_sotk='.$id_pegawai.') AS b ON a.id_pegawai = b.id_pegawai
+            INNER JOIN (SELECT a.id_pangkat, a.id_pegawai, a.pangkat_pegawai, a.tmt_pangkat
+            FROM ref_pegawai_pangkat AS a WHERE a.tmt_pangkat = (SELECT MAX(tmt_pangkat) FROM ref_pegawai_pangkat AS b WHERE a.id_pegawai = b.id_pegawai)
+            ) AS c ON a.id_pegawai = c.id_pegawai
+            WHERE b.id_sotk ='.$id_pegawai);
         return json_encode($getPegawai);
     }
 

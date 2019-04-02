@@ -58,10 +58,14 @@ class KinRealEs3Controller extends Controller
         {
             $getJabatan=DB::SELECT('SELECT (@id:=@id+1) AS urut,a.id_sotk_es3, a.id_sotk_es2, a.nama_eselon, a.tingkat_eselon, b.id_unit,
             CASE a.tingkat_eselon 
-                WHEN 0 THEN "I"
-                WHEN 1 THEN "II"
-                WHEN 2 THEN "III"
-                WHEN 3 THEN "IV"
+                WHEN 0 THEN "Ia" /*0*/
+                WHEN 1 THEN "Ib"
+                WHEN 2 THEN "IIa" /*1*/
+                WHEN 3 THEN "IIb"
+                WHEN 4 THEN "IIIa" /*2*/
+                WHEN 5 THEN "IIIb"
+                WHEN 6 THEN "IVa" /*3*/
+                WHEN 7 THEN "IVb"
             ELSE "((Error))" END AS eselon_display
             FROM ref_sotk_level_2 AS a
 			INNER JOIN ref_sotk_level_1 AS b ON a.id_sotk_es2=b.id_sotk_es2,(SELECT @id:=0) x
@@ -73,10 +77,14 @@ class KinRealEs3Controller extends Controller
         {
             $getJabatan=DB::SELECT('SELECT (@id:=@id+1) AS urut,a.id_sotk_es3, a.id_sotk_es4, a.nama_eselon, a.tingkat_eselon,
             CASE a.tingkat_eselon 
-                WHEN 0 THEN "I"
-                WHEN 1 THEN "II"
-                WHEN 2 THEN "III"
-                WHEN 3 THEN "IV"
+                WHEN 0 THEN "Ia" /*0*/
+                WHEN 1 THEN "Ib"
+                WHEN 2 THEN "IIa" /*1*/
+                WHEN 3 THEN "IIb"
+                WHEN 4 THEN "IIIa" /*2*/
+                WHEN 5 THEN "IIIb"
+                WHEN 6 THEN "IVa" /*3*/
+                WHEN 7 THEN "IVb"
             ELSE "((Error))" END AS eselon_display
             FROM ref_sotk_level_3 AS a,(SELECT @id:=0) x
             WHERE a.id_sotk_es3='.$id_eselon3);
@@ -104,10 +112,14 @@ class KinRealEs3Controller extends Controller
             a.nama_penandatangan, a.jabatan_penandatangan, a.nip_penandatangan, a.status_data, a.created_at, a.updated_at,
             b.nama_pegawai, b.nip_pegawai, a.pangkat_penandatangan, a.uraian_pangkat_penandatangan, c.id_sotk_es2, c.nama_eselon, c.tingkat_eselon,
             CASE c.tingkat_eselon 
-                WHEN 0 THEN "I"
-                WHEN 1 THEN "II"
-                WHEN 2 THEN "III"
-                WHEN 3 THEN "IV"
+                WHEN 0 THEN "Ia" /*0*/
+                WHEN 1 THEN "Ib"
+                WHEN 2 THEN "IIa" /*1*/
+                WHEN 3 THEN "IIb"
+                WHEN 4 THEN "IIIa" /*2*/
+                WHEN 5 THEN "IIIb"
+                WHEN 6 THEN "IVa" /*3*/
+                WHEN 7 THEN "IVb"
             ELSE "((Error))" END AS eselon_display
             FROM kin_trx_real_es3_dok AS a
             LEFT OUTER JOIN ref_pegawai AS b ON a.id_pegawai = b.id_pegawai
@@ -143,10 +155,14 @@ class KinRealEs3Controller extends Controller
     {
         $getJabatan=DB::SELECT('SELECT (@id:=@id+1) AS urut,id_sotk_es2, id_unit, nama_eselon, tingkat_eselon, created_at, updated_at,
         CASE tingkat_eselon 
-            WHEN 0 THEN "I"
-            WHEN 1 THEN "II"
-            WHEN 2 THEN "III"
-            WHEN 3 THEN "IV"
+            WHEN 0 THEN "Ia" /*0*/
+            WHEN 1 THEN "Ib"
+            WHEN 2 THEN "IIa" /*1*/
+            WHEN 3 THEN "IIb"
+            WHEN 4 THEN "IIIa" /*2*/
+            WHEN 5 THEN "IIIb"
+            WHEN 6 THEN "IVa" /*3*/
+            WHEN 7 THEN "IVb"
         ELSE "((Error))" END AS eselon_display
         FROM ref_sotk_level_1,(SELECT @id:=0) x
         WHERE id_unit='.$id_unit);
@@ -176,9 +192,8 @@ class KinRealEs3Controller extends Controller
 
     public function getPejabat($id_pegawai)
     {
-        $getPegawai=DB::SELECT('SELECT (@id:=@id+1) AS urut, a.id_pangkat, a.id_pegawai, a.pangkat_pegawai, 
-            a.tmt_pangkat, a.created_at, a.updated_at, b.nama_pegawai, b.nip_pegawai,
-            CASE a.pangkat_pegawai
+        $getPegawai=DB::SELECT('SELECT a.id_pegawai, a.nama_pegawai, a.nip_pegawai, b.nama_jabatan, c.pangkat_pegawai, b.id_unit, b.id_sotk,
+            CASE c.pangkat_pegawai
                 WHEN  9 THEN "Penata Muda (III/a)"
                 WHEN 10 THEN "Penata Muda Tk.I (III/b)"
                 WHEN 11 THEN "Penata (III/c)" 
@@ -188,10 +203,15 @@ class KinRealEs3Controller extends Controller
                 WHEN 15 THEN "Pembina Utama Muda (IV/c)"
                 WHEN 16 THEN "Pembina Utama Madya (IV/d)"
                 WHEN 17 THEN "Pembina Utama (IV/e)"
-            END AS pangkat_display
-            FROM ref_pegawai_pangkat AS a
-            INNER JOIN ref_pegawai AS b ON a.id_pegawai=b.id_pegawai,(SELECT @id:=0) x
-            WHERE a.id_pegawai ='.$id_pegawai.' LIMIT 1');
+            END AS pangkat_display 
+            FROM ref_pegawai AS a
+            INNER JOIN (SELECT a.id_pegawai, a.id_unit, a.id_sotk, a.nama_jabatan, a.tmt_unit
+            FROM ref_pegawai_unit AS a WHERE a.tmt_unit = (SELECT MAX(tmt_unit) FROM ref_pegawai_unit AS b WHERE b.tingkat_eselon=1 AND b.id_sotk='.$id_pegawai.') 
+            AND a.tingkat_eselon=1 AND a.id_sotk='.$id_pegawai.') AS b ON a.id_pegawai = b.id_pegawai
+            INNER JOIN (SELECT a.id_pangkat, a.id_pegawai, a.pangkat_pegawai, a.tmt_pangkat
+            FROM ref_pegawai_pangkat AS a WHERE a.tmt_pangkat = (SELECT MAX(tmt_pangkat) FROM ref_pegawai_pangkat AS b WHERE a.id_pegawai = b.id_pegawai)
+            ) AS c ON a.id_pegawai = c.id_pegawai
+            WHERE b.id_sotk ='.$id_pegawai);
         return json_encode($getPegawai);
     }
 
