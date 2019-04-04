@@ -82,11 +82,19 @@ class KinPokinController extends Controller
 
     public function indexChart($id_rpjmd)
     {
-        // if(Auth::check()){ 
             $data = TrxRpjmdVisi::with(array("TrxRpjmdMisis" => function ($q){
                     $q->where("no_urut","<","90")->with('TrxRpjmdTujuans.TrxRpjmdSasarans.TrxRpjmdPrograms');}))
                     ->where('id_rpjmd','=',$id_rpjmd)
                     ->get(); 
+
+            // $data = DB::SELECT('SELECT a.no_urut, a.uraian_visi_rpjmd, a.id_visi_rpjmd, b.id_misi_rpjmd, b.no_urut, b.uraian_misi_rpjmd,
+            //             c.no_urut, c.id_tujuan_rpjmd, c.uraian_tujuan_rpjmd, d.no_urut, d.id_sasaran_rpjmd, d.uraian_sasaran_rpjmd,
+            //             e.no_urut, e.id_program_rpjmd, e.uraian_program_rpjmd
+            //             FROM trx_rpjmd_visi AS a
+            //             INNER JOIN trx_rpjmd_misi AS b ON b.id_visi_rpjmd = a.id_visi_rpjmd
+            //             INNER JOIN trx_rpjmd_tujuan AS c ON c.id_misi_rpjmd = b.id_misi_rpjmd
+            //             INNER JOIN trx_rpjmd_sasaran AS d ON d.id_tujuan_rpjmd = c.id_tujuan_rpjmd
+            //             INNER JOIN trx_rpjmd_program AS e ON e.id_sasaran_rpjmd = d.id_sasaran_rpjmd')
             
             $dok = DB::SELECT('SELECT id_rpjmd, id_rpjmd_old, thn_dasar, tahun_1, tahun_2, tahun_3, tahun_4, tahun_5, no_perda, 
                     tgl_perda, id_revisi, id_status_dokumen, sumber_data, created_at, updated_at
@@ -94,9 +102,6 @@ class KinPokinController extends Controller
                     WHERE id_rpjmd='.$id_rpjmd);
                     
             return view('kin.pokin.FrmRpjmdChart',['data' => $data,'dok' => $dok]);
-        // } else {
-            // return view ( 'errors.401' );
-        // }
     }
 
     public function indexChartPD($id_renstra,$id_unit)
@@ -105,6 +110,7 @@ class KinPokinController extends Controller
             $data = TrxRenstraVisi::with(array("TrxRenstraMisis" => function ($q){
                     $q->where("no_urut","<","90")->with('TrxRenstraTujuans.TrxRenstraSasarans.TrxRenstraPrograms.TrxRenstraKegiatans');}))
                     ->where('id_renstra','=',$id_renstra)
+                    ->where('id_unit','=',$id_unit)
                     ->get(); 
             
             $dok = DB::SELECT('SELECT id_rpjmd, id_renstra, id_unit, nomor_renstra, tanggal_renstra, uraian_renstra, nm_pimpinan, 
@@ -145,6 +151,7 @@ class KinPokinController extends Controller
             $data = TrxRenstraVisi::with(array("TrxRenstraMisis" => function ($q){
                     $q->where("no_urut","<","90")->with('TrxRenstraTujuans.TrxRenstraSasarans.KinTrxCascadingProgramOpds.KinTrxCascadingKegiatanOpds');}))
                     ->where('id_renstra','=',$id_renstra)
+                    ->where('id_unit','=',$id_unit)
                     ->get(); 
             
             $dok = DB::SELECT('SELECT id_rpjmd, id_renstra, id_unit, nomor_renstra, tanggal_renstra, uraian_renstra, nm_pimpinan, 

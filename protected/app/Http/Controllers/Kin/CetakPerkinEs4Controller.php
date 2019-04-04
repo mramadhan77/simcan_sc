@@ -180,7 +180,7 @@ class CetakPerkinEs4Controller extends Controller
                 <td width="40%"  style="padding: 50px; text-align: center; font-weight: bold;" >INDIKATOR KINERJA</td>
                 <td width="10%"  style="padding: 50px; text-align: center; font-weight: bold;" >TARGET</td>
             </tr></thead>';
-        $sasaran=DB::select('SELECT COALESCE(a.uraian_sasaran_kegiatan,"tidak ada data") AS uraian_sasaran_kegiatan,
+        $sasaran=DB::select('SELECT COALESCE(a.uraian_hasil_kegiatan,"tidak ada data") AS uraian_sasaran_kegiatan,
             COALESCE(c.nm_indikator,"tidak ada data") AS uraian_indikator_kegiatan_renstra,
             COALESCE(CASE (SELECT tahun_5 FROM ref_tahun)-'.$request->tahun.'
             WHEN 0 THEN b.angka_tahun5
@@ -189,11 +189,12 @@ class CetakPerkinEs4Controller extends Controller
             WHEN 3 THEN b.angka_tahun2
             ELSE b.angka_tahun1 end,"tidak ada data") AS angka_tahun,
             COALESCE(d.uraian_satuan,"tidak ada data") AS uraian_satuan
-            FROM trx_renstra_kegiatan a
-            LEFT OUTER JOIN trx_renstra_kegiatan_indikator b ON a.id_kegiatan_renstra=b.id_kegiatan_renstra
+            FROM kin_trx_cascading_kegiatan_opd a
+            INNER JOIN kin_trx_cascading_indikator_kegiatan_pd p ON a.id_hasil_kegiatan = p.id_hasil_kegiatan
+            LEFT OUTER JOIN trx_renstra_kegiatan_indikator b ON p.id_renstra_kegiatan_indikator=b.id_indikator_kegiatan_renstra
             LEFT OUTER JOIN ref_indikator c ON b.kd_indikator=c.id_indikator
             LEFT OUTER JOIN ref_satuan d ON c.id_satuan_output=d.id_satuan
-            INNER JOIN kin_trx_perkin_es4_kegiatan e ON a.id_kegiatan_renstra = e.id_kegiatan_renstra
+            INNER JOIN kin_trx_perkin_es4_kegiatan e ON a.id_renstra_kegiatan = e.id_kegiatan_renstra
             INNER JOIN kin_trx_perkin_es4_dok f ON e.id_dokumen_perkin = f.id_dokumen_perkin
             WHERE f.id_sotk_es4='.$request->unit.' AND f.tahun='.$request->tahun);
         $html .= '<tbody>';
