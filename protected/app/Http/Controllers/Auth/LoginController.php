@@ -42,12 +42,17 @@ class LoginController extends Controller
         $this->middleware('guest', ['except' => 'logout']);
     }
 
-    protected function authenticated($request, $user){
+    protected function authenticated($request, $user){  
+      $dt = Carbon::now()->setTimeZone('Asia/Jakarta');
+      if($dt > '2019-06-01 00:00:00'){
+            echo 'Maaf Aplikasi ini hanya dipakai saat WORKSHOP SAKIP 2019 - tidak untuk disebarkan ke Pemda Pengguna';
+            die();
+      } else {
+
         if(!$user->is_active){
             $menu = require(base_path().'/config/menu.php');
             $getApp = $menu['li'];  
-            $cekRef = DB::SELECT('SELECT TABLE_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA="'.env('DB_DATABASE', 'forge').'" AND TABLE_NAME="ref_log_akses" 
-                GROUP BY TABLE_NAME');
+            $cekRef = DB::SELECT('SELECT TABLE_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA="'.env('DB_DATABASE', 'forge').'" AND TABLE_NAME="ref_log_akses"  GROUP BY TABLE_NAME');
 
             if($cekRef!= null){            
                 $cekData = DB::SELECT('SELECT * FROM ref_log_akses WHERE id_log = "'.$getApp.'" AND fr4 >= "'.Carbon::now().'"');
@@ -72,7 +77,12 @@ class LoginController extends Controller
             $dt = Carbon::now()->setTimeZone('Asia/Jakarta');
 
             if($menuform->reveal($menu['state']) == 'demo'){
+              if($dt > '2019-06-01 00:00:00'){
+                    echo 'Maaf Aplikasi Sudah Expired';
+                    $json = 0;
+              } else {
                 $json = 1;
+              }
             } else {
                 if($cekData != null){
                   $json = 1;
@@ -109,6 +119,7 @@ class LoginController extends Controller
                 }   
             }
         }
+      }
     }
 
     protected function hasTooManyLoginAttempts(Request $request)
@@ -121,7 +132,14 @@ class LoginController extends Controller
     public function showLoginForm()
     {
         $tahun=DB::select('SELECT a.tahun_rencana FROM ref_setting AS a WHERE a.status_setting IN (0,1)ORDER BY a.status_setting DESC, a.tahun_rencana ASC LIMIT 5');
-        return view('user.login')->with(compact('tahun'));
+
+        $dt = Carbon::now()->setTimeZone('Asia/Jakarta');
+        if($dt > '2019-06-01 00:00:00'){
+              echo 'Maaf Aplikasi ini hanya dipakai saat WORKSHOP SAKIP 2019 - tidak untuk disebarkan ke Pemda Pengguna';
+              die();
+        } else {
+          return view('user.login')->with(compact('tahun'));
+        }
     }
 
     protected function validateLogin(Request $request)

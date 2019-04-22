@@ -79,7 +79,8 @@ class CetakIkuOPDKegiatanController extends Controller
         $indsas=DB::SELECT('SELECT j.nm_kegiatan,b.uraian_indikator_kegiatan_renstra,c.metode_penghitungan,c.sumber_data_indikator, d.flag_iku, d.id_esl4, i.nama_eselon,
             (SELECT CASE COALESCE(p.id_kegiatan_renstra,0) WHEN 0 THEN 1 ELSE
                             COUNT(p.id_indikator_kegiatan_renstra) END AS level FROM trx_renstra_kegiatan_indikator p 
-                            WHERE p.id_kegiatan_renstra=a.id_kegiatan_renstra
+                            INNER JOIN kin_trx_iku_opd_kegiatan q on p.id_indikator_kegiatan_renstra=q.id_indikator_kegiatan_renstra
+                            WHERE p.id_kegiatan_renstra=a.id_kegiatan_renstra AND q.flag_iku = 1
                             GROUP BY p.id_kegiatan_renstra) AS level_1 
             FROM trx_renstra_kegiatan a
             INNER JOIN trx_renstra_kegiatan_indikator b ON a.id_kegiatan_renstra=b.id_kegiatan_renstra

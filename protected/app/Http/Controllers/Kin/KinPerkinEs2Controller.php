@@ -340,7 +340,8 @@ class KinPerkinEs2Controller extends Controller
                 INNER JOIN trx_renstra_sasaran AS d ON c.id_tujuan_renstra = d.id_tujuan_renstra
                 INNER JOIN ref_sotk_level_1 AS e ON a.id_unit = e.id_unit
                 INNER JOIN kin_trx_perkin_opd_dok AS f ON e.id_sotk_es2 = f.id_sotk_es2
-                WHERE a.id_unit ='.$request->id_unit.' AND f.tahun='.$request->tahun);
+                LEFT OUTER JOIN kin_trx_perkin_opd_sasaran AS g ON d.id_sasaran_renstra = g.id_sasaran_renstra
+                WHERE g.id_perkin_sasaran IS NULL AND b.no_urut NOT IN (97,98,99) AND a.id_unit ='.$request->id_unit.' AND f.tahun='.$request->tahun);
             if($Sasaran==0){
                 return response ()->json (['pesan'=>'Data Gagal Proses Sasaran Renstra ke Perjanjian Kinerja','status_pesan'=>'0']);
             } else {
@@ -351,7 +352,8 @@ class KinPerkinEs2Controller extends Controller
                     INNER JOIN kin_trx_perkin_opd_sasaran AS b ON a.id_sasaran_renstra = b.id_sasaran_renstra
                     INNER JOIN kin_trx_perkin_opd_dok AS c ON b.id_dokumen_perkin = c.id_dokumen_perkin
                     INNER JOIN ref_sotk_level_1 AS d ON c.id_sotk_es2 = d.id_sotk_es2
-                    WHERE d.id_unit ='.$request->id_unit.' AND c.tahun='.$request->tahun);
+                    LEFT OUTER JOIN kin_trx_perkin_opd_sasaran_indikator AS e ON a.id_indikator_sasaran_renstra = e.id_indikator_sasaran_renstra
+                    WHERE e.id_perkin_indikator IS NULL AND d.id_unit ='.$request->id_unit.' AND c.tahun='.$request->tahun);
                 if($Indikator==0){
                     return response ()->json (['pesan'=>'Data Gagal Proses Sasaran Indikator Renstra ke Perjanjian Kinerja','status_pesan'=>'0']);
                 } else {
@@ -361,7 +363,8 @@ class KinPerkinEs2Controller extends Controller
                         INNER JOIN kin_trx_perkin_opd_sasaran AS b ON a.id_sasaran_renstra = b.id_sasaran_renstra
                         INNER JOIN kin_trx_perkin_opd_dok AS c ON b.id_dokumen_perkin = c.id_dokumen_perkin
                         INNER JOIN ref_sotk_level_1 AS d ON c.id_sotk_es2 = d.id_sotk_es2
-                        WHERE d.id_unit ='.$request->id_unit.' AND c.tahun='.$request->tahun);
+                        LEFT OUTER JOIN kin_trx_perkin_opd_program AS e ON a.id_program_renstra = e.id_program_renstra
+                        WHERE e.id_perkin_program IS NULL AND d.id_unit ='.$request->id_unit.' AND c.tahun='.$request->tahun);
                     if($Program==0){
                         return response ()->json (['pesan'=>'Data Gagal Proses Program Renstra ke Perjanjian Kinerja','status_pesan'=>'0']);
                     } else {
@@ -385,7 +388,7 @@ class KinPerkinEs2Controller extends Controller
                 INNER JOIN trx_renstra_sasaran AS d ON d.id_tujuan_renstra = c.id_tujuan_renstra
                 INNER JOIN kin_trx_perkin_opd_sasaran AS e ON e.id_sasaran_renstra	= d.id_sasaran_renstra
                 INNER JOIN kin_trx_perkin_opd_dok AS f ON e.id_dokumen_perkin = f.id_dokumen_perkin, (SELECT @id:=0) x
-                WHERE e.id_dokumen_perkin='.$id_dokumen_perkin );
+                WHERE b.no_urut NOT IN (97,98,99)  AND e.id_dokumen_perkin='.$id_dokumen_perkin );
 
         return DataTables::of($sasaran)
         ->addColumn('details_url', function($sasaran) {

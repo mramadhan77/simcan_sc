@@ -892,13 +892,13 @@ public function getBelanja($id_lokasi){
     public function insertProgramRkpd(Request $req){
     $progRkpd=DB::INSERT('INSERT INTO trx_forum_skpd_program_ranwal
         (no_urut, jenis_belanja, id_rkpd_ranwal, tahun_forum, id_program_rpjmd, id_bidang, id_unit, uraian_program_rpjmd, pagu_rpjmd, pagu_ranwal, keterangan_program, status_data, sumber_data)
-        SELECT (@id:=@id+1) as no_urut, a.jenis_belanja, a.id_rkpd_ranwal, a.tahun_rkpd, a.id_program_rpjmd,b.id_bidang,c.id_unit,a.uraian_program_rpjmd, a.pagu_rpjmd,a.pagu_ranwal,a.keterangan_program,0,0
+        SELECT (@id:=@id+1) as no_urut, a.jenis_belanja, a.id_rkpd_ranwal, a.tahun_rkpd, a.id_program_rpjmd,0,c.id_unit,a.uraian_program_rpjmd, a.pagu_rpjmd,a.pagu_ranwal,a.keterangan_program,0,0
         FROM trx_rkpd_ranwal a
         INNER JOIN trx_rkpd_ranwal_urusan b ON a.id_rkpd_ranwal = b.id_rkpd_ranwal and a.tahun_rkpd = b.tahun_rkpd
         INNER JOIN trx_rkpd_ranwal_pelaksana c ON b.id_urusan_rkpd = c.id_urusan_rkpd and b.tahun_rkpd = c.tahun_rkpd, 
         (SELECT @id:=0) x
          WHERE a.status_data = 2 and a.status_pelaksanaan <> 2 and a.status_pelaksanaan <> 3 and c.status_pelaksanaan <> 2 and c.status_pelaksanaan <> 3 and a.tahun_rkpd = '.$req->tahun_renja.' AND c.id_unit ='.$req->id_unit.' AND a.id_rkpd_ranwal='.$req->id_rkpd_ranwal.' 
-         GROUP BY b.id_bidang, a.jenis_belanja, a.id_rkpd_ranwal, a.tahun_rkpd, a.id_program_rpjmd, c.id_unit,a.uraian_program_rpjmd, a.pagu_rpjmd,a.pagu_ranwal,a.keterangan_program');
+         GROUP BY a.jenis_belanja, a.id_rkpd_ranwal, a.tahun_rkpd, a.id_program_rpjmd, c.id_unit,a.uraian_program_rpjmd, a.pagu_rpjmd,a.pagu_ranwal,a.keterangan_program');
     if($progRkpd == 0){
             return response ()->json (['pesan'=>'Load Data Forum SKPD gagal pada langkah Import Program Ranwal RKPD','status_pesan'=>'0']);
         } else {

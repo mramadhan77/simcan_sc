@@ -66,7 +66,8 @@ class CetakIkuPemdaController extends Controller
             d.unit_penanggung_jawab, COALESCE(e.nm_unit,"Semua OPD") AS nm_unit,
             (SELECT CASE COALESCE(p.id_sasaran_rpjmd,0) WHEN 0 THEN 1 ELSE
                 COUNT(p.id_indikator_sasaran_rpjmd) END AS level FROM trx_rpjmd_sasaran_indikator p 
-                WHERE p.id_sasaran_rpjmd=a.id_sasaran_rpjmd
+                INNER JOIN kin_trx_iku_pemda_rinci q ON p.id_indikator_sasaran_rpjmd=q.id_indikator_sasaran_rpjmd
+                WHERE p.id_sasaran_rpjmd=a.id_sasaran_rpjmd AND q.flag_iku = 1
                 GROUP BY p.id_sasaran_rpjmd) AS level_1
             FROM trx_rpjmd_sasaran a
             LEFT OUTER JOIN trx_rpjmd_sasaran_indikator b ON a.id_sasaran_rpjmd=b.id_sasaran_rpjmd

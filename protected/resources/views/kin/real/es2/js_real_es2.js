@@ -2,13 +2,10 @@ $(document).ready(function() {
 
   var detInSasaran = Handlebars.compile($("#details-inSasaran").html());
 
-  var id_unit_temp;
-  var id_tahun_temp;
-  var id_eselon2_temp;
-  var id_eselon3_temp;  
-  var id_eselon4_temp;
-  var id_real_kegiatan_temp;
-  var triwulan_temp;
+  var id_unit_temp, id_tahun_temp;
+  var id_eselon2_temp, id_eselon3_temp, id_eselon4_temp;
+  var id_real_kegiatan_temp, triwulan_temp;
+  var data_real_temp, status_data_temp;
   
   function formatTgl(val_tanggal){
       var formattedDate = new Date(val_tanggal);
@@ -127,6 +124,10 @@ tblDokPerkin = $('#tblDokPerkin').DataTable( {
                 { data: 'triwulan', sClass: "dt-center"},
                 { data: 'no_dokumen', sClass: "dt-center"},
                 { data: 'jabatan_penandatangan'},
+                { data: 'icon','searchable': false, 'orderable':false, sClass: "dt-center",
+                            render: function(data, type, row,meta) {
+                            return '<i class="'+row.status_icon+'" style="font-size:16px;color:'+row.warna+';"/>';
+                          }},
                 { data: 'action', 'searchable': false, 'orderable':false }
               ]
         });
@@ -410,6 +411,10 @@ function loadCapaian($id_unit,$tahun,$triwulan) {
                 { data: 'triwulan', sClass: "dt-center"},
                 { data: 'no_dokumen', sClass: "dt-center"},
                 { data: 'nama_eselon', sClass: "dt-left"},
+                { data: 'icon','searchable': false, 'orderable':false, sClass: "dt-center",
+                            render: function(data, type, row,meta) {
+                            return '<i class="'+row.status_icon+'" style="font-size:16px;color:'+row.warna+';"/>';
+                          }},
                 { data: 'action', 'searchable': false, 'orderable':false, sClass: "dt-center" } 
               ]
     });
@@ -652,7 +657,13 @@ var data = tblIndikator.row( $(this).parents('tr') ).data();
     $('#real_indikator_t2').val(data.real_t2)
     $('#real_indikator_t3').val(data.real_t3)
     $('#real_indikator_t4').val(data.real_t4)
+    $('#real_fisik_t4').val(data.real_fisik);
     $('#real_indikator_t'+triwulan_temp).removeClass('realisasi');
+    if(triwulan_temp==4){
+      $('#real_fisik_t4').removeClass('realisasi'); 
+    } else {
+      $('#real_fisik_t4').addClass('realisasi'); 
+    };
     $('#uraian_deviasi_indikator').val(data.uraian_deviasi);
     $('#uraian_renaksi_indikator').val(data.uraian_renaksi);
     $('#target_tahun').val(data.target_tahun);
@@ -674,6 +685,7 @@ $('.modal-footer').on('click', '.editSasaranIndikator', function() {
             'real_t2': $('#real_indikator_t2').val(),
             'real_t3': $('#real_indikator_t3').val(),
             'real_t4': $('#real_indikator_t4').val(),   
+            'real_fisik': $('#real_fisik_t4').val(), 
             'uraian_deviasi': $('#uraian_deviasi_indikator').val(), 
             'uraian_renaksi': $('#uraian_renaksi_indikator').val(),  
         },
@@ -743,6 +755,40 @@ $('.modal-footer').on('click', '.editRealEs4Indikator', function() {
         },
         success: function(data) {
             tblProgram.ajax.reload(null,false);
+              if(data.status_pesan==1){
+                createPesan(data.pesan,"success");
+                } else {
+                createPesan(data.pesan,"danger"); 
+              }
+
+        }
+    });
+});
+
+$(document).on('click', '.btnPostingDokumenEs3', function() {
+  // var data = tbldokCapaian.row(this).data(); //klik double
+  var data = tbldokCapaian.row( $(this).parents('tr') ).data(); //klik button
+    data_real_temp= data.id_dokumen_real;
+    if(data.status_data == 0) {
+        status_data_temp = 1;
+      } else {
+        status_data_temp = 0;
+      }
+
+    $.ajaxSetup({
+       headers: { 'X-CSRF-Token' : $('meta[name=_token]').attr('content') }
+    });
+
+    $.ajax({
+        type: 'post',
+        url: './real/postingReviu',
+        data: {
+            '_token': $('input[name=_token]').val(),
+            'id_dokumen_real': data_real_temp,
+            'status_data': status_data_temp, 
+        },
+        success: function(data) {
+            tbldokCapaian.ajax.reload(null,false);
               if(data.status_pesan==1){
                 createPesan(data.pesan,"success");
                 } else {

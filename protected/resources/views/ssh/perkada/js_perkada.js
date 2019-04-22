@@ -680,13 +680,13 @@ $(document).on('click', '#btnparam_cari', function() {
     $('.btnTarif').addClass('btn-success');
     $('.btnTarif').removeClass('edittarif');
     $('.btnTarif').addClass('addtarif');
-    $('.modal-title').text('Tambah Data Tarif Item SSH');
+    $('.modal-title').text('Tambah Data Tarif Item SSH a');
     $('.form-horizontal').show();
     $('#id_perkada_tarif'). val(id_sk_ssh);
     document.getElementById("idperkada_tarif").innerHTML = no_sk_ssh;
     $('#id_zona_perkada'). val(data.id_zona_perkada);
     $('#id_zona_tarif'). val(data.id_zona);
-    document.getElementById("idzona_tarif").innerHTML = data.nama_zona;
+    document.getElementById("idzona_tarif").innerHTML = data.ur_zona;
     $('#id_item_perkada'). val(null);
     $('#ur_item_perkada'). val(null);
     $('#no_urut_tarif').val(null);
@@ -747,9 +747,7 @@ $(document).on('click', '#btnparam_cari', function() {
 
   //Edit Tarif Perkada
   $(document).on('click', '.edit-tarif', function() {
-
     var data = detailtarif_tbl.row( $(this).parents('tr') ).data();
-
     $('.btnTarif').addClass('btn-success');
     $('.btnTarif').removeClass('addtarif');
     $('.btnTarif').addClass('edittarif');
@@ -829,10 +827,34 @@ $(document).on('click', '#btnparam_cari', function() {
     });
   });
 
-  $(document).on('click', '.copy-tarif', function() {
-
+   var id_zona_copy_new
+  $(document).on('click', '.btncopy-item', function() {
+    var data = detailzona.row($(this).parents('tr') ).data();
+    id_zona_copy_new= data.id_zona_perkada;
     $('#CopyDataTarif').modal('show');
+    $.ajax({
+          type: "GET",
+          url: './getDataPerkada',
+          data:"id_perkada="+ id_sk_ssh,
+          dataType: "json",
+          success: function(data) {
 
+          var j = data.length;
+          var post, i;
+
+          $('select[name="pilih_perkada"]').empty();
+          $('select[name="pilih_perkada"]').append('<option value="-1">---Pilih Nomor Perkada---</option>');
+
+          for (i = 0; i < j; i++) {
+            post = data[i];
+            $('select[name="pilih_perkada"]').append('<option value="'+ post.id_perkada +'">'+ post.nomor_perkada +'</option>');
+          }
+          }
+      });
+  });
+
+  $(document).on('click', '.copy-tarif', function() {
+    $('#CopyDataTarif').modal('show');
     $.ajax({
           type: "GET",
           url: './getDataPerkada',
@@ -855,10 +877,8 @@ $(document).on('click', '#btnparam_cari', function() {
   });
 
   $(document).on('click', '.btnTransfer', function() {
-
-
       if (document.frmModalCopy.opt_copy.value==0){
-          var id_zona_copy_new= id_zonassh;
+          // id_zona_copy_new= id_zonassh;
           $.ajax({
             type: "POST",
             url: './copyTarifRef',
@@ -871,12 +891,11 @@ $(document).on('click', '#btnparam_cari', function() {
             }
       });
     } else {
-
       if($('#pilih_zona').val()==null || $('#pilih_zona').val()=== undefined){
         // alert("Kode Zona yang terdapat dalam perkada masih kosong");
         $('#pesan').html('<div class="alert alert-danger col-md-12"><button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>Kode Zona yang terdapat dalam perkada masih kosong</div>');
       } else {
-        var id_zona_copy_new= id_zonassh;
+        // var id_zona_copy_new= id_zonassh;
           var id_perkada_copy = $('#pilih_perkada').val();
           var id_zona_copy = $('#pilih_zona').val();
               $.ajax({

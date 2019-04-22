@@ -119,7 +119,15 @@ class KinRealEs4Controller extends Controller
                 WHEN 5 THEN "IIIb"
                 WHEN 6 THEN "IVa" /*3*/
                 WHEN 7 THEN "IVb"
-            ELSE "((Error))" END AS eselon_display
+            ELSE "((Error))" END AS eselon_display,
+            CASE a.status_data
+                    WHEN 0 THEN "fa fa-question"
+                    WHEN 1 THEN "fa fa-check-square-o"
+                END AS status_icon,
+                CASE a.status_data
+                    WHEN 0 THEN "red"
+                    WHEN 1 THEN "green"
+                END AS warna
             FROM kin_trx_real_es4_dok AS a
             LEFT OUTER JOIN ref_pegawai AS b ON a.id_pegawai = b.id_pegawai
             LEFT OUTER JOIN ref_sotk_level_3 AS c ON a.id_sotk_es4 = c.id_sotk_es4, (SELECT @id:=0) x
@@ -127,6 +135,7 @@ class KinRealEs4Controller extends Controller
 
         return DataTables::of($dokumen)
             ->addColumn('action', function ($dokumen) {
+                if ($dokumen->status_data==0)
                 return
                 '<div class="btn-group">
                     <button type="button" class="btn btn-info dropdown-toggle btn-labeled" aria-haspopup="true" aria-expanded="false" data-toggle="dropdown"><span class="btn-label"><i class="fa fa-wrench fa-fw fa-lg"></i></span>Aksi <span class="caret"></span></button>
@@ -136,9 +145,6 @@ class KinRealEs4Controller extends Controller
                         </li>
                         <li>
                             <a class="btnHapusDokumen dropdown-item"><i class="fa fa-trash-o fa-fw fa-lg text-danger"></i> Hapus Data</a>
-                        </li>
-                        <li>
-                            <a class="btnPostingDokumen dropdown-item"><i class="fa fa-check-square-o fa-fw fa-lg text-primary"></i> Posting Dokumen </a>
                         </li>
                     </ul>
                 </div>';
@@ -405,9 +411,9 @@ class KinRealEs4Controller extends Controller
             } else {
                 $Indikator=DB::INSERT('INSERT INTO kin_trx_real_es4_kegiatan_indikator
                     (id_real_kegiatan, id_perkin_indikator, id_indikator_kegiatan_renstra, target_tahun, target_t1, target_t2, target_t3, target_t4, 
-                    real_t1, real_t2, real_t3, real_t4, status_data)
+                    real_t1, real_t2, real_t3, real_t4, real_fisik, status_data)
                     SELECT  c.id_real_kegiatan, x.id_perkin_indikator, x.id_indikator_kegiatan_renstra, x.target_tahun, x.target_t1, x.target_t2, x.target_t3, x.target_t4,
-                    0 AS real_t1, 0 AS real_t2, 0 AS real_t3, 0 AS real_t4, 0 AS status_data
+                    0 AS real_t1, 0 AS real_t2, 0 AS real_t3, 0 AS real_t4,0 AS real_fisik, 0 AS status_data
                     FROM kin_trx_perkin_es4_kegiatan_indikator AS x
 					INNER JOIN kin_trx_perkin_es4_kegiatan AS a ON x.id_perkin_kegiatan = a.id_perkin_kegiatan
                     INNER JOIN kin_trx_real_es4_kegiatan AS c ON a.id_perkin_kegiatan = c.id_perkin_kegiatan
@@ -424,7 +430,7 @@ class KinRealEs4Controller extends Controller
     
     public function getSasaran($id_dokumen_perkin)
     {
-        $sasaran=DB::SELECT('SELECT (@id:=@id+1) AS urut, e.id_real_kegiatan, e.id_dokumen_real, e.id_perkin_kegiatan, e.id_kegiatan_renstra, a.id_kegiatan_ref, b.nm_kegiatan,
+        $sasaran=DB::SELECT('SELECT (@id:=@id+1) AS urut, e.id_real_kegiatan, e.id_dokumen_real, e.id_perkin_kegiatan, e.id_kegiatan_renstra, a.id_kegiatan_ref, b.nm_kegiatan, g.status_data AS status_dokumen,
             CONCAT(d.kd_urusan,".",RIGHT(CONCAT("0",d.kd_bidang),2),".",RIGHT(CONCAT("0",c.kd_program),2),".",RIGHT(CONCAT("0",b.kd_kegiatan),2)) as kd_kegiatan, 
             CONCAT("(",d.kd_urusan,".",RIGHT(CONCAT("0",d.kd_bidang),2),".",RIGHT(CONCAT("0",c.kd_program),2),".",RIGHT(CONCAT("0",b.kd_kegiatan),2),") ", b.nm_kegiatan) AS uraian_kegiatan_display,
             e.pagu_tahun, e.status_data, e.pagu_t1, e.pagu_t2, e.pagu_t3, e.pagu_t4, e.real_t1, e.real_t2, e.real_t3, e.real_t4, e.uraian_deviasi, e.uraian_renaksi,
@@ -460,7 +466,7 @@ class KinRealEs4Controller extends Controller
 
     public function getIndikatorSasaran($id_perkin_kegiatan)
     {
-        $indikator=DB::SELECT('SELECT (@id:=@id+1) AS urut,d.id_indikator_kegiatan_renstra, d.id_real_kegiatan, d.id_real_indikator, d.target_tahun, d.target_t1, d.target_t2, d.target_t3, d.target_t4,
+        $indikator=DB::SELECT('SELECT (@id:=@id+1) AS urut,d.id_indikator_kegiatan_renstra, d.id_real_kegiatan, d.id_real_indikator, d.target_tahun, d.target_t1, d.target_t2, d.target_t3, d.target_t4,d.real_fisik, f.status_data AS status_dokumen,
             d.status_data, b.id_indikator, b.nm_indikator, b.id_satuan_output, c.uraian_satuan, d.real_t1, d.real_t2, d.real_t3, d.real_t4, d.uraian_deviasi, d.uraian_renaksi
             FROM trx_renstra_kegiatan_indikator AS a
             INNER JOIN ref_indikator AS b ON a.kd_indikator = b.id_indikator
@@ -544,6 +550,7 @@ class KinRealEs4Controller extends Controller
                 'real_t2'=>'required',
                 'real_t3'=>'required',
                 'real_t4'=>'required',
+                'real_fisik'=>'required',
                 'uraian_deviasi'=>'required',
                 'uraian_renaksi'=>'required',
             ];
@@ -553,6 +560,7 @@ class KinRealEs4Controller extends Controller
                 'real_t2.required'=>'Realisasi Triwulan II Kosong',
                 'real_t3.required'=>'Realisasi Triwulan III Kosong',
                 'real_t4.required'=>'Realisasi Triwulan IV Kosong',
+                'real_fisik.required'=>'Realisasi Fisik Akhir Tahun Kosong',
                 'uraian_deviasi.required'=>'Penyebab Deviasi Kosong',
                 'uraian_renaksi.required'=>'Rencana Aksi Deviasi Kosong',
             ];
@@ -568,6 +576,7 @@ class KinRealEs4Controller extends Controller
                 $data->real_t2= $request->real_t2;
                 $data->real_t3= $request->real_t3;
                 $data->real_t4= $request->real_t4;
+                $data->real_fisik= $request->real_fisik;
                 $data->uraian_deviasi= $request->uraian_deviasi;
                 $data->uraian_renaksi= $request->uraian_renaksi;
                 $data->reviu_real= $request->real_reviu;

@@ -73,12 +73,13 @@ class CetakIkuOPDController extends Controller
             c.sumber_data_indikator, d.flag_iku, f.nama_eselon,
             (SELECT CASE COALESCE(p.id_sasaran_renstra,0) WHEN 0 THEN 1 ELSE
                 COUNT(p.id_indikator_sasaran_renstra) END AS level FROM trx_renstra_sasaran_indikator p 
-                WHERE p.id_sasaran_renstra=a.id_sasaran_renstra
+                INNER JOIN kin_trx_iku_opd_sasaran q ON p.id_indikator_sasaran_renstra=q.id_indikator_sasaran_renstra                               
+                WHERE p.id_sasaran_renstra=a.id_sasaran_renstra AND q.flag_iku = 1
                 GROUP BY p.id_sasaran_renstra) AS level_1
             FROM trx_renstra_sasaran a
-            INNER join trx_renstra_sasaran_indikator b ON a.id_sasaran_renstra=b.id_sasaran_renstra
-            INNER join kin_trx_iku_opd_sasaran d ON b.id_indikator_sasaran_renstra=d.id_indikator_sasaran_renstra
-            left outer join ref_indikator c ON b.kd_indikator=c.id_indikator
+            INNER JOIN trx_renstra_sasaran_indikator b ON a.id_sasaran_renstra=b.id_sasaran_renstra
+            INNER JOIN kin_trx_iku_opd_sasaran d ON b.id_indikator_sasaran_renstra=d.id_indikator_sasaran_renstra
+            LEFT OUTER JOIN ref_indikator c ON b.kd_indikator=c.id_indikator
             INNER JOIN kin_trx_iku_opd_dok e ON d.id_dokumen = e.id_dokumen
             INNER JOIN ref_sotk_level_1 f ON e.id_unit = f.id_unit
             WHERE d.flag_iku = 1 AND e.id_dokumen='.$id_dokumen);

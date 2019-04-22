@@ -39,6 +39,15 @@ class HomeController extends Controller
      */
     public function index()
     {
+
+    $dt = Carbon::now()->setTimeZone('Asia/Jakarta');
+            // $dt = Carbon::today();
+
+    if($dt > '2019-06-01 00:00:00'){
+            echo 'Maaf Aplikasi ini hanya dipakai saat WORKSHOP SAKIP 2019 - tidak untuk disebarkan ke Pemda Pengguna';
+            die();
+    } else {
+
         $tahun=DB::select('SELECT a.* FROM ref_setting AS a
             WHERE a.status_setting = 1 ORDER BY a.tahun_rencana LIMIT 1');
         $AppType=DB::select('SELECT a.kd_kab FROM ref_pemda AS a LIMIT 1');
@@ -109,18 +118,8 @@ class HomeController extends Controller
             //     }
             // };
 
-            
-            // $dt = Carbon::now()->setTimeZone('Asia/Jakarta');
-            $dt = Carbon::today();
-
-            // if($dt > '2019-02-28 00:00:00'){
-            //     echo 'Maaf Aplikasi ini hanya dipakai saat Diklat tgl 28/1/2019 s.d 1/2/2019 - belum dirilis secara umum';
-            //     die();
-            // } else {
-                return view('home'); 
-            // }
-            
-
+            return view('home'); 
+            }
         }             
     }
 

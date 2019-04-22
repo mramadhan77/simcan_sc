@@ -22,6 +22,8 @@ use App\Models\Kin\KinTrxRealEs3Dok;
 use App\Models\Kin\KinTrxRealEs3Program;
 use App\Models\Kin\KinTrxRealEs3Kegiatan;
 use App\Models\Kin\KinTrxRealEs3ProgramIndikator;
+use App\Models\Kin\KinTrxRealEs4Dok;
+use App\Models\Kin\KinTrxRealEs4Kegiatan;
 use App\Models\Kin\KinTrxRealEs4KegiatanIndikator;
 
 
@@ -120,7 +122,15 @@ class KinRealEs3Controller extends Controller
                 WHEN 5 THEN "IIIb"
                 WHEN 6 THEN "IVa" /*3*/
                 WHEN 7 THEN "IVb"
-            ELSE "((Error))" END AS eselon_display
+            ELSE "((Error))" END AS eselon_display,
+            CASE a.status_data
+                    WHEN 0 THEN "fa fa-question"
+                    WHEN 1 THEN "fa fa-check-square-o"
+                END AS status_icon,
+                CASE a.status_data
+                    WHEN 0 THEN "red"
+                    WHEN 1 THEN "green"
+                END AS warna
             FROM kin_trx_real_es3_dok AS a
             LEFT OUTER JOIN ref_pegawai AS b ON a.id_pegawai = b.id_pegawai
             LEFT OUTER JOIN ref_sotk_level_2 AS c ON a.id_sotk_es3 = c.id_sotk_es3, (SELECT @id:=0) x
@@ -128,6 +138,7 @@ class KinRealEs3Controller extends Controller
 
         return DataTables::of($dokumen)
             ->addColumn('action', function ($dokumen) {
+                if ($dokumen->status_data==0)
                 return
                 '<div class="btn-group">
                     <button type="button" class="btn btn-info dropdown-toggle btn-labeled" aria-haspopup="true" aria-expanded="false" data-toggle="dropdown"><span class="btn-label"><i class="fa fa-wrench fa-fw fa-lg"></i></span>Aksi <span class="caret"></span></button>
@@ -141,8 +152,15 @@ class KinRealEs3Controller extends Controller
                         <li>
                             <a class="btnLihatRealEs4 dropdown-item"><i class="fa fa-file-text-o fa-fw fa-lg blue"></i> Realisasi Level 3</a>
                         </li>
+                    </ul>
+                </div>';
+                if ($dokumen->status_data==1)
+                return
+                '<div class="btn-group">
+                    <button type="button" class="btn btn-info dropdown-toggle btn-labeled" aria-haspopup="true" aria-expanded="false" data-toggle="dropdown"><span class="btn-label"><i class="fa fa-wrench fa-fw fa-lg"></i></span>Aksi <span class="caret"></span></button>
+                    <ul class="dropdown-menu dropdown-menu-right">
                         <li>
-                            <a class="btnPostingDokumen dropdown-item"><i class="fa fa-check-square-o fa-fw fa-lg text-primary"></i> Posting Dokumen </a>
+                            <a class="btnLihatRealEs4 dropdown-item"><i class="fa fa-file-text-o fa-fw fa-lg blue"></i> Realisasi Level 3</a>
                         </li>
                     </ul>
                 </div>';
@@ -408,9 +426,9 @@ class KinRealEs3Controller extends Controller
             } else {
                 $Indikator=DB::INSERT('INSERT INTO kin_trx_real_es3_program_indikator
                     (id_real_program, id_perkin_indikator, id_indikator_program_renstra, target_tahun, target_t1, target_t2, target_t3, target_t4, 
-                    real_t1, real_t2, real_t3, real_t4, status_data)
+                    real_t1, real_t2, real_t3, real_t4, real_fisik, status_data)
                     SELECT  c.id_real_program, x.id_perkin_indikator, x.id_indikator_program_renstra, x.target_tahun, x.target_t1, x.target_t2, x.target_t3, x.target_t4,
-                    0 AS real_t1, 0 AS real_t2, 0 AS real_t3, 0 AS real_t4, 0 AS status_data
+                    0 AS real_t1, 0 AS real_t2, 0 AS real_t3, 0 AS real_t4,0 AS real_fisik, 0 AS status_data
                     FROM kin_trx_perkin_es3_program_indikator AS x
                     INNER JOIN kin_trx_perkin_es3_program AS a ON x.id_perkin_program = a.id_perkin_program
                     INNER JOIN kin_trx_real_es3_program AS c ON a.id_perkin_program = c.id_perkin_program
@@ -430,7 +448,7 @@ class KinRealEs3Controller extends Controller
         $sasaran=DB::SELECT('SELECT (@id:=@id+1) AS urut,d.id_real_program, d.id_dokumen_real, d.id_perkin_program, d.id_program_renstra, a.id_program_ref, b.uraian_program,
             CONCAT(c.kd_urusan,".",RIGHT(CONCAT("0",c.kd_bidang),2),".",RIGHT(CONCAT("0",b.kd_program),2)) as kd_program, 
             CONCAT("(",c.kd_urusan,".",RIGHT(CONCAT("0",c.kd_bidang),2),".",RIGHT(CONCAT("0",b.kd_program),2),") ", b.uraian_program) AS uraian_program_display,
-            d.pagu_tahun, d.status_data, d.pagu_t1, d.pagu_t2, d.pagu_t3, d.pagu_t4, d.real_t1, d.real_t2, d.real_t3, d.real_t4,
+            d.pagu_tahun, d.status_data, d.pagu_t1, d.pagu_t2, d.pagu_t3, d.pagu_t4, d.real_t1, d.real_t2, d.real_t3, d.real_t4, e.status_data AS status_dokumen,
             (SELECT COUNT(a.id_real_indikator) FROM kin_trx_real_es3_program_indikator AS a WHERE a.id_real_program=d.id_real_program ) AS jml_indikator
             FROM trx_renstra_program AS a
             INNER JOIN ref_program AS b ON a.id_program_ref = b.id_program
@@ -462,7 +480,7 @@ class KinRealEs3Controller extends Controller
 
     public function getIndikatorSasaran($id_perkin_kegiatan)
     {
-        $indikator=DB::SELECT('SELECT (@id:=@id+1) AS urut,d.id_indikator_program_renstra, d.id_real_program, d.id_real_indikator, d.target_tahun, d.target_t1, d.target_t2, d.target_t3, d.target_t4,
+        $indikator=DB::SELECT('SELECT (@id:=@id+1) AS urut,d.id_indikator_program_renstra, d.id_real_program, d.id_real_indikator, d.target_tahun, d.target_t1, d.target_t2, d.target_t3, d.target_t4,d.real_fisik, f.status_data AS status_dokumen,
             d.status_data, b.id_indikator, b.nm_indikator, b.id_satuan_output, c.uraian_satuan, d.real_t1, d.real_t2, d.real_t3, d.real_t4
             FROM trx_renstra_program_indikator AS a
             INNER JOIN ref_indikator AS b ON a.kd_indikator = b.id_indikator
@@ -591,6 +609,7 @@ class KinRealEs3Controller extends Controller
                 'real_t2'=>'required',
                 'real_t3'=>'required',
                 'real_t4'=>'required',
+                'real_fisik'=>'required',
                 'uraian_deviasi'=>'required',
                 'uraian_renaksi'=>'required',
             ];
@@ -600,6 +619,7 @@ class KinRealEs3Controller extends Controller
                 'real_t2.required'=>'Realisasi Triwulan II Kosong',
                 'real_t3.required'=>'Realisasi Triwulan III Kosong',
                 'real_t4.required'=>'Realisasi Triwulan IV Kosong',
+                'real_fisik.required'=>'Realisasi Fisik Akhir Tahun Kosong',
                 'uraian_deviasi.required'=>'Penyebab Deviasi Kosong',
                 'uraian_renaksi.required'=>'Rencana Aksi Deviasi Kosong',
             ];
@@ -615,6 +635,7 @@ class KinRealEs3Controller extends Controller
                 $data->real_t2= $request->real_t2;
                 $data->real_t3= $request->real_t3;
                 $data->real_t4= $request->real_t4;
+                $data->real_fisik= $request->real_fisik;
                 $data->uraian_deviasi= $request->uraian_deviasi;
                 $data->uraian_renaksi= $request->uraian_renaksi;
                 $data->reviu_real= $request->real_reviu;
@@ -659,7 +680,7 @@ class KinRealEs3Controller extends Controller
     public function getIndikatorKegiatanEs4($id_perkin_kegiatan)
     {
             $indikator=DB::SELECT('SELECT (@id:=@id+1) AS urut,d.id_indikator_kegiatan_renstra, e.id_dokumen_real, d.id_real_kegiatan, d.id_real_indikator, d.target_tahun, d.target_t1, d.target_t2, d.target_t3, d.target_t4,
-                d.status_data, b.id_indikator, b.nm_indikator, b.id_satuan_output, c.uraian_satuan, d.real_t1, d.real_t2, d.real_t3, d.real_t4, d.uraian_deviasi, d.uraian_renaksi,d.reviu_real, d.reviu_deviasi, d.reviu_renaksi
+                d.status_data, b.id_indikator, b.nm_indikator, b.id_satuan_output, c.uraian_satuan, d.real_t1, d.real_t2, d.real_t3, d.real_t4, d.uraian_deviasi, d.uraian_renaksi,d.reviu_real, d.reviu_deviasi, d.reviu_renaksi, f.status_data AS status_dokumen
                 FROM trx_renstra_kegiatan_indikator AS a
                 INNER JOIN ref_indikator AS b ON a.kd_indikator = b.id_indikator
                 LEFT OUTER JOIN ref_satuan AS c ON b.id_satuan_output = c.id_satuan
@@ -679,15 +700,26 @@ class KinRealEs3Controller extends Controller
 
     public function getDokRealEs4($id_unit,$tahun,$triwulan)
     {
-        $dokumen = DB::select('SELECT DISTINCT (@id:=@id+1) as no_urut,a.id_dokumen_real, a.id_dokumen_perkin, a.id_sotk_es4, a.tahun, a.triwulan, a.no_dokumen, a.tgl_dokumen, a.id_pegawai, 
-            a.nama_penandatangan, a.jabatan_penandatangan, a.nip_penandatangan, a.status_data, a.created_at, a.updated_at,
+        $dokumen = DB::select('SELECT DISTINCT (@id:=@id+1) as no_urut,a.id_dokumen_real, a.id_dokumen_perkin, a.id_sotk_es4, a.tahun, a.triwulan, a.no_dokumen, a.tgl_dokumen, a.id_pegawai, a.nama_penandatangan, a.jabatan_penandatangan, a.nip_penandatangan, a.status_data, a.created_at, a.updated_at,
             b.nama_pegawai, b.nip_pegawai, a.pangkat_penandatangan, a.uraian_pangkat_penandatangan, c.id_sotk_es3, c.nama_eselon, c.tingkat_eselon,
-            CASE c.tingkat_eselon 
-                WHEN 0 THEN "I"
-                WHEN 1 THEN "II"
-                WHEN 2 THEN "III"
-                WHEN 3 THEN "IV"
-            ELSE "((Error))" END AS eselon_display
+            CASE tingkat_eselon 
+                WHEN 0 THEN "Ia" /*0*/
+                WHEN 1 THEN "Ib"
+                WHEN 2 THEN "IIa" /*1*/
+                WHEN 3 THEN "IIb"
+                WHEN 4 THEN "IIIa" /*2*/
+                WHEN 5 THEN "IIIb"
+                WHEN 6 THEN "IVa" /*3*/
+                WHEN 7 THEN "IVb"
+            ELSE "((Error))" END AS eselon_display,
+            CASE a.status_data
+                    WHEN 0 THEN "fa fa-question"
+                    WHEN 1 THEN "fa fa-check-square-o"
+                END AS status_icon,
+                CASE a.status_data
+                    WHEN 0 THEN "red"
+                    WHEN 1 THEN "green"
+                END AS warna
             FROM kin_trx_real_es4_dok AS a
             LEFT OUTER JOIN ref_pegawai AS b ON a.id_pegawai = b.id_pegawai
             LEFT OUTER JOIN ref_sotk_level_3 AS c ON a.id_sotk_es4 = c.id_sotk_es4, (SELECT @id:=0) x
@@ -747,5 +779,45 @@ class KinRealEs3Controller extends Controller
                 }
             }
         } 
+
+    public function postingReviu(Request $request)
+        {
+            $rules = [
+                'id_dokumen_real'=>'required',
+                'status_data'=>'required',
+            ];
+            $messages =[
+                'id_dokumen_real.required'=>'ID Dokumen Realisasi Kinerja Kosong',
+                'status_data.required'=>'Status Reviu Kosong',
+            ];
+            $validation = Validator::make($request->all(),$rules,$messages);
+            
+            if($validation->fails()) {
+                $errors = Fungsi::validationErrorsToString($validation->errors());
+                return response ()->json (['pesan'=>$errors,'status_pesan'=>'0']);          
+                }
+            else {
+                $cek = DB::SELECT('SELECT COUNT(a.id_real_indikator) AS jml_status_data FROM kin_trx_real_es4_kegiatan_indikator AS a
+                        INNER JOIN kin_trx_real_es4_kegiatan AS b ON a.id_real_kegiatan = b.id_real_kegiatan
+                        INNER JOIN kin_trx_real_es4_dok AS c ON b.id_dokumen_real = c.id_dokumen_real
+                        WHERE a.status_data = 0 AND c.id_dokumen_real = '.$request->id_dokumen_real.'
+                        GROUP BY c.id_dokumen_real');
+
+                if($cek == null || $cek[0]->jml_status_data == 0 || $request->status_data == 0 ){ 
+                    $data = KinTrxRealEs4Dok::find($request->id_dokumen_real);
+                    $data->status_data= $request->status_data;
+                    try{
+                        $data->save (['timestamps' => true]);
+                        return response ()->json (['pesan'=>'Data Berhasil di Update','status_pesan'=>'1']);
+                    }
+                    catch(QueryException $e){
+                        $error_code = $e->errorInfo[1] ;
+                        return response ()->json (['pesan'=>'Data Gagal di Update ( Cek Status Reviu (0))','status_pesan'=>'0']);
+                    }
+                } else {                
+                        return response ()->json (['pesan'=>'Data Gagal di Update ( Cek Status Reviu (1))','status_pesan'=>'0']);
+                }
+            }
+        } 
         
-}
+} //end file

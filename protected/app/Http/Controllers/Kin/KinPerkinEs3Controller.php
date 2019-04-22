@@ -386,7 +386,8 @@ class KinPerkinEs3Controller extends Controller
                 INNER JOIN kin_trx_perkin_opd_sasaran AS b ON a.id_perkin_sasaran = b.id_perkin_sasaran
                 INNER JOIN kin_trx_perkin_opd_dok AS c ON b.id_dokumen_perkin = c.id_dokumen_perkin
                 INNER JOIN kin_trx_perkin_es3_dok AS d ON a.id_sotk_es3 = d.id_sotk_es3
-                WHERE d.id_sotk_es3 ='.$request->id_sotk_es3.' AND d.tahun='.$request->tahun);
+                LEFT OUTER JOIN kin_trx_perkin_es3_program AS e ON a.id_perkin_program = e.id_perkin_program_opd
+                WHERE e.id_perkin_program IS NULL AND d.id_sotk_es3 ='.$request->id_sotk_es3.' AND d.tahun='.$request->tahun);
             if($Sasaran==0){
                 return response ()->json (['pesan'=>'Data Gagal Proses Sasaran Renstra ke Perjanjian Kinerja','status_pesan'=>'0']);
             } else {
@@ -396,7 +397,8 @@ class KinPerkinEs3Controller extends Controller
                     FROM trx_renstra_program_indikator AS a
                     INNER JOIN kin_trx_perkin_es3_program AS b ON a.id_program_renstra = b.id_program_renstra
                     INNER JOIN kin_trx_perkin_es3_dok AS c ON b.id_dokumen_perkin = c.id_dokumen_perkin
-                    WHERE c.id_sotk_es3 ='.$request->id_sotk_es3.' AND c.tahun='.$request->tahun);
+                    LEFT OUTER JOIN kin_trx_perkin_es3_program_indikator AS e ON a.id_indikator_program_renstra = e.id_indikator_program_renstra
+                    WHERE e.id_perkin_indikator IS NULL AND c.id_sotk_es3 ='.$request->id_sotk_es3.' AND c.tahun='.$request->tahun);
                 if($Indikator==0){
                     return response ()->json (['pesan'=>'Data Gagal Proses Sasaran Indikator Renstra ke Perjanjian Kinerja','status_pesan'=>'0']);
                 } else {
@@ -405,7 +407,8 @@ class KinPerkinEs3Controller extends Controller
                         FROM trx_renstra_kegiatan AS a
                         INNER JOIN kin_trx_perkin_es3_program AS b ON a.id_program_renstra = b.id_program_renstra
                         INNER JOIN kin_trx_perkin_es3_dok AS c ON b.id_dokumen_perkin = c.id_dokumen_perkin
-                        WHERE c.id_sotk_es3 ='.$request->id_sotk_es3.' AND c.tahun='.$request->tahun);
+                        LEFT OUTER JOIN kin_trx_perkin_es3_kegiatan AS e ON a.id_kegiatan_renstra = e.id_kegiatan_renstra
+                        WHERE e.id_perkin_kegiatan IS NULL AND c.id_sotk_es3 ='.$request->id_sotk_es3.' AND c.tahun='.$request->tahun);
                     if($Program==0){
                         return response ()->json (['pesan'=>'Data Gagal Proses Program Renstra ke Perjanjian Kinerja','status_pesan'=>'0']);
                     } else {

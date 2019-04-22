@@ -216,6 +216,7 @@ Route::group(['prefix' => '/real','middleware' => ['auth','menu:94']], function 
     Route::any('/editProgram', 'Kin\KinRealEs2Controller@editProgram');
     Route::any('/getIndikatorProgramEs3/{id_dokumen}', 'Kin\KinRealEs2Controller@getIndikatorProgramEs3');
     Route::any('/reviuRealisasi', 'Kin\KinRealEs2Controller@reviuRealisasi');
+    Route::any('/postingReviu', 'Kin\KinRealEs2Controller@postingReviu');
 
     Route::group(['prefix' => '/es3','middleware' => ['auth','menu:94']], function () {
         Route::any('/', 'Kin\KinRealEs3Controller@index');
@@ -241,6 +242,7 @@ Route::group(['prefix' => '/real','middleware' => ['auth','menu:94']], function 
         Route::any('/editProgram', 'Kin\KinRealEs3Controller@editProgram');
         Route::any('/getIndikatorKegiatanEs4/{id_dokumen}', 'Kin\KinRealEs3Controller@getIndikatorKegiatanEs4');
         Route::any('/reviuRealisasi', 'Kin\KinRealEs3Controller@reviuRealisasi');
+        Route::any('/postingReviu', 'Kin\KinRealEs3Controller@postingReviu');
     });
 
     Route::group(['prefix' => '/es4','middleware' => ['auth','menu:94']], function () {

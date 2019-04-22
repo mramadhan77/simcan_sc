@@ -51,7 +51,7 @@ class TrxRenstraKinController extends Controller
             INNER JOIN trx_renstra_misi AS b ON a.id_visi_renstra = b.id_visi_renstra
             INNER JOIN trx_renstra_tujuan AS c ON b.id_misi_renstra = c.id_misi_renstra
             INNER JOIN trx_renstra_sasaran AS d ON c.id_tujuan_renstra = d.id_tujuan_renstra
-            WHERE a.id_unit='.$id_unit.' ORDER BY a.no_urut,b.no_urut,c.no_urut,d.no_urut ASC) AS y, (SELECT @id:=0) x' );
+            WHERE a.id_unit='.$id_unit.' AND b.no_urut NOT IN (97,98,99) ORDER BY a.no_urut,b.no_urut,c.no_urut,d.no_urut ASC) AS y, (SELECT @id:=0) x' );
 
         return DataTables::of($sasaranrenstra)
         ->addColumn('details_url', function($sasaranrenstra) {
@@ -234,7 +234,8 @@ class TrxRenstraKinController extends Controller
             INNER JOIN trx_renstra_visi AS f ON e.id_visi_renstra = f.id_visi_renstra
             INNER JOIN ref_program AS g ON y.id_program_ref = g.id_program
             INNER JOIN ref_bidang AS h ON g.id_bidang = h.id_bidang,(SELECT @id:=0) m
-            WHERE x.id_renstra_program IS NULL AND y.id_sasaran_renstra='.$id_sasaran_renstra);
+            WHERE  y.id_sasaran_renstra='.$id_sasaran_renstra);
+            // WHERE x.id_renstra_program IS NULL AND y.id_sasaran_renstra='.$id_sasaran_renstra);
 
       return DataTables::of($indikatorProg)->make(true);
     }
@@ -254,7 +255,8 @@ class TrxRenstraKinController extends Controller
             INNER JOIN ref_kegiatan AS i ON y.id_kegiatan_ref = i.id_kegiatan
             INNER JOIN ref_program AS g ON i.id_program = g.id_program
             INNER JOIN ref_bidang AS h ON g.id_bidang = h.id_bidang,(SELECT @id:=0) m
-            WHERE x.id_renstra_kegiatan IS NULL  AND y.id_program_renstra='.$id_program_renstra);
+            WHERE  y.id_program_renstra='.$id_program_renstra);
+            // WHERE x.id_renstra_kegiatan IS NULL  AND y.id_program_renstra='.$id_program_renstra);
 
       return DataTables::of($indikatorProg)->make(true);
     }

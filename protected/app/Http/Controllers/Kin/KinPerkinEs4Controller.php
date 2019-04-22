@@ -386,7 +386,8 @@ class KinPerkinEs4Controller extends Controller
                 INNER JOIN kin_trx_perkin_es3_program AS b ON a.id_perkin_program = b.id_perkin_program
                 INNER JOIN kin_trx_perkin_es3_dok AS c ON b.id_dokumen_perkin = c.id_dokumen_perkin
                 INNER JOIN kin_trx_perkin_es4_dok AS d ON a.id_sotk_es4 = d.id_sotk_es4
-                WHERE d.id_sotk_es4 ='.$request->id_sotk_es4.' AND d.tahun='.$request->tahun);
+                LEFT OUTER JOIN kin_trx_perkin_es4_kegiatan AS e ON a.id_perkin_kegiatan = e.id_perkin_kegiatan_es3
+                WHERE e.id_perkin_kegiatan IS NULL AND d.id_sotk_es4 ='.$request->id_sotk_es4.' AND d.tahun='.$request->tahun);
             if($Sasaran==0){
                 return response ()->json (['pesan'=>'Data Gagal Proses Sasaran Renstra ke Perjanjian Kinerja','status_pesan'=>'0']);
             } else {
@@ -396,7 +397,8 @@ class KinPerkinEs4Controller extends Controller
                     FROM trx_renstra_kegiatan_indikator AS a
                     INNER JOIN kin_trx_perkin_es4_kegiatan AS b ON a.id_kegiatan_renstra = b.id_kegiatan_renstra
                     INNER JOIN kin_trx_perkin_es4_dok AS c ON b.id_dokumen_perkin = c.id_dokumen_perkin
-                    WHERE c.id_sotk_es4 ='.$request->id_sotk_es4.' AND c.tahun='.$request->tahun);
+                    LEFT OUTER JOIN kin_trx_perkin_es4_kegiatan_indikator AS e ON a.id_indikator_kegiatan_renstra = e.id_indikator_kegiatan_renstra
+                    WHERE e.id_perkin_indikator IS NULL AND c.id_sotk_es4 ='.$request->id_sotk_es4.' AND c.tahun='.$request->tahun);
                 if($Indikator==0){
                     return response ()->json (['pesan'=>'Data Gagal Proses Sasaran Indikator Renstra ke Perjanjian Kinerja','status_pesan'=>'0']);
                 } else {

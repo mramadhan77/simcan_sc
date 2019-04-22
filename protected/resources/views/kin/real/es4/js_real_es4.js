@@ -137,6 +137,10 @@ tblDokPerkin = $('#tblDokPerkin').DataTable( {
                 { data: 'triwulan', sClass: "dt-center"},
                 { data: 'no_dokumen', sClass: "dt-center"},
                 { data: 'jabatan_penandatangan'},
+                { data: 'icon','searchable': false, 'orderable':false, sClass: "dt-center",
+                            render: function(data, type, row,meta) {
+                            return '<i class="'+row.status_icon+'" style="font-size:16px;color:'+row.warna+';"/>';
+                          }},
                 { data: 'action', 'searchable': false, 'orderable':false }
               ]
         });
@@ -687,6 +691,11 @@ realisasi();
 var data = tblIndikator.row( $(this).parents('tr') ).data();
     $('.btnSimpanSasaranIndikator').removeClass('addSasaranIndikator');
     $('.btnSimpanSasaranIndikator').addClass('editSasaranIndikator');
+    if(data.status_dokumen==0){      
+      $('.btnSimpanSasaranIndikator').show();
+    } else {
+      $('.btnSimpanSasaranIndikator').hide();
+    }
   $('.modal-title').text('Data Indikator Kegiatan Perangkat Daerah');
   $('.form-horizontal').show();
     $('#id_indikator_sasaran_renstra').val(data.id_indikator_kegiatan_renstra);
@@ -702,8 +711,14 @@ var data = tblIndikator.row( $(this).parents('tr') ).data();
     $('#real_indikator_t1').val(data.real_t1);
     $('#real_indikator_t2').val(data.real_t2);
     $('#real_indikator_t3').val(data.real_t3);
-    $('#real_indikator_t4').val(data.real_t4);
-    $('#real_indikator_t'+triwulan_temp).removeClass('realisasi');
+    $('#real_indikator_t4').val(data.real_t4);      
+    $('#real_fisik_t4').val(data.real_fisik);
+    $('#real_indikator_t'+triwulan_temp).removeClass('realisasi'); 
+    if(triwulan_temp==4){
+      $('#real_fisik_t4').removeClass('realisasi'); 
+    } else {
+      $('#real_fisik_t4').addClass('realisasi'); 
+    };
     $('#target_tahun').val(data.target_tahun);
     $('#uraian_deviasi_indikator').val(data.uraian_deviasi);
     $('#uraian_renaksi_indikator').val(data.uraian_renaksi);
@@ -725,6 +740,7 @@ $('.modal-footer').on('click', '.editSasaranIndikator', function() {
             'real_t2': $('#real_indikator_t2').val(),
             'real_t3': $('#real_indikator_t3').val(),
             'real_t4': $('#real_indikator_t4').val(), 
+            'real_fisik': $('#real_fisik_t4').val(), 
             'uraian_deviasi': $('#uraian_deviasi_indikator').val(), 
             'uraian_renaksi': $('#uraian_renaksi_indikator').val(),
             'real_reviu': $('#real_indikator_t'+triwulan_temp).val(),    
@@ -746,6 +762,11 @@ realisasi();
 var data = tblSasaran.row( $(this).parents('tr') ).data();
     $('.btnSimpanProgram').removeClass('addSasaranProgram');
     $('.btnSimpanProgram').addClass('editSasaranProgram');
+    if(data.status_dokumen==0){      
+      $('.btnSimpanProgram').show();
+    } else {
+      $('.btnSimpanProgram').hide();
+    }
   $('.modal-title').text('Data Program Perangkat Daerah');
   $('.form-horizontal').show();
     $('#id_perkin_kegiatan').val(data.id_real_kegiatan);
@@ -760,8 +781,8 @@ var data = tblSasaran.row( $(this).parents('tr') ).data();
     $('#real_t1').val(data.real_t1);
     $('#real_t2').val(data.real_t2);
     $('#real_t3').val(data.real_t3);
-    $('#real_t4').val(data.real_t4);
-    $('#real_t'+triwulan_temp).removeClass('realisasi');
+    $('#real_t4').val(data.real_t4);   
+    $('#real_t'+triwulan_temp).removeClass('realisasi'); 
     $('#uraian_deviasi_anggaran').val(data.uraian_deviasi);
     $('#uraian_renaksi_anggaran').val(data.uraian_renaksi);
     $('#ModalKegiatan').modal('show');

@@ -86,6 +86,7 @@ use hoaaah\LaravelBreadcrumb\Breadcrumb as Breadcrumb;
                           <th width="5%" style="text-align: center; vertical-align:middle">Triwulan</th>
                           <th width="15%" style="text-align: center; vertical-align:middle">No Dokumen Realisasi</th>
                           <th style="text-align: center; vertical-align:middle">Pejabat Pembuat Dokumen Realisasi</th>
+                          <th width="50px" style="text-align: center; vertical-align:middle">Status</th>
                           <th width="50px" style="text-align: center; vertical-align:middle">Aksi</th>
                       </tr>
                   </thead>
@@ -157,6 +158,7 @@ use hoaaah\LaravelBreadcrumb\Breadcrumb as Breadcrumb;
                                     <th width="5%" style="text-align: center; vertical-align:middle">Triwulan</th>
                                     <th width="15%" style="text-align: center; vertical-align:middle">No Dokumen Realisasi</th>
                                     <th style="text-align: center; vertical-align:middle">Pejabat Level 3</th>
+                                    <th width="50px" style="text-align: center; vertical-align:middle">Status</th>
                                     <th width="50px" style="text-align: center; vertical-align:middle">Aksi</th>
                                 </tr>
                             </thead>

@@ -4,5 +4,6 @@ return [
     'description' => 'SIMDA Perencanaan BPKP',
     'ul' => 6,
     'appVersi' => 'ver 1.0',
-    'rilis'=>'1060'
+    // 'rilis'=>'1060'
+     'rilis'=>'KHUSUS WORKSHOP 2019'
 ];

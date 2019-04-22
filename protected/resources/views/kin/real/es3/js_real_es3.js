@@ -3,13 +3,10 @@ $(document).ready(function() {
   var detInSasaran = Handlebars.compile($("#details-inSasaran").html());
   var detInIndikator = Handlebars.compile($("#details-inIndikator").html());
 
-  var id_unit_temp;
-  var id_tahun_temp;
-  var id_eselon2_temp;
-  var id_eselon3_temp;  
-  var id_eselon4_temp;
-  var id_real_kegiatan_temp;
-  var triwulan_temp;
+  var id_unit_temp, id_tahun_temp;
+  var id_eselon2_temp, id_eselon3_temp, id_eselon4_temp;
+  var id_real_kegiatan_temp, triwulan_temp;
+  var data_real_temp, status_data_temp;
   
   function formatTgl(val_tanggal){
       var formattedDate = new Date(val_tanggal);
@@ -131,6 +128,10 @@ tblDokPerkin = $('#tblDokPerkin').DataTable( {
                 { data: 'triwulan', sClass: "dt-center"},
                 { data: 'no_dokumen', sClass: "dt-center"},
                 { data: 'jabatan_penandatangan'},
+                { data: 'icon','searchable': false, 'orderable':false, sClass: "dt-center",
+                            render: function(data, type, row,meta) {
+                            return '<i class="'+row.status_icon+'" style="font-size:16px;color:'+row.warna+';"/>';
+                          }},
                 { data: 'action', 'searchable': false, 'orderable':false }
               ]
         });
@@ -477,6 +478,10 @@ function loadCapaian($id_unit,$tahun,$triwulan) {
                 { data: 'triwulan', sClass: "dt-center"},
                 { data: 'no_dokumen', sClass: "dt-center"},
                 { data: 'nama_eselon', sClass: "dt-left"},
+                { data: 'icon','searchable': false, 'orderable':false, sClass: "dt-center",
+                            render: function(data, type, row,meta) {
+                            return '<i class="'+row.status_icon+'" style="font-size:16px;color:'+row.warna+';"/>';
+                          }},
                 { data: 'action', 'searchable': false, 'orderable':false, sClass: "dt-center" } 
               ]
     });
@@ -720,7 +725,12 @@ $(document).on('click', '.btnDetailIndikatorSasaran', function() {
 realisasi();
 var data = tblIndikator.row( $(this).parents('tr') ).data();
     $('.btnSimpanSasaranIndikator').removeClass('addSasaranIndikator');
-    $('.btnSimpanSasaranIndikator').addClass('editSasaranIndikator');
+    $('.btnSimpanSasaranIndikator').addClass('editSasaranIndikator');    
+    if(data.status_dokumen==0){      
+      $('.btnSimpanSasaranIndikator').show();
+    } else {
+      $('.btnSimpanSasaranIndikator').hide();
+    }
   $('.modal-title').text('Data Indikator Kegiatan Perangkat Daerah');
   $('.form-horizontal').show();
     $('#id_indikator_sasaran_renstra').val(data.id_indikator_program_renstra);
@@ -737,7 +747,13 @@ var data = tblIndikator.row( $(this).parents('tr') ).data();
     $('#real_indikator_t2').val(data.real_t2);
     $('#real_indikator_t3').val(data.real_t3);
     $('#real_indikator_t4').val(data.real_t4);
-    $('#real_indikator_t'+triwulan_temp).removeClass('realisasi');
+    $('#real_fisik_t4').val(data.real_fisik);
+    $('#real_indikator_t'+triwulan_temp).removeClass('realisasi'); 
+    if(triwulan_temp==4){
+      $('#real_fisik_t4').removeClass('realisasi'); 
+    } else {
+      $('#real_fisik_t4').addClass('realisasi'); 
+    };
     $('#target_tahun').val(data.target_tahun);
     $('#uraian_deviasi_indikator').val(data.uraian_deviasi);
     $('#uraian_renaksi_indikator').val(data.uraian_renaksi);
@@ -759,6 +775,7 @@ $('.modal-footer').on('click', '.editSasaranIndikator', function() {
             'real_t2': $('#real_indikator_t2').val(),
             'real_t3': $('#real_indikator_t3').val(),
             'real_t4': $('#real_indikator_t4').val(),  
+            'real_fisik': $('#real_fisik_t4').val(), 
             'uraian_deviasi': $('#uraian_deviasi_indikator').val(), 
             'uraian_renaksi': $('#uraian_renaksi_indikator').val(),
             'real_reviu': $('#real_indikator_t'+triwulan_temp).val(),   
@@ -780,6 +797,11 @@ realisasi();
 var data = tblSasaran.row( $(this).parents('tr') ).data();
     $('.btnSimpanProgram').removeClass('addSasaranProgram');
     $('.btnSimpanProgram').addClass('editSasaranProgram');
+    if(data.status_dokumen==0){      
+      $('.btnSimpanProgram').show();
+    } else {
+      $('.btnSimpanProgram').hide();
+    }
   $('.modal-title').text('Data Program Perangkat Daerah');
   $('.form-horizontal').show();
     $('#id_perkin_program').val(data.id_real_program);
@@ -833,10 +855,16 @@ $('.modal-footer').on('click', '.editSasaranProgram', function() {
 
 $(document).on('click', '.btnDetailIndikatorKegiatan', function() {
 var data = tblProgram.row( $(this).parents('tr') ).data();
+
     $('.btnSimpanRealEs4Indikator').removeClass('addRealEs4Indikator');
     $('.btnSimpanRealEs4Indikator').addClass('editRealEs4Indikator');
-  $('.modal-title').text('Data Indikator Kegiatan Perangkat Daerah');
-  $('.form-horizontal').show();
+    if(data.status_dokumen==0){      
+      $('.btnSimpanRealEs4Indikator').show();
+    } else {
+      $('.btnSimpanRealEs4Indikator').hide();
+    }
+    $('.modal-title').text('Data Indikator Kegiatan Perangkat Daerah');
+    $('.form-horizontal').show();
     $('#id_indikator_realEs4_renstra').val(data.id_indikator_kegiatan_renstra);
     $('#id_perkin_realEs4_indikator').val(data.id_real_kegiatan);
     $('#id_perkin_realEs4').val(data.id_real_indikator);
@@ -885,6 +913,40 @@ $('.modal-footer').on('click', '.editRealEs4Indikator', function() {
         },
         success: function(data) {
             tblProgram.ajax.reload(null,false);
+              if(data.status_pesan==1){
+                createPesan(data.pesan,"success");
+                } else {
+                createPesan(data.pesan,"danger"); 
+              }
+
+        }
+    });
+});
+
+$(document).on('click', '.btnPostingDokumenEs4', function() {
+  // var data = tbldokCapaian.row(this).data(); //klik double
+  var data = tbldokCapaian.row( $(this).parents('tr') ).data(); //klik button
+    data_real_temp= data.id_dokumen_real;
+    if(data.status_data == 0) {
+        status_data_temp = 1;
+      } else {
+        status_data_temp = 0;
+      }
+
+    $.ajaxSetup({
+       headers: { 'X-CSRF-Token' : $('meta[name=_token]').attr('content') }
+    });
+
+    $.ajax({
+        type: 'post',
+        url: './es3/postingReviu',
+        data: {
+            '_token': $('input[name=_token]').val(),
+            'id_dokumen_real': data_real_temp,
+            'status_data': status_data_temp, 
+        },
+        success: function(data) {
+            tbldokCapaian.ajax.reload(null,false);
               if(data.status_pesan==1){
                 createPesan(data.pesan,"success");
                 } else {

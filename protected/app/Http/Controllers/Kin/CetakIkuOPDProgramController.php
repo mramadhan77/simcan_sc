@@ -80,7 +80,8 @@ class CetakIkuOPDProgramController extends Controller
             d.id_esl3, d.flag_iku, i.nama_eselon,
             (SELECT CASE COALESCE(p.id_program_renstra,0) WHEN 0 THEN 1 ELSE
                 COUNT(p.id_indikator_program_renstra) END AS level FROM trx_renstra_program_indikator p 
-                WHERE p.id_program_renstra=a.id_program_renstra
+                INNER JOIN kin_trx_iku_opd_program q ON p.id_indikator_program_renstra=q.id_indikator_program_renstra
+                WHERE p.id_program_renstra=a.id_program_renstra AND q.flag_iku = 1
                 GROUP BY p.id_program_renstra) AS level_1
             FROM trx_renstra_program a
             INNER JOIN trx_renstra_program_indikator b ON a.id_program_renstra=b.id_program_renstra

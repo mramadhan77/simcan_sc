@@ -75,7 +75,7 @@ class KinPokinController extends Controller
             union
             select 3 as id, "Pohon Kinerja RPJMD-Renstra" as uraian_laporan
             union
-            select 4 as id, "Pohon Kinerja Sasaran OPD" as uraian_laporan
+            select 4 as id, "Pohon Kinerja Sasaran Program - Kegiatan OPD" as uraian_laporan
             ');
        return json_encode($getJenis);
     }
