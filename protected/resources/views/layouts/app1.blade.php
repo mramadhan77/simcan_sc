@@ -101,11 +101,11 @@ use hoaaah\LaravelMenu\Menu;
                                     ['label' => 'Modul RPJMD dan Renstra', 'icon'=>'fa fa-newspaper-o fa-fw fa-lg','url' => '/rpjmd/dash'],
                                     [
                                         'label' => 'Pra RPJMD',
-                                        'visible' => $akses->get(20),
+                                        'visible' => $akses->get(29),
                                         'items' => [ 
-                                            ['label' => 'Analisa Capaian IKK', 'icon' => 'fa fa-blind fa-fw','url' => '/amh','visible' => $akses->get(101)],                       
-                                            ['label' => 'Identifikasi Masalah', 'icon' => 'fa fa-desktop fa-fw', 'url' => '/pdrb','visible' => $akses->get(101)],
-                                            ['label' => 'Identifikasi Prioritas', 'icon' => 'fa fa-newspaper-o fa-fw','url' => '/prarpjmd/prioritas','visible' => $akses->get(101)],
+                                            ['label' => 'Analisa Capaian IKK', 'icon' => 'fa fa-blind fa-fw','url' => '/amh','visible' => $akses->get(290)],                       
+                                            ['label' => 'Identifikasi Masalah', 'icon' => 'fa fa-desktop fa-fw', 'url' => '/pdrb','visible' => $akses->get(290)],
+                                            ['label' => 'Identifikasi Prioritas', 'icon' => 'fa fa-newspaper-o fa-fw','url' => '/prarpjmd/prioritas','visible' => $akses->get(290)],
                                         ],  
                                         // 'items' => [                        
                                         //     ['label' => 'PDRB Harga Konstan', 'icon' => 'fa fa-desktop fa-fw', 'url' => '/pdrb','visible' => $akses->get(101)],
@@ -144,20 +144,20 @@ use hoaaah\LaravelMenu\Menu;
                                     ],
                                     [
                                         'label' => 'Indikator Kinerja',
-                                        'visible' => $akses->get(20),
+                                        'visible' => $akses->get(108),
                                         'items' => [
                                             ['label' => 'Usulan Indikator', 'url' => '/admin/parameter/indikator','visible' => $akses->get(108)],
                                             ['label' => 'Indikator Kinerja', 'url' => '/admin/parameter/indikator','visible' => $akses->get(108)],
-                                            [ 'label' => 'Verifikasi Indikator', 'visible' => $akses->get(20), 
+                                            [ 'label' => 'Verifikasi Indikator', 'visible' => $akses->get(108), 
                                             'items' => [
                                                     [
                                                         'label' => 'Tim SAKIP',
-                                                        'visible' => $akses->get(20),
+                                                        'visible' => $akses->get(108),
                                                         'url' => '',
                                                     ],
                                                     [
                                                         'label' => 'Internal Control',
-                                                        'visible' => $akses->get(20),
+                                                        'visible' => $akses->get(108),
                                                         'url' => '',
                                                     ],
                                                 ]
@@ -199,6 +199,8 @@ use hoaaah\LaravelMenu\Menu;
         <script src="{{ asset('/js/jquery.number.js')}}"></script>
         <script src="{{ asset('vendor/metisMenu/metisMenu.min.js')}}"></script>
         <script src="{{ asset('/js/sb-admin-2.js')}}"></script>
+        <script src="{{ asset('/js/jquery.number.js')}}"></script>
+        <script src="{{ asset('/js/datepicker-id.js')}}"></script>
 
 
         @yield('scripts')

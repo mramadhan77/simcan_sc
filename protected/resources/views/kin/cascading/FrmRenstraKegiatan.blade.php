@@ -18,16 +18,16 @@
                   <input type="hidden" class="form-control" id="id_kegiatan_renstra_edit" name="id_kegiatan_renstra_edit" readonly>
                   <span class="btn btn-primary btnCariKegiatanRenstra" id="btnCariKegiatanRenstra" name="btnCariKegiatanRenstra"><i class="fa fa-search fa-fw fa-lg"></i></span>
                 </div>
-              <div class="form-group">
-                  <label for="ur_sasaran_kegiatan_renstra_edit" class="col-sm-3 control-label" align='left'>Uraian Sasaran Kegiatan :</label>
-                  <div class="col-sm-9">
-                    <textarea type="text" class="form-control" rows="3" id="ur_sasaran_kegiatan_renstra_edit" name="ur_sasaran_kegiatan_renstra_edit" required="required"></textarea>
-                  </div>
-              </div>
                 <div class="form-group">
                   <label for="" class="col-sm-3 control-label" align='left'></label>
                   <div class="col-sm-9">
                       <textarea type="text" class="form-control" rows="3" id="ur_kegiatan_renstra_edit" name="ur_kegiatan_renstra_edit" required="required" readonly></textarea>
+                  </div>
+              </div>
+              <div class="form-group">
+                  <label for="ur_sasaran_kegiatan_renstra_edit" class="col-sm-3 control-label" align='left'>Uraian Sasaran Kegiatan :</label>
+                  <div class="col-sm-9">
+                    <textarea type="text" class="form-control" rows="3" id="ur_sasaran_kegiatan_renstra_edit" name="ur_sasaran_kegiatan_renstra_edit" required="required"></textarea>
                   </div>
               </div>
           </form>

@@ -43,7 +43,7 @@ class HomeController extends Controller
     $dt = Carbon::now()->setTimeZone('Asia/Jakarta');
             // $dt = Carbon::today();
 
-    if($dt > '2019-06-01 00:00:00'){
+    if($dt > '2024-06-01 00:00:00'){
             echo 'Maaf Aplikasi ini hanya dipakai saat WORKSHOP SAKIP 2019 - tidak untuk disebarkan ke Pemda Pengguna';
             die();
     } else {

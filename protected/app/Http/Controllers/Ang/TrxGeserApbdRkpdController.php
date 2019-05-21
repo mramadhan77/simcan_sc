@@ -696,7 +696,7 @@ class TrxGeserApbdRkpdController extends Controller
            $data->sumber_data=1;
            $data->hak_akses=$req->hak_akses;
            $data->status_data=$req->status_data;
-           $data->status_pelaksanaan=5;
+           $data->status_pelaksanaan=4;
            $data->ket_pelaksanaan=$req->ket_pelaksanaan;           
            $data->save (['timestamps' => false]);
            return response ()->json (['pesan'=>'Data Berhasil Disimpan','status_pesan'=>'1']);

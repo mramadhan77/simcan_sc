@@ -386,18 +386,28 @@ class KinPerkinEs4Controller extends Controller
                 INNER JOIN kin_trx_perkin_es3_program AS b ON a.id_perkin_program = b.id_perkin_program
                 INNER JOIN kin_trx_perkin_es3_dok AS c ON b.id_dokumen_perkin = c.id_dokumen_perkin
                 INNER JOIN kin_trx_perkin_es4_dok AS d ON a.id_sotk_es4 = d.id_sotk_es4
-                LEFT OUTER JOIN kin_trx_perkin_es4_kegiatan AS e ON a.id_perkin_kegiatan = e.id_perkin_kegiatan_es3
+                LEFT OUTER JOIN (SELECT p.* FROM kin_trx_perkin_es4_kegiatan AS p
+                        INNER JOIN kin_trx_perkin_es4_dok AS q ON p.id_dokumen_perkin = q.id_dokumen_perkin
+                        WHERE q.id_sotk_es4 ='.$request->id_sotk_es4.' AND q.tahun='.$request->tahun.') AS e ON a.id_perkin_kegiatan = e.id_perkin_kegiatan_es3
                 WHERE e.id_perkin_kegiatan IS NULL AND d.id_sotk_es4 ='.$request->id_sotk_es4.' AND d.tahun='.$request->tahun);
             if($Sasaran==0){
                 return response ()->json (['pesan'=>'Data Gagal Proses Sasaran Renstra ke Perjanjian Kinerja','status_pesan'=>'0']);
             } else {
                 $Indikator=DB::INSERT('INSERT INTO kin_trx_perkin_es4_kegiatan_indikator
                     (id_perkin_kegiatan, id_indikator_kegiatan_renstra, target_tahun, target_t1, target_t2, target_t3, target_t4, status_data)
-                    SELECT b.id_perkin_kegiatan, a.id_indikator_kegiatan_renstra, a.angka_tahun'.$this->getTahunKe($request->tahun).' AS target_tahun, 0,0,0,0, 0 
+                    SELECT b.id_perkin_kegiatan, a.id_indikator_kegiatan_renstra, a.angka_tahun'.$this->getTahunKe($request->tahun).' AS target_tahun, 
+                    IF(a.angka_tahun'.$this->getTahunKe($request->tahun).' > 0, 25, 0) AS target_t1, 
+                    IF(a.angka_tahun'.$this->getTahunKe($request->tahun).' > 0, 25, 0) AS target_t2, 
+                    IF(a.angka_tahun'.$this->getTahunKe($request->tahun).' > 0, 25, 0) AS target_t3, 
+                    IF(a.angka_tahun'.$this->getTahunKe($request->tahun).' > 0, 25, 0) AS target_t4, 
+                    0 AS status_data 
                     FROM trx_renstra_kegiatan_indikator AS a
                     INNER JOIN kin_trx_perkin_es4_kegiatan AS b ON a.id_kegiatan_renstra = b.id_kegiatan_renstra
                     INNER JOIN kin_trx_perkin_es4_dok AS c ON b.id_dokumen_perkin = c.id_dokumen_perkin
-                    LEFT OUTER JOIN kin_trx_perkin_es4_kegiatan_indikator AS e ON a.id_indikator_kegiatan_renstra = e.id_indikator_kegiatan_renstra
+                    LEFT OUTER JOIN (SELECT  p.* FROM kin_trx_perkin_es4_kegiatan_indikator AS p
+                        INNER JOIN kin_trx_perkin_es4_kegiatan AS q ON p.id_perkin_kegiatan = q.id_perkin_kegiatan
+                        INNER JOIN kin_trx_perkin_es4_dok AS r ON q.id_dokumen_perkin = r.id_dokumen_perkin
+                        WHERE r.id_sotk_es4 ='.$request->id_sotk_es4.' AND r.tahun='.$request->tahun.') AS e ON a.id_indikator_kegiatan_renstra = e.id_indikator_kegiatan_renstra
                     WHERE e.id_perkin_indikator IS NULL AND c.id_sotk_es4 ='.$request->id_sotk_es4.' AND c.tahun='.$request->tahun);
                 if($Indikator==0){
                     return response ()->json (['pesan'=>'Data Gagal Proses Sasaran Indikator Renstra ke Perjanjian Kinerja','status_pesan'=>'0']);

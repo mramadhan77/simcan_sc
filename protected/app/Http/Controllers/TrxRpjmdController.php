@@ -6,13 +6,17 @@ use Illuminate\Http\Request;
 
 use App\Http\Requests;
 use Illuminate\Support\Facades\Input;
-use Yajra\Datatables\Datatables;
+use Validator;
 use DB;
 use Response;
 use Session;
 use Auth;
+use CekAkses;
+use App\Fungsi as Fungsi;
+use Yajra\Datatables\Datatables;
 use Yajra\Datatables\Html\Builder;
 use Yajra\Datatables\Services\DataTable;
+use Doctrine\DBAL\Query\QueryException;
 use App\Models\RefPemda;
 use App\Models\RefUnit;
 use App\Models\RefIndikator;
@@ -46,28 +50,225 @@ class TrxRpjmdController extends Controller
     }
     public function indexChart($id_rpjmd)
     {
-        // if(Auth::check()){ 
             $data = TrxRpjmdVisi::with('TrxRpjmdMisis.TrxRpjmdTujuans.TrxRpjmdSasarans.TrxRpjmdPrograms')
                     ->where('id_rpjmd','=',$id_rpjmd)
-                    ->get();
-                    
+                    ->get();                    
             return view('rpjmd.FrmRpjmdChart',['data' => $data]);
-        // } else {
-            // return view ( 'errors.401' );
-        // }
     }
 
     public function getDokumen()
     {
-
-      $dataperdarpjmd=DB::select('SELECT * FROM trx_rpjmd_dokumen WHERE id_status_dokumen=1');
+      $dataperdarpjmd=DB::SELECT('SELECT * FROM trx_rpjmd_dokumen WHERE id_status_dokumen=1');
       return json_encode($dataperdarpjmd);
-
     }
 
-    public function getVisiRPJMD()
+    public function getDokumenRpjmd()
     {
-      $rpjmdvisi = DB::select('SELECT * FROM trx_rpjmd_visi ORDER BY id_rpjmd ASC');
+      $dokrpjmd = DB::SELECT('SELECT DISTINCT (@id:=@id+1) as no_urut, p.* FROM  (SELECT a.id_pemda, a.id_rpjmd, COALESCE(a.id_rpjmd_old) AS id_rpjmd_old, a.thn_dasar, a.tahun_1, a.tahun_2, a.tahun_3, a.tahun_4, a.tahun_5,
+                a.no_perda, a.tgl_perda, a.keterangan_dokumen, a.jns_dokumen, c.nm_dokumen, Coalesce(a.id_revisi,0) AS id_revisi, a.id_status_dokumen, a.sumber_data, 
+                a.created_at, a.updated_at, DATE_FORMAT(a.tgl_perda, "%d %M %Y") AS tgl_perda_view,
+                CASE a.id_status_dokumen
+                                    WHEN 0 THEN "fa fa-question"
+                                    WHEN 1 THEN "fa fa-check-square-o"
+                END AS status_icon,
+                CASE a.id_status_dokumen
+                                    WHEN 0 THEN "red"
+                                    WHEN 1 THEN "green"
+                END AS warna
+                FROM trx_rpjmd_dokumen AS a
+                INNER JOIN ref_pemda AS b ON a.id_pemda = b.id_pemda
+                INNER JOIN ref_dokumen AS c ON a.jns_dokumen = c.id_dokumen
+                WHERE b.id_pemda = '.Session::get('xIdPemda').' ORDER BY a.id_pemda, a.jns_dokumen, a.id_revisi, a.id_rpjmd) AS p, 
+                (SELECT @id:=0) x');
+
+      return DataTables::of($dokrpjmd)
+        ->addColumn('details_url', function($dokrpjmd) {
+                return url('rpjmd/visi/'.$dokrpjmd->id_rpjmd);
+            })
+        ->addColumn('action', function ($dokrpjmd) {
+            if ($dokrpjmd->id_status_dokumen==0)
+            return
+            '<div class="btn-group">
+                <button type="button" class="btn btn-info dropdown-toggle btn-labeled" aria-haspopup="true" aria-expanded="false" data-toggle="dropdown"><span class="btn-label"><i class="fa fa-wrench fa-fw fa-lg"></i></span>Aksi <span class="caret"></span></button>
+                <ul class="dropdown-menu dropdown-menu-right">
+                    <li>
+                        <a class="btnViewDok dropdown-item"><i class="fa fa-pencil fa-fw fa-lg text-success"></i> Lihat Data Dokumen</a>
+                    </li>
+                    <li>
+                        <a class="btnAddVisi dropdown-item"><i class="fa fa-plus fa-fw fa-lg text-success"></i> Tambah Visi RPJMD</a>
+                    </li>
+                    <li>
+                        <a class="btnViewBtl dropdown-item" ><i class="fa fa-check-square-o fa-fw fa-lg text-warning"></i> Posting Dokumen </a>
+                    </li>
+                </ul>
+            </div>';
+            if ($dokrpjmd->id_status_dokumen==1)
+            return
+            '<div class="btn-group">
+                <button type="button" class="btn btn-info dropdown-toggle btn-labeled" aria-haspopup="true" aria-expanded="false" data-toggle="dropdown"><span class="btn-label"><i class="fa fa-wrench fa-fw fa-lg"></i></span>Aksi <span class="caret"></span></button>
+                <ul class="dropdown-menu dropdown-menu-right">
+                    <li>
+                        <a class="btnViewDok dropdown-item"><i class="fa fa-pencil fa-fw fa-lg text-success"></i> Lihat Data Dokumen</a>
+                    </li>
+                    <li>
+                        <a class="btnViewBtl dropdown-item" ><i class="fa fa-check-square-o fa-fw fa-lg text-warning"></i> un-Posting Dokumen </a>
+                    </li>
+                </ul>
+            </div>';
+        })
+        ->make(true);
+    }
+
+    public function addDokumen(Request $request)
+    {
+        $rules = [
+            'id_pemda'=>'required',
+            'thn_dasar'=>'required',
+            'tahun_1'=>'required',
+            'tahun_2'=>'required',
+            'tahun_3'=>'required',
+            'tahun_4'=>'required',
+            'tahun_5'=>'required',
+            'no_perda'=>'required',
+            'tgl_perda'=>'required',
+            'keterangan_dokumen'=>'required',
+            'jns_dokumen'=>'required',
+            'id_revisi'=>'required',
+        ];
+        $messages =[
+            'id_pemda.required'=>'id_pemda Kosong',
+            'thn_dasar.required'=>'thn_dasar Kosong',
+            'tahun_1.required'=>'tahun_1 Kosong',
+            'tahun_2.required'=>'tahun_2 Kosong',
+            'tahun_3.required'=>'tahun_3 Kosong',
+            'tahun_4.required'=>'tahun_4 Kosong',
+            'tahun_5.required'=>'tahun_5 Kosong',
+            'no_perda.required'=>'no_perda Kosong',
+            'tgl_perda.required'=>'tgl_perda Kosong',
+            'keterangan_dokumen.required'=>'keterangan_dokumen Kosong',
+            'jns_dokumen.required'=>'jns_dokumen Kosong',
+            'id_revisi.required'=>'id_revisi Kosong',
+        ];
+        $validation = Validator::make($request->all(),$rules,$messages);
+        
+        if($validation->fails()) {
+            $errors = Fungsi::validationErrorsToString($validation->errors());
+            return response ()->json (['pesan'=>$errors,'status_pesan'=>'0']);          
+            }
+        else {
+            $data = new TrxRpjmdDokumen();
+            $data->id_pemda=$request->id_pemda;
+            $data->thn_dasar=$request->thn_dasar;
+            $data->tahun_1=$request->tahun_1;
+            $data->tahun_2=$request->tahun_2;
+            $data->tahun_3=$request->tahun_3;
+            $data->tahun_4=$request->tahun_4;
+            $data->tahun_5=$request->tahun_5;
+            $data->no_perda=$request->no_perda;
+            $data->tgl_perda=$request->tgl_perda;
+            $data->keterangan_dokumen=$request->keterangan_dokumen;
+            $data->jns_dokumen=$request->jns_dokumen;
+            $data->id_revisi=$request->id_revisi;
+            $data->id_status_dokumen=0;
+            $data->sumber_data=0;
+            try{
+                $data->save (['timestamps' => true]);
+                return response ()->json (['pesan'=>'Data Berhasil Disimpan','status_pesan'=>'1']);
+            }
+              catch(QueryException $e){
+                 $error_code = $e->errorInfo[1] ;
+                 return response ()->json (['pesan'=>'Data Gagal Disimpan ('.$error_code.')','status_pesan'=>'0']);
+            }
+        }
+    }
+
+    public function editDokumen(Request $request)
+    {
+        $rules = [
+            'id_rpjmd'=>'required',
+            'thn_dasar'=>'required',
+            'tahun_1'=>'required',
+            'tahun_2'=>'required',
+            'tahun_3'=>'required',
+            'tahun_4'=>'required',
+            'tahun_5'=>'required',
+            'no_perda'=>'required',
+            'tgl_perda'=>'required',
+            'keterangan_dokumen'=>'required',
+            'jns_dokumen'=>'required',
+            'id_revisi'=>'required',
+        ];
+        $messages =[
+            'id_rpjmd.required'=>'id_rpjmd Kosong',
+            'thn_dasar.required'=>'thn_dasar Kosong',
+            'tahun_1.required'=>'tahun_1 Kosong',
+            'tahun_2.required'=>'tahun_2 Kosong',
+            'tahun_3.required'=>'tahun_3 Kosong',
+            'tahun_4.required'=>'tahun_4 Kosong',
+            'tahun_5.required'=>'tahun_5 Kosong',
+            'no_perda.required'=>'no_perda Kosong',
+            'tgl_perda.required'=>'tgl_perda Kosong',
+            'keterangan_dokumen.required'=>'keterangan_dokumen Kosong',
+            'jns_dokumen.required'=>'jns_dokumen Kosong',
+            'id_revisi.required'=>'id_revisi Kosong',
+        ];
+        $validation = Validator::make($request->all(),$rules,$messages);
+        
+        if($validation->fails()) {
+            $errors = Fungsi::validationErrorsToString($validation->errors());
+            return response ()->json (['pesan'=>$errors,'status_pesan'=>'0']);          
+            }
+        else {
+            $data = TrxRpjmdDokumen::find($request->id_rpjmd);
+            $data->thn_dasar=$request->thn_dasar;
+            $data->tahun_1=$request->tahun_1;
+            $data->tahun_2=$request->tahun_2;
+            $data->tahun_3=$request->tahun_3;
+            $data->tahun_4=$request->tahun_4;
+            $data->tahun_5=$request->tahun_5;
+            $data->no_perda=$request->no_perda;
+            $data->tgl_perda=$request->tgl_perda;
+            $data->keterangan_dokumen=$request->keterangan_dokumen;
+            $data->jns_dokumen=$request->jns_dokumen;
+            $data->id_revisi=$request->id_revisi;
+            try{
+                $data->save (['timestamps' => true]);
+                return response ()->json (['pesan'=>'Data Berhasil Disimpan','status_pesan'=>'1']);
+            }
+              catch(QueryException $e){
+                 $error_code = $e->errorInfo[1] ;
+                 return response ()->json (['pesan'=>'Data Gagal Disimpan ('.$error_code.')','status_pesan'=>'0']);
+            }
+        }
+    }
+
+    public function deleteDokumen(Request $request){
+        $rules = [
+            'id_rpjmd'=> 'required',
+        ];
+        $messages =[
+            'id_rpjmd.required'=> 'ID Dokumen Kosong',            
+        ];
+        $validation = Validator::make($request->all(),$rules,$messages);
+        
+        if($validation->fails()) {
+            $errors = Fungsi::validationErrorsToString($validation->errors());
+            return response ()->json (['pesan'=>$errors,'status_pesan'=>'0']);          
+            }
+        else {        
+            $data = TrxRpjmdDokumen::where('id_rpjmd',$request->id_rpjmd)->delete();
+
+            if($data != 0){
+            return response ()->json (['pesan'=>'Data Berhasil Dihapus','status_pesan'=>'1']);
+            } else {
+            return response ()->json (['pesan'=>'Data Gagal Dihapus','status_pesan'=>'0']);
+            }  
+        } 
+    }
+
+    public function getVisiRPJMD($id_rpjmd)
+    {
+      $rpjmdvisi = DB::select('SELECT * FROM trx_rpjmd_visi WHERE id_rpjmd='.$id_rpjmd.' ORDER BY id_rpjmd ASC');
 
       return DataTables::of($rpjmdvisi)
         ->addColumn('action', function ($rpjmdvisi) {
@@ -77,6 +278,12 @@ class TrxRpjmdController extends Controller
             	<ul class="dropdown-menu dropdown-menu-right">
             		<li>
             			<a class="edit-visi dropdown-item" data-id_visi_rpjmd="'.$rpjmdvisi->id_visi_rpjmd.'" data-thn_id="'.$rpjmdvisi->thn_id.'" data-id_rpjmd="'.$rpjmdvisi->id_rpjmd.'" data-id_perubahan="'.$rpjmdvisi->id_perubahan.'"  data-uraian_visi_rpjmd="'.$rpjmdvisi->uraian_visi_rpjmd.'" data-no_urut="'.$rpjmdvisi->no_urut.'"><i class="fa fa-paper-plane-o fa-fw fa-lg text-success"></i> Lihat Data Visi</a>
+                    </li>
+                    <li>
+                        <a class="btnViewBtl dropdown-item" ><i class="fa fa-building fa-fw fa-lg text-warning"></i> Belanja Tidak Langsung </a>
+                    </li>
+                    <li>
+                        <a class="btnViewPendapatan dropdown-item"><i class="fa fa-money fa-fw fa-lg text-success"></i> Pendapatan </a>
                     </li>
                     <li>
                         <a class="btnLihatChart dropdown-item" href="'.url('rpjmd/getRpjmdChart/'.$rpjmdvisi->id_rpjmd).'"><i class="fa fa-sitemap fa-fw fa-lg text-primary"></i> Pohon Kinerja RPJMD </a>
@@ -103,9 +310,10 @@ class TrxRpjmdController extends Controller
              return response ()->json (['pesan'=>'Data Gagal Disimpan ('.$error_code.')','status_pesan'=>'0']);
         }
     }
+
     public function getMisiRPJMD($id_visi_rpjmd)
     {
-      $rpjmdmisi = DB::select('SELECT * FROM trx_rpjmd_misi WHERE id_visi_rpjmd = '.$id_visi_rpjmd.' ORDER BY no_urut desc');
+      $rpjmdmisi = DB::select('SELECT * FROM trx_rpjmd_misi WHERE no_urut not in (98,99) AND id_visi_rpjmd = '.$id_visi_rpjmd.' ORDER BY no_urut desc');
 
       return DataTables::of($rpjmdmisi)
         ->addColumn('action', function ($rpjmdmisi) {
@@ -326,6 +534,7 @@ class TrxRpjmdController extends Controller
              return response ()->json (['pesan'=>'Data Gagal Disimpan ('.$error_code.')','status_pesan'=>'0']);
         }
     }
+
     public function getProgramRPJMD($id_sasaran_rpjmd)
     {
 
@@ -369,6 +578,77 @@ class TrxRpjmdController extends Controller
                 </div>
 				';})
 				->make(true);
+    }
+
+    public function getPendapatanRPJMD($id_visi_rpjmd)
+    {
+
+      $rpjmdprogram = DB::Select('SELECT CONCAT(a.no_urut,".",b.no_urut,".",c.no_urut,".",d.no_urut) as kd_sasaran,e.id_program_rpjmd, 
+                        e.no_urut,e.uraian_program_rpjmd,e.thn_id,e.id_sasaran_rpjmd,e.id_perubahan,(e.pagu_tahun1/1000000) as pagu_tahun1,(e.pagu_tahun2/1000000) as pagu_tahun2, 
+                        (e.pagu_tahun3/1000000) as pagu_tahun3,(e.pagu_tahun4/1000000) as pagu_tahun4,(e.pagu_tahun5/1000000) as pagu_tahun5,(e.total_pagu/1000000) as total_pagu,
+                        (e.pagu_tahun1) as pagu_tahun1a, (e.pagu_tahun2) as pagu_tahun2a, (e.pagu_tahun3) as pagu_tahun3a,(e.pagu_tahun4) as pagu_tahun4a,(e.pagu_tahun5) as pagu_tahun5a,
+                        (e.total_pagu) as total_pagua, d.no_urut as id_sasaran 
+                        FROM trx_rpjmd_visi AS a 
+                        INNER JOIN trx_rpjmd_misi AS b ON b.id_visi_rpjmd = a.id_visi_rpjmd 
+                        INNER JOIN trx_rpjmd_tujuan AS c ON c.id_misi_rpjmd = b.id_misi_rpjmd 
+                        INNER JOIN trx_rpjmd_sasaran AS d ON d.id_tujuan_rpjmd = c.id_tujuan_rpjmd 
+                        INNER JOIN trx_rpjmd_program AS e ON e.id_sasaran_rpjmd = d.id_sasaran_rpjmd 
+                        WHERE b.no_urut = 98 AND b. id_visi_rpjmd = '.$id_visi_rpjmd);
+
+      return DataTables::of($rpjmdprogram)
+      ->addColumn('action', function ($rpjmdprogram) {
+        return '<div class="btn-group">
+                <button type="button" class="btn btn-info dropdown-toggle btn-labeled" aria-haspopup="true" aria-expanded="false" data-toggle="dropdown"><span class="btn-label"><i class="fa fa-wrench fa-fw fa-lg"></i></span>Aksi <span class="caret"></span></button>
+                </button>
+                    <ul class="dropdown-menu dropdown-menu-right">
+                        <li>
+                            <a class="btnEditPendapatan dropdown-item"><i class="fa fa-pencil fa-fw fa-lg text-success"></i> Lihat Data Pendapatan</a>
+                        </li>
+                        <li>
+                            <a class="btnViewUrusanPdt dropdown-item"><i class="fa fa-puzzle-piece fa-fw fa-lg text-info"></i> Lihat Urusan</a>
+                        </li>
+                        <li>
+                            <a class="btnPostUrusanPdt dropdown-item"><i class="fa fa-check-square-o fa-fw fa-lg text-success"></i> Posting Urusan</a>
+                        </li>
+                    </ul>
+                </div>
+                ';})
+                ->make(true);
+    }
+
+    public function getBtlRPJMD($id_visi_rpjmd)
+    {
+      $rpjmdprogram = DB::Select('SELECT CONCAT(a.no_urut,".",b.no_urut,".",c.no_urut,".",d.no_urut) as kd_sasaran,e.id_program_rpjmd, 
+                        e.no_urut,e.uraian_program_rpjmd,e.thn_id,e.id_sasaran_rpjmd,e.id_perubahan,(e.pagu_tahun1/1000000) as pagu_tahun1,(e.pagu_tahun2/1000000) as pagu_tahun2, 
+                        (e.pagu_tahun3/1000000) as pagu_tahun3,(e.pagu_tahun4/1000000) as pagu_tahun4,(e.pagu_tahun5/1000000) as pagu_tahun5,(e.total_pagu/1000000) as total_pagu,
+                        (e.pagu_tahun1) as pagu_tahun1a, (e.pagu_tahun2) as pagu_tahun2a, (e.pagu_tahun3) as pagu_tahun3a,(e.pagu_tahun4) as pagu_tahun4a,(e.pagu_tahun5) as pagu_tahun5a,
+                        (e.total_pagu) as total_pagua, d.no_urut as id_sasaran 
+                        FROM trx_rpjmd_visi AS a 
+                        INNER JOIN trx_rpjmd_misi AS b ON b.id_visi_rpjmd = a.id_visi_rpjmd 
+                        INNER JOIN trx_rpjmd_tujuan AS c ON c.id_misi_rpjmd = b.id_misi_rpjmd 
+                        INNER JOIN trx_rpjmd_sasaran AS d ON d.id_tujuan_rpjmd = c.id_tujuan_rpjmd 
+                        INNER JOIN trx_rpjmd_program AS e ON e.id_sasaran_rpjmd = d.id_sasaran_rpjmd 
+                        WHERE b.no_urut = 99 AND b. id_visi_rpjmd = '.$id_visi_rpjmd);
+
+      return DataTables::of($rpjmdprogram)
+      ->addColumn('action', function ($rpjmdprogram) {
+        return '<div class="btn-group">
+                <button type="button" class="btn btn-info dropdown-toggle btn-labeled" aria-haspopup="true" aria-expanded="false" data-toggle="dropdown"><span class="btn-label"><i class="fa fa-wrench fa-fw fa-lg"></i></span>Aksi <span class="caret"></span></button>
+                </button>
+                    <ul class="dropdown-menu dropdown-menu-right">
+                        <li>
+                            <a class="btnEditBtl dropdown-item"><i class="fa fa-pencil fa-fw fa-lg text-success"></i> Lihat Data Belanja</a>
+                        </li>
+                        <li>
+                            <a class="btnViewUrusanBtl dropdown-item"><i class="fa fa-puzzle-piece fa-fw fa-lg text-info"></i> Lihat Urusan</a>
+                        </li>
+                        <li>
+                            <a class="btnPostUrusanBtl dropdown-item"><i class="fa fa-check-square-o fa-fw fa-lg text-success"></i> Posting Urusan</a>
+                        </li>
+                    </ul>
+                </div>
+                ';})
+                ->make(true);
     }
 
     public function ReprosesPivotPelaksana(Request $req)

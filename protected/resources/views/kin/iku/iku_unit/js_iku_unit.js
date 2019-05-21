@@ -130,6 +130,8 @@ tblDokPerkin = $('#tblDokPerkin').DataTable( {
 
 $( ".cb_unit_renstra" ).change(function() {    
     id_unit_temp = $( ".cb_unit_renstra" ).val();
+    id_dokumen_temp = null;
+    id_renstra_temp = null;
     loadDokumen(id_unit_temp);
     loadRenstra(id_unit_temp);  
     
@@ -444,30 +446,33 @@ function loadSasaran($id_dokumen) {
 
 
   $(document).on('click', '.btnProsesSasaran', function() {
-    $.ajaxSetup({
-       headers: { 'X-CSRF-Token' : $('meta[name=_token]').attr('content') }
-    });
-    
-    $('#prosesbar').show();
-    $.ajax({
-        type: 'post',
-        url: './opd/transIndikatorSasaran',
-        data: {
-            '_token': $('input[name=_token]').val(),
-            'id_dokumen': id_dokumen_temp,
-            'id_renstra': id_renstra_temp,
-            'id_unit': id_unit_temp,
-        },
-        success: function(data) {
-            tblSasaran.ajax.reload(null,false);
-            $('#prosesbar').hide();
-            if(data.status_pesan==1){
-                createPesan(data.pesan,"success");
-                } else {
-                createPesan(data.pesan,"danger"); 
-            };
-        }
-    });
+    if(id_dokumen_temp == null || id_renstra_temp == null ){
+      createPesan('Silahkan Klik Double di Dokumen terlebih dahulu',"danger"); 
+    } else { 
+        $('#prosesbar').show();
+        $.ajaxSetup({
+           headers: { 'X-CSRF-Token' : $('meta[name=_token]').attr('content') }
+        });   
+        $.ajax({
+            type: 'post',
+            url: './opd/transIndikatorSasaran',
+            data: {
+                '_token': $('input[name=_token]').val(),
+                'id_dokumen': id_dokumen_temp,
+                'id_renstra': id_renstra_temp,
+                'id_unit': id_unit_temp,
+            },
+            success: function(data) {
+                tblSasaran.ajax.reload(null,false);
+                $('#prosesbar').hide();
+                if(data.status_pesan==1){
+                    createPesan(data.pesan,"success");
+                    } else {
+                    createPesan(data.pesan,"danger"); 
+                };
+            }
+        });
+      }
   });
 
   $('#radioBtn a').on('click', function(){

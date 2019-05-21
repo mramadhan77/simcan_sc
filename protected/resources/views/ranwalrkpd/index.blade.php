@@ -285,9 +285,9 @@ use hoaaah\LaravelBreadcrumb\Breadcrumb as Breadcrumb;
                       <label class="radio-inline">
                         <input type="radio" class="sUnit" name="status_pelaksanaan_unit" id="status_pelaksanaan_unit" value="3">Dibatalkan
                       </label>
-                      <label class="radio-inline hidden">
+                      {{-- <label class="radio-inline hidden">
                         <input type="radio" class="sUnit" name="status_pelaksanaan_unit" id="status_pelaksanaan_unit" value="5">Tanpa Anggaran
-                      </label>
+                      </label> --}}
                       <label class="radio-inline hidden" id="status_pelaksanaan_unit4">
                         <input type="radio" class="sUnit" name="status_pelaksanaan_unit" id="status_pelaksanaan_unit" value="4">Baru
                       </label>

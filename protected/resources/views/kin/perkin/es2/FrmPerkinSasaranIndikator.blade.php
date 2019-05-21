@@ -25,7 +25,15 @@
                         </div>
                     </div>                  
                 </div> --}}
-                <label class="col-sm-12" style="text-align: left;">Rincian Target Indikator Sasaran Renstra (dalam persen (%)):</label>
+                <div class="form-group">
+                  <label class="col-sm-9" style="text-align: left;">Rincian Target Indikator Sasaran Renstra (dalam persen (%)):</label>
+                  <div class="col-sm-3 hidden">
+                      <button type="button" class="btn btn-labeled btn-success btnBagiRata">
+                        <span class="btn-label"><i class="fa fa-plus fa-lg fa-fw"></i></span> Percepatan Target
+                      </button>  
+                  </div>
+                </div>
+                
                 <br>
                 <table id="tblIndikatorSasarant" class="table table-bordered"  cellspacing="0" width="100%">
                         <thead style="background: #428bca; color: #fff">

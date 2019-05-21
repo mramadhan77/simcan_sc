@@ -640,5 +640,11 @@ $('.modal-footer').on('click', '.editSasaranProgram', function() {
     });
 });
 
+$(document).on('click', '.btnBagiRata', function() {
+    $('#target_t1').val(25);
+    $('#target_t2').val(25);
+    $('#target_t3').val(25);
+    $('#target_t4').val(25);
+});
 
 }); //end file

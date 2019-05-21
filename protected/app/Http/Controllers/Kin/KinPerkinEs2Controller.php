@@ -340,30 +340,48 @@ class KinPerkinEs2Controller extends Controller
                 INNER JOIN trx_renstra_sasaran AS d ON c.id_tujuan_renstra = d.id_tujuan_renstra
                 INNER JOIN ref_sotk_level_1 AS e ON a.id_unit = e.id_unit
                 INNER JOIN kin_trx_perkin_opd_dok AS f ON e.id_sotk_es2 = f.id_sotk_es2
-                LEFT OUTER JOIN kin_trx_perkin_opd_sasaran AS g ON d.id_sasaran_renstra = g.id_sasaran_renstra
+                LEFT OUTER JOIN (SELECT p.* FROM kin_trx_perkin_opd_sasaran AS p
+                        INNER JOIN kin_trx_perkin_opd_dok AS q ON p.id_dokumen_perkin = q.id_dokumen_perkin
+                        INNER JOIN ref_sotk_level_1 AS r ON q.id_sotk_es2 = r.id_sotk_es2
+                        WHERE r.id_unit ='.$request->id_unit.' AND q.tahun='.$request->tahun.')  AS g ON d.id_sasaran_renstra = g.id_sasaran_renstra
                 WHERE g.id_perkin_sasaran IS NULL AND b.no_urut NOT IN (97,98,99) AND a.id_unit ='.$request->id_unit.' AND f.tahun='.$request->tahun);
             if($Sasaran==0){
                 return response ()->json (['pesan'=>'Data Gagal Proses Sasaran Renstra ke Perjanjian Kinerja','status_pesan'=>'0']);
             } else {
                 $Indikator=DB::INSERT('INSERT INTO kin_trx_perkin_opd_sasaran_indikator
                     (id_perkin_sasaran, id_indikator_sasaran_renstra, target_tahun, target_t1, target_t2, target_t3, target_t4, status_data)
-                    SELECT b.id_perkin_sasaran, a.id_indikator_sasaran_renstra, a.angka_tahun'.$this->getTahunKe($request->tahun).' AS target_tahun, 0 AS target_t1, 0 AS target_t2, 0 AS target_t3, 0 AS target_t4, 0 AS status_data 
+                    SELECT b.id_perkin_sasaran, a.id_indikator_sasaran_renstra, a.angka_tahun'.$this->getTahunKe($request->tahun).' AS target_tahun, 
+                    IF(a.angka_tahun'.$this->getTahunKe($request->tahun).' > 0, 25, 0) AS target_t1, 
+                    IF(a.angka_tahun'.$this->getTahunKe($request->tahun).' > 0, 25, 0) AS target_t2, 
+                    IF(a.angka_tahun'.$this->getTahunKe($request->tahun).' > 0, 25, 0) AS target_t3, 
+                    IF(a.angka_tahun'.$this->getTahunKe($request->tahun).' > 0, 25, 0) AS target_t4,
+                    0 AS status_data 
                     FROM trx_renstra_sasaran_indikator AS a
                     INNER JOIN kin_trx_perkin_opd_sasaran AS b ON a.id_sasaran_renstra = b.id_sasaran_renstra
                     INNER JOIN kin_trx_perkin_opd_dok AS c ON b.id_dokumen_perkin = c.id_dokumen_perkin
                     INNER JOIN ref_sotk_level_1 AS d ON c.id_sotk_es2 = d.id_sotk_es2
-                    LEFT OUTER JOIN kin_trx_perkin_opd_sasaran_indikator AS e ON a.id_indikator_sasaran_renstra = e.id_indikator_sasaran_renstra
+                    LEFT OUTER JOIN (SELECT  p.id_perkin_indikator, p.id_indikator_sasaran_renstra, q.id_perkin_sasaran, r.id_sotk_es2, s.id_unit 
+                        FROM kin_trx_perkin_opd_sasaran_indikator AS p
+                        INNER JOIN kin_trx_perkin_opd_sasaran AS q ON p.id_perkin_sasaran = q.id_perkin_sasaran
+                        INNER JOIN kin_trx_perkin_opd_dok AS r ON q.id_dokumen_perkin = r.id_dokumen_perkin
+                        INNER JOIN ref_sotk_level_1 AS s ON r.id_sotk_es2 = s.id_sotk_es2
+                        WHERE s.id_unit ='.$request->id_unit.' AND r.tahun='.$request->tahun.') AS e ON a.id_indikator_sasaran_renstra = e.id_indikator_sasaran_renstra
                     WHERE e.id_perkin_indikator IS NULL AND d.id_unit ='.$request->id_unit.' AND c.tahun='.$request->tahun);
                 if($Indikator==0){
                     return response ()->json (['pesan'=>'Data Gagal Proses Sasaran Indikator Renstra ke Perjanjian Kinerja','status_pesan'=>'0']);
                 } else {
-                    $Program=DB::INSERT('INSERT INTO kin_trx_perkin_opd_program (id_perkin_sasaran, id_program_renstra, id_sotk_es3, status_data, pagu_tahun)
-                        SELECT b.id_perkin_sasaran, a.id_program_renstra, 0 as id_sotk_es3, 0 AS status_data, a.pagu_tahun'.$this->getTahunKe($request->tahun).' AS pagu_tahun 
+                    $Program=DB::INSERT('INSERT INTO kin_trx_perkin_opd_program (id_perkin_sasaran, id_program_renstra, id_sotk_es3, status_data, pagu_tahun,id_hasil_program)
+                        SELECT b.id_perkin_sasaran, a.id_program_renstra, 0 as id_sotk_es3, 0 AS status_data, a.pagu_tahun'.$this->getTahunKe($request->tahun).' AS pagu_tahun ,0 as id_hasil_program
                         FROM trx_renstra_program AS a
                         INNER JOIN kin_trx_perkin_opd_sasaran AS b ON a.id_sasaran_renstra = b.id_sasaran_renstra
                         INNER JOIN kin_trx_perkin_opd_dok AS c ON b.id_dokumen_perkin = c.id_dokumen_perkin
                         INNER JOIN ref_sotk_level_1 AS d ON c.id_sotk_es2 = d.id_sotk_es2
-                        LEFT OUTER JOIN kin_trx_perkin_opd_program AS e ON a.id_program_renstra = e.id_program_renstra
+                        LEFT OUTER JOIN (SELECT  p.id_perkin_program, p.id_program_renstra, q.id_perkin_sasaran, r.id_sotk_es2, s.id_unit 
+                            FROM kin_trx_perkin_opd_program AS p
+                            INNER JOIN kin_trx_perkin_opd_sasaran AS q ON p.id_perkin_sasaran = q.id_perkin_sasaran
+                            INNER JOIN kin_trx_perkin_opd_dok AS r ON q.id_dokumen_perkin = r.id_dokumen_perkin
+                            INNER JOIN ref_sotk_level_1 AS s ON r.id_sotk_es2 = s.id_sotk_es2
+                            WHERE s.id_unit ='.$request->id_unit.' AND r.tahun='.$request->tahun.') AS e ON a.id_program_renstra = e.id_program_renstra
                         WHERE e.id_perkin_program IS NULL AND d.id_unit ='.$request->id_unit.' AND c.tahun='.$request->tahun);
                     if($Program==0){
                         return response ()->json (['pesan'=>'Data Gagal Proses Program Renstra ke Perjanjian Kinerja','status_pesan'=>'0']);

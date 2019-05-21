@@ -48,13 +48,13 @@ use hoaaah\LaravelBreadcrumb\Breadcrumb as Breadcrumb;
               </div>
             </div> 
             <div class="form-group">
-                <label for="cb_eselon_3" class="col-sm-2 control-label" align='left'>Unit Eselon 3:</label>
+                <label for="cb_eselon_3" class="col-sm-2 control-label" align='left'>Unit Level 2:</label>
                 <div class="col-sm-9">
                     <select class="form-control cb_eselon_3" name="cb_eselon_3" id="cb_eselon_3"></select>
                 </div>
             </div>
             <div class="form-group">
-                <label for="cb_eselon_4" class="col-sm-2 control-label" align='left'>Unit Eselon 4:</label>
+                <label for="cb_eselon_4" class="col-sm-2 control-label" align='left'>Unit Level 3:</label>
                 <div class="col-sm-9">
                     <select class="form-control cb_eselon_4" name="cb_eselon_4" id="cb_eselon_4"></select>
                 </div>

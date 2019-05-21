@@ -30,13 +30,22 @@ Route::group(['prefix' => 'prarpjmd', 'middleware' => ['auth', 'menu:20']], func
 Route::group(['prefix' => 'rpjmd', 'middleware' => ['auth', 'menu:20']], function() {
         Route::get('/', 'TrxRpjmdController@index');
         Route::get('/getDokumen', 'TrxRpjmdController@getDokumen');
-        Route::get('/visi', 'TrxRpjmdController@getVisiRPJMD');
+        Route::get('/visi/{id_rpjmd}', 'TrxRpjmdController@getVisiRPJMD');
         Route::post('/editVisi', ['uses'=>'TrxRpjmdController@editVisi','as'=>'EditVisi']);
         Route::get('/misi/{id_visi_rpjmd}','TrxRpjmdController@getMisiRPJMD');
         Route::post('/editMisi', ['uses'=>'TrxRpjmdController@editMisi','as'=>'EditMisi']);
         Route::get('/tujuan/{id_misi_rpjmd}','TrxRpjmdController@getTujuanRPJMD');
         Route::post('/edittujuan', ['uses'=>'TrxRpjmdController@editTujuan','as'=>'Edittujuan']);
         Route::any('/getRpjmdChart/{id_rpjmd}', 'TrxRpjmdController@indexChart');
+        Route::get('/pdtRpjmd/{id_visi_rpjmd}','TrxRpjmdController@getPendapatanRPJMD');
+        Route::get('/btlRpjmd/{id_visi_rpjmd}','TrxRpjmdController@getBtlRPJMD');
+    //RPJMD Dokumen
+        Route::get('/getDokumenRpjmd', 'TrxRpjmdController@getDokumenRpjmd');
+        Route::post('/addDokumen', 'TrxRpjmdController@addDokumen');
+        // Route::post('/editDokumen', 'TrxRpjmdController@editDokumen');
+        // Route::post('/deleteDokumen', 'TrxRpjmdController@deleteDokumen');
+        // Route::post('/postingDokumen', 'TrxRpjmdController@postingDokumen');
+
     //RPJMD Sasaran
         Route::get('/sasaran/{id_tujuan_rpjmd}','TrxRpjmdController@getSasaranRPJMD');
         Route::post('/editsasaran', ['uses'=>'TrxRpjmdController@editSasaran','as'=>'EditSasaran']);
@@ -78,6 +87,7 @@ Route::group(['prefix' => 'rpjmd', 'middleware' => ['auth', 'menu:20']], functio
         Route::post('/addIndikatorProgram','TrxRpjmdProgramIndikatorController@addIndikator');
         Route::post('/editIndikatorProgram','TrxRpjmdProgramIndikatorController@editIndikator');
         Route::post('/delIndikatorProgram','TrxRpjmdProgramIndikatorController@delIndikator');
+
     Route::group(['prefix' => 'rancangan', 'middleware' => ['auth', 'menu:20']], function() {
         Route::get('/', 'TrxRpjmdRancanganController@index');
         Route::get('/getDokumen', 'TrxRpjmdRancanganController@getDokumen');

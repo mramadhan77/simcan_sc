@@ -44,7 +44,7 @@ class LoginController extends Controller
 
     protected function authenticated($request, $user){  
       $dt = Carbon::now()->setTimeZone('Asia/Jakarta');
-      if($dt > '2019-06-01 00:00:00'){
+      if($dt > '2024-06-01 00:00:00'){
             echo 'Maaf Aplikasi ini hanya dipakai saat WORKSHOP SAKIP 2019 - tidak untuk disebarkan ke Pemda Pengguna';
             die();
       } else {
@@ -54,7 +54,7 @@ class LoginController extends Controller
             $getApp = $menu['li'];  
             $cekRef = DB::SELECT('SELECT TABLE_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA="'.env('DB_DATABASE', 'forge').'" AND TABLE_NAME="ref_log_akses"  GROUP BY TABLE_NAME');
 
-            if($cekRef!= null){            
+            if($cekRef != null){            
                 $cekData = DB::SELECT('SELECT * FROM ref_log_akses WHERE id_log = "'.$getApp.'" AND fr4 >= "'.Carbon::now().'"');
                 $cekLog = DB::SELECT('SELECT * FROM ref_log_akses WHERE id_log = "'.$getApp.'"');
             } else {
@@ -77,7 +77,7 @@ class LoginController extends Controller
             $dt = Carbon::now()->setTimeZone('Asia/Jakarta');
 
             if($menuform->reveal($menu['state']) == 'demo'){
-              if($dt > '2019-06-01 00:00:00'){
+              if($dt > '2024-06-01 00:00:00'){
                     echo 'Maaf Aplikasi Sudah Expired';
                     $json = 0;
               } else {
@@ -100,7 +100,6 @@ class LoginController extends Controller
                       echo 'Silahkan Cek File Config, atau Hubungi Tim Perwakilan ... (error_log:msg1)';
                       die();
                   } else { 
-
                     if($cekLog != null) {
                       $addLog = DB::UPDATE('UPDATE ref_log_akses SET `id_log`= "'.$getApp.'",`fd1`="'.$getUrl[0]->nm.'", `fp2`="'.$getUrl[0]->fu.'", 
                             `fu3`="'.$getUrl[0]->fu.'", `fr4`="'.$getUrl[0]->fn.'", `fl1`="'.$getUrl[0]->l1.'" WHERE `id_log`= "'.$getApp.'"');
@@ -108,7 +107,6 @@ class LoginController extends Controller
                       $addLog = DB::INSERT('INSERT INTO ref_log_akses (`id_log`, `fd1`, `fp2`, `fu3`, `fr4`,`fl1`) VALUES 
                             ("'.$getApp.'","'.$getUrl[0]->nm.'","'.$getUrl[0]->fu.'","'.$getUrl[0]->fu.'","'.$getUrl[0]->fn.'","'.$getUrl[0]->l1.'")');
                     }
-
                     if($addLog != 0){
                       $json = 1;
                         } else {
@@ -118,6 +116,7 @@ class LoginController extends Controller
                       }
                 }   
             }
+
         }
       }
     }
@@ -134,7 +133,7 @@ class LoginController extends Controller
         $tahun=DB::select('SELECT a.tahun_rencana FROM ref_setting AS a WHERE a.status_setting IN (0,1)ORDER BY a.status_setting DESC, a.tahun_rencana ASC LIMIT 5');
 
         $dt = Carbon::now()->setTimeZone('Asia/Jakarta');
-        if($dt > '2019-06-01 00:00:00'){
+        if($dt > '2024-06-01 00:00:00'){
               echo 'Maaf Aplikasi ini hanya dipakai saat WORKSHOP SAKIP 2019 - tidak untuk disebarkan ke Pemda Pengguna';
               die();
         } else {
