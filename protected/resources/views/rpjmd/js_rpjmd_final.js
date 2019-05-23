@@ -1391,7 +1391,6 @@ $('#tblProgram tbody').on( 'dblclick', 'tr', function () {
   $('#tblPelaksana').DataTable().ajax.url("./rpjmd/programpelaksana/0").load();
 
   $.ajax({
-
           type: "GET",
           url: './rpjmd/getUrusan/'+id_program_rpjmd,
           dataType: "json",
@@ -1410,7 +1409,6 @@ $('#tblProgram tbody').on( 'dblclick', 'tr', function () {
           }
           }
       });
-
 });
 
   var UrusanProg = $('#tblUrusan').DataTable( {
@@ -1991,6 +1989,25 @@ $('#tblProgram tbody').on( 'dblclick', 'tr', function () {
       $('.nav-tabs a[href="#btl"]').tab('show');
       loadTblBtl(data.id_visi_rpjmd);
     });
+
+  $.ajax({
+          type: "GET",
+          url: './rpjmd/getJnsDokumen',
+          dataType: "json",
+
+          success: function(data) {
+            var j = data.length;
+            var post, i;
+
+            $('select[name="cb_jns_dokumen"]').empty();
+            $('select[name="cb_jns_dokumen"]').append('<option value="-1">---Pilih Jenis Dokumen RPJMD---</option>');
+
+            for (i = 0; i < j; i++) {
+              post = data[i];
+              $('select[name="cb_jns_dokumen"]').append('<option value="'+ post.id_dokumen +'">'+ post.nm_dokumen +'</option>');
+            }
+          }
+  });
 
   $(document).on('click', '.btnAddDokumen', function() {
       // $('.actionBtn_visi').addClass('editVisi');

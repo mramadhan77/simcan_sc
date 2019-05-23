@@ -56,6 +56,12 @@ class TrxRpjmdController extends Controller
             return view('rpjmd.FrmRpjmdChart',['data' => $data]);
     }
 
+    public function getJnsDokumen()
+    {
+      $dataperdarpjmd=DB::SELECT('SELECT * FROM ref_dokumen WHERE jenis_proses = 1');
+      return json_encode($dataperdarpjmd);
+    }
+
     public function getDokumen()
     {
       $dataperdarpjmd=DB::SELECT('SELECT * FROM trx_rpjmd_dokumen WHERE id_status_dokumen=1');

@@ -29,6 +29,7 @@ Route::group(['prefix' => 'prarpjmd', 'middleware' => ['auth', 'menu:20']], func
 //RPJMD FINAL
 Route::group(['prefix' => 'rpjmd', 'middleware' => ['auth', 'menu:20']], function() {
         Route::get('/', 'TrxRpjmdController@index');
+        Route::get('/getJnsDokumen', 'TrxRpjmdController@getJnsDokumen');
         Route::get('/getDokumen', 'TrxRpjmdController@getDokumen');
         Route::get('/visi/{id_rpjmd}', 'TrxRpjmdController@getVisiRPJMD');
         Route::post('/editVisi', ['uses'=>'TrxRpjmdController@editVisi','as'=>'EditVisi']);

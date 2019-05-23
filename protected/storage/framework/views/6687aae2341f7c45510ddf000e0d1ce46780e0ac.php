@@ -34,7 +34,7 @@ use hoaaah\LaravelBreadcrumb\Breadcrumb as Breadcrumb;
             <li><a href="#misi" aria-controls="misi" role="tab" data-toggle="tab">Misi</a></li>
             <li><a href="#tujuan" aria-controls="tujuan" role="tab" data-toggle="tab">Tujuan</a></li>
             <li><a href="#sasaran" aria-controls="sasaran" role="tab" data-toggle="tab">Sasaran</a></li>
-            <li><a href="#program" aria-controls="program" role="tab" data-toggle="tab">Program</a></li>
+            <li><a href="#program" aria-controls="program" role="tab" data-toggle="tab">Program Daerah</a></li>
             <li><a href="#btl" aria-controls="btl" role="tab" data-toggle="tab">Belanja Tidak Langsung</a></li>
             <li><a href="#pendapatan" aria-controls="pendapatan" role="tab" data-toggle="tab">Pendapatan</a></li>
           </ul>
