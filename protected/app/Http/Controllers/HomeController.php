@@ -87,6 +87,7 @@ class HomeController extends Controller
         Session::forget('xPemda');
         Session::forget('xAlamat');
         Session::forget('xKontak');
+        Session::forget('xIdPemda');
 
         if(Auth::user()->status_user != 1) {
            return back();

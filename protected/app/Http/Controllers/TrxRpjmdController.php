@@ -58,7 +58,7 @@ class TrxRpjmdController extends Controller
 
     public function getJnsDokumen()
     {
-      $dataperdarpjmd=DB::SELECT('SELECT * FROM ref_dokumen WHERE jenis_proses = 1');
+      $dataperdarpjmd=DB::SELECT('SELECT * FROM ref_dokumen WHERE jenis_proses = 1 ORDER BY urut_tampil');
       return json_encode($dataperdarpjmd);
     }
 
@@ -68,11 +68,17 @@ class TrxRpjmdController extends Controller
       return json_encode($dataperdarpjmd);
     }
 
+    public function getDokumenRef(Request $request)
+    {
+      $dataperdarpjmd=DB::SELECT('SELECT * FROM trx_rpjmd_dokumen WHERE id_status_dokumen=1 AND jns_dokumen='.$request->jns);
+      return json_encode($dataperdarpjmd);
+    }
+
     public function getDokumenRpjmd()
     {
-      $dokrpjmd = DB::SELECT('SELECT DISTINCT (@id:=@id+1) as no_urut, p.* FROM  (SELECT a.id_pemda, a.id_rpjmd, COALESCE(a.id_rpjmd_old) AS id_rpjmd_old, a.thn_dasar, a.tahun_1, a.tahun_2, a.tahun_3, a.tahun_4, a.tahun_5,
+      $dokrpjmd = DB::SELECT('SELECT DISTINCT (@id:=@id+1) as no_urut, p.* FROM  (SELECT a.id_pemda, a.id_rpjmd, COALESCE(a.id_rpjmd_old) AS id_rpjmd_old, a.thn_dasar, a.tahun_1, a.tahun_2, a.tahun_3, a.tahun_4, a.tahun_5,a.id_rpjmd_ref,
                 a.no_perda, a.tgl_perda, a.keterangan_dokumen, a.jns_dokumen, c.nm_dokumen, Coalesce(a.id_revisi,0) AS id_revisi, a.id_status_dokumen, a.sumber_data, 
-                a.created_at, a.updated_at, DATE_FORMAT(a.tgl_perda, "%d %M %Y") AS tgl_perda_view,
+                a.created_at, a.updated_at, TglIndonesia(a.tgl_perda) AS tgl_perda_view,
                 CASE a.id_status_dokumen
                                     WHEN 0 THEN "fa fa-question"
                                     WHEN 1 THEN "fa fa-check-square-o"
@@ -128,31 +134,23 @@ class TrxRpjmdController extends Controller
     public function addDokumen(Request $request)
     {
         $rules = [
-            'id_pemda'=>'required',
-            'thn_dasar'=>'required',
             'tahun_1'=>'required',
-            'tahun_2'=>'required',
-            'tahun_3'=>'required',
-            'tahun_4'=>'required',
             'tahun_5'=>'required',
             'no_perda'=>'required',
             'tgl_perda'=>'required',
             'keterangan_dokumen'=>'required',
             'jns_dokumen'=>'required',
+            'jns_dokumen'=>'required',
             'id_revisi'=>'required',
         ];
         $messages =[
-            'id_pemda.required'=>'id_pemda Kosong',
-            'thn_dasar.required'=>'thn_dasar Kosong',
             'tahun_1.required'=>'tahun_1 Kosong',
-            'tahun_2.required'=>'tahun_2 Kosong',
-            'tahun_3.required'=>'tahun_3 Kosong',
-            'tahun_4.required'=>'tahun_4 Kosong',
             'tahun_5.required'=>'tahun_5 Kosong',
             'no_perda.required'=>'no_perda Kosong',
             'tgl_perda.required'=>'tgl_perda Kosong',
             'keterangan_dokumen.required'=>'keterangan_dokumen Kosong',
             'jns_dokumen.required'=>'jns_dokumen Kosong',
+            'id_rpjmd_ref.required'=>'referensi dokumen Kosong',
             'id_revisi.required'=>'id_revisi Kosong',
         ];
         $validation = Validator::make($request->all(),$rules,$messages);
@@ -163,17 +161,18 @@ class TrxRpjmdController extends Controller
             }
         else {
             $data = new TrxRpjmdDokumen();
-            $data->id_pemda=$request->id_pemda;
-            $data->thn_dasar=$request->thn_dasar;
+            $data->id_pemda=Session::get('xIdPemda');
+            $data->thn_dasar=$request->tahun_1 - 1;
             $data->tahun_1=$request->tahun_1;
-            $data->tahun_2=$request->tahun_2;
-            $data->tahun_3=$request->tahun_3;
-            $data->tahun_4=$request->tahun_4;
+            $data->tahun_2=$request->tahun_1 + 1;
+            $data->tahun_3=$request->tahun_1 + 2;
+            $data->tahun_4=$request->tahun_1 + 3;
             $data->tahun_5=$request->tahun_5;
             $data->no_perda=$request->no_perda;
             $data->tgl_perda=$request->tgl_perda;
             $data->keterangan_dokumen=$request->keterangan_dokumen;
             $data->jns_dokumen=$request->jns_dokumen;
+            $data->id_rpjmd_ref=$request->id_rpjmd_ref;
             $data->id_revisi=$request->id_revisi;
             $data->id_status_dokumen=0;
             $data->sumber_data=0;
@@ -192,30 +191,24 @@ class TrxRpjmdController extends Controller
     {
         $rules = [
             'id_rpjmd'=>'required',
-            'thn_dasar'=>'required',
             'tahun_1'=>'required',
-            'tahun_2'=>'required',
-            'tahun_3'=>'required',
-            'tahun_4'=>'required',
             'tahun_5'=>'required',
             'no_perda'=>'required',
             'tgl_perda'=>'required',
             'keterangan_dokumen'=>'required',
             'jns_dokumen'=>'required',
+            'id_rpjmd_ref'=>'required',
             'id_revisi'=>'required',
         ];
         $messages =[
             'id_rpjmd.required'=>'id_rpjmd Kosong',
-            'thn_dasar.required'=>'thn_dasar Kosong',
             'tahun_1.required'=>'tahun_1 Kosong',
-            'tahun_2.required'=>'tahun_2 Kosong',
-            'tahun_3.required'=>'tahun_3 Kosong',
-            'tahun_4.required'=>'tahun_4 Kosong',
             'tahun_5.required'=>'tahun_5 Kosong',
             'no_perda.required'=>'no_perda Kosong',
             'tgl_perda.required'=>'tgl_perda Kosong',
             'keterangan_dokumen.required'=>'keterangan_dokumen Kosong',
             'jns_dokumen.required'=>'jns_dokumen Kosong',
+            'id_rpjmd_ref.required'=>'referensi dokumen Kosong',
             'id_revisi.required'=>'id_revisi Kosong',
         ];
         $validation = Validator::make($request->all(),$rules,$messages);
@@ -226,24 +219,29 @@ class TrxRpjmdController extends Controller
             }
         else {
             $data = TrxRpjmdDokumen::find($request->id_rpjmd);
-            $data->thn_dasar=$request->thn_dasar;
-            $data->tahun_1=$request->tahun_1;
-            $data->tahun_2=$request->tahun_2;
-            $data->tahun_3=$request->tahun_3;
-            $data->tahun_4=$request->tahun_4;
-            $data->tahun_5=$request->tahun_5;
-            $data->no_perda=$request->no_perda;
-            $data->tgl_perda=$request->tgl_perda;
-            $data->keterangan_dokumen=$request->keterangan_dokumen;
-            $data->jns_dokumen=$request->jns_dokumen;
-            $data->id_revisi=$request->id_revisi;
-            try{
-                $data->save (['timestamps' => true]);
-                return response ()->json (['pesan'=>'Data Berhasil Disimpan','status_pesan'=>'1']);
-            }
-              catch(QueryException $e){
-                 $error_code = $e->errorInfo[1] ;
-                 return response ()->json (['pesan'=>'Data Gagal Disimpan ('.$error_code.')','status_pesan'=>'0']);
+            if($data->id_status_dokumen == 0){
+                        $data->thn_dasar=$request->tahun_1 - 1;
+                        $data->tahun_1=$request->tahun_1;
+                        $data->tahun_2=$request->tahun_1 + 1;
+                        $data->tahun_3=$request->tahun_1 + 2;
+                        $data->tahun_4=$request->tahun_1 + 3;
+                        $data->tahun_5=$request->tahun_5;
+                        $data->no_perda=$request->no_perda;
+                        $data->tgl_perda=$request->tgl_perda;
+                        $data->keterangan_dokumen=$request->keterangan_dokumen;
+                        $data->jns_dokumen=$request->jns_dokumen;
+                        $data->id_rpjmd_ref=$request->id_rpjmd_ref;
+                        $data->id_revisi=$request->id_revisi;
+                        try{
+                            $data->save (['timestamps' => true]);
+                            return response ()->json (['pesan'=>'Data Berhasil Disimpan','status_pesan'=>'1']);
+                        }
+                          catch(QueryException $e){
+                             $error_code = $e->errorInfo[1] ;
+                             return response ()->json (['pesan'=>'Data Gagal Disimpan ('.$error_code.')','status_pesan'=>'0']);
+                        }
+            } else {
+                return response ()->json (['pesan'=>'Data Gagal Disimpan (Status Dokumen telah terposting)','status_pesan'=>'0']);
             }
         }
     }
@@ -261,14 +259,20 @@ class TrxRpjmdController extends Controller
             $errors = Fungsi::validationErrorsToString($validation->errors());
             return response ()->json (['pesan'=>$errors,'status_pesan'=>'0']);          
             }
-        else {        
-            $data = TrxRpjmdDokumen::where('id_rpjmd',$request->id_rpjmd)->delete();
-
-            if($data != 0){
-            return response ()->json (['pesan'=>'Data Berhasil Dihapus','status_pesan'=>'1']);
+        else {  
+            $data = TrxRpjmdDokumen::find($request->id_rpjmd);
+            if($data->id_status_dokumen == 0){
+                try{
+                    $data->delete();
+                     return response ()->json (['pesan'=>'Data Berhasil Dihapus','status_pesan'=>'1']);
+                }
+                    catch(QueryException $e){
+                     $error_code = $e->errorInfo[1] ;
+                     return response ()->json (['pesan'=>'Data Gagal Dihapus ('.$error_code.')','status_pesan'=>'0']);
+                }
             } else {
-            return response ()->json (['pesan'=>'Data Gagal Dihapus','status_pesan'=>'0']);
-            }  
+                return response ()->json (['pesan'=>'Data Gagal Dihapus (Status Dokumen telah terposting)','status_pesan'=>'0']);
+            }
         } 
     }
 

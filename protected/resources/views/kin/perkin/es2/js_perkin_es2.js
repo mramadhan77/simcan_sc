@@ -290,6 +290,7 @@ $('#tblSasaran tbody').on( 'dblclick', 'tr', function () {
               } ]
           });
   }
+  $.datepicker.setDefaults( $.datepicker.regional[ "id" ] );
   
   $('#tgl_perkin_dok_x').datepicker({
     altField: "#tgl_perkin_dok",

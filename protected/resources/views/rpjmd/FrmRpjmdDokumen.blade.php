@@ -20,6 +20,12 @@
                   </div>
                 </div> 
                 <div class="form-group">
+                  <label for="cb_ref_dokumen" class="col-sm-3 control-label" align='left'>Dokumen Referensi</label>
+                  <div class="col-sm-8">
+                      <select class="form-control cb_ref_dokumen" name="cb_ref_dokumen" id="cb_ref_dokumen"></select>
+                  </div>
+                </div> 
+                <div class="form-group">
                   <label for="thn_1_dok" class="col-sm-3 control-label" align='left'>Periode RPJMD </label>
                   <div class="col-sm-2">
                     <input type="text" class="form-control number" id="thn_1_dok" name="thn_1_dok" required="required">
@@ -54,7 +60,7 @@
             <div class="modal-footer">
               <div class="row">
                 <div class="col-sm-2 text-left">
-                  {{-- <button type="button" id="btnDelDokumen" class="btn btn-labeled btn-danger"><span class="btn-label"><i class="fa fa-trash-o fa-lg fa-fw"></i></span>Hapus</button> --}}
+                    <button type="button" id="btnDelDokumen" class="btn btn-labeled btn-danger btnDelDokumen"><span class="btn-label"><i class="fa fa-trash-o fa-lg fa-fw"></i></span>Hapus</button>
                 </div>
                 <div class="col-sm-10 text-right">
                   <div class="ui-group-buttons">

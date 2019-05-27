@@ -91,13 +91,30 @@ $(document).ready(function() {
           processing: true,
           serverSide: true,
           responsive: true,
-          dom : 'BFRTIP',                  
+          dom : 'bfrtip',                  
           autoWidth : false,
           order: [[0, 'asc']],
           bDestroy: true,
           language: {
-                "decimal": ",",
-                "thousands": "."},
+              "decimal": ",",
+              "thousands": ".",
+              "sEmptyTable":   "Tidak ada data yang tersedia pada tabel ini",
+              "sProcessing":   "Sedang memproses...",
+              "sLengthMenu":   "Tampilkan _MENU_ entri",
+              "sZeroRecords":  "Tidak ditemukan data yang sesuai",
+              "sInfo":         "Menampilkan _START_ sampai _END_ dari _TOTAL_ entri",
+              "sInfoEmpty":    "Menampilkan 0 sampai 0 dari 0 entri",
+              "sInfoFiltered": "(disaring dari _MAX_ entri keseluruhan)",
+              "sInfoPostFix":  "",
+              "sSearch":       "Cari:",
+              "sUrl":          "",
+              "oPaginate": {
+                  "sFirst":    "Pertama",
+                  "sPrevious": "Sebelumnya",
+                  "sNext":     "Selanjutnya",
+                  "sLast":     "Terakhir"
+              }
+            },
            "ajax": {"url": "./rpjmd/getDokumenRpjmd"},
           columns: [
                  {
@@ -137,9 +154,26 @@ $(document).ready(function() {
                 ajax: data.details_url,
                 dom : 'BfRtIP',
                 autoWidth: false,
-                "language": {
-                          "decimal": ",",
-                          "thousands": "."},
+                language: {
+              "decimal": ",",
+              "thousands": ".",
+              "sEmptyTable":   "Tidak ada data yang tersedia pada tabel ini",
+              "sProcessing":   "Sedang memproses...",
+              "sLengthMenu":   "Tampilkan _MENU_ entri",
+              "sZeroRecords":  "Tidak ditemukan data yang sesuai",
+              "sInfo":         "Menampilkan _START_ sampai _END_ dari _TOTAL_ entri",
+              "sInfoEmpty":    "Menampilkan 0 sampai 0 dari 0 entri",
+              "sInfoFiltered": "(disaring dari _MAX_ entri keseluruhan)",
+              "sInfoPostFix":  "",
+              "sSearch":       "Cari:",
+              "sUrl":          "",
+              "oPaginate": {
+                  "sFirst":    "Pertama",
+                  "sPrevious": "Sebelumnya",
+                  "sNext":     "Selanjutnya",
+                  "sLast":     "Terakhir"
+              }
+            },
                 "columns": [
                             { data: 'id_visi_rpjmd','searchable': false, 'orderable':false, sClass: "dt-center"},
                             { data: 'uraian_visi_rpjmd','searchable': false, 'orderable':false},
@@ -185,8 +219,25 @@ $(document).ready(function() {
           order: [[0, 'asc']],
           bDestroy: true,
           language: {
-                "decimal": ",",
-                "thousands": "."},
+              "decimal": ",",
+              "thousands": ".",
+              "sEmptyTable":   "Tidak ada data yang tersedia pada tabel ini",
+              "sProcessing":   "Sedang memproses...",
+              "sLengthMenu":   "Tampilkan _MENU_ entri",
+              "sZeroRecords":  "Tidak ditemukan data yang sesuai",
+              "sInfo":         "Menampilkan _START_ sampai _END_ dari _TOTAL_ entri",
+              "sInfoEmpty":    "Menampilkan 0 sampai 0 dari 0 entri",
+              "sInfoFiltered": "(disaring dari _MAX_ entri keseluruhan)",
+              "sInfoPostFix":  "",
+              "sSearch":       "Cari:",
+              "sUrl":          "",
+              "oPaginate": {
+                  "sFirst":    "Pertama",
+                  "sPrevious": "Sebelumnya",
+                  "sNext":     "Selanjutnya",
+                  "sLast":     "Terakhir"
+              }
+            },
            "ajax": {"url": "./rpjmd/visi/"+id_rpjmd},
           columns: [
                 { data: 'id_visi_rpjmd','searchable': false, 'orderable':false, sClass: "dt-center"},
@@ -198,6 +249,7 @@ $(document).ready(function() {
 
   $(document).on('click', '.edit-visi', function() {
 	    $('.actionBtn_visi').addClass('editVisi');
+      $('.actionBtn_visi').removeClass('addVisi');
 	    $('.modal-title').text('Data Visi Daerah');
 	    $('.form-horizontal').show();
 	    $('#id_visi_rpjmd_edit').val($(this).data('id_visi_rpjmd'));
@@ -260,8 +312,25 @@ $(document).ready(function() {
           order: [[0, 'asc']],
           bDestroy: true,
           language: {
-                "decimal": ",",
-                "thousands": "."},
+              "decimal": ",",
+              "thousands": ".",
+              "sEmptyTable":   "Tidak ada data yang tersedia pada tabel ini",
+              "sProcessing":   "Sedang memproses...",
+              "sLengthMenu":   "Tampilkan _MENU_ entri",
+              "sZeroRecords":  "Tidak ditemukan data yang sesuai",
+              "sInfo":         "Menampilkan _START_ sampai _END_ dari _TOTAL_ entri",
+              "sInfoEmpty":    "Menampilkan 0 sampai 0 dari 0 entri",
+              "sInfoFiltered": "(disaring dari _MAX_ entri keseluruhan)",
+              "sInfoPostFix":  "",
+              "sSearch":       "Cari:",
+              "sUrl":          "",
+              "oPaginate": {
+                  "sFirst":    "Pertama",
+                  "sPrevious": "Sebelumnya",
+                  "sNext":     "Selanjutnya",
+                  "sLast":     "Terakhir"
+              }
+            },
            "ajax": {"url": "./rpjmd/misi/"+id_visi_rpjmd},
           "columns": [
                 { data: 'id_visi_rpjmd','searchable': false,  sClass: "dt-center"},
@@ -328,8 +397,25 @@ $(document).ready(function() {
           order: [[0, 'asc']],
           bDestroy: true,
           language: {
-                "decimal": ",",
-                "thousands": "."},
+              "decimal": ",",
+              "thousands": ".",
+              "sEmptyTable":   "Tidak ada data yang tersedia pada tabel ini",
+              "sProcessing":   "Sedang memproses...",
+              "sLengthMenu":   "Tampilkan _MENU_ entri",
+              "sZeroRecords":  "Tidak ditemukan data yang sesuai",
+              "sInfo":         "Menampilkan _START_ sampai _END_ dari _TOTAL_ entri",
+              "sInfoEmpty":    "Menampilkan 0 sampai 0 dari 0 entri",
+              "sInfoFiltered": "(disaring dari _MAX_ entri keseluruhan)",
+              "sInfoPostFix":  "",
+              "sSearch":       "Cari:",
+              "sUrl":          "",
+              "oPaginate": {
+                  "sFirst":    "Pertama",
+                  "sPrevious": "Sebelumnya",
+                  "sNext":     "Selanjutnya",
+                  "sLast":     "Terakhir"
+              }
+            },
           "ajax": {"url": "./rpjmd/tujuan/0"},
           "columns": [
                 {
@@ -357,9 +443,26 @@ $(document).ready(function() {
                 ajax: data.details_url,
                 dom : 'BfRtIP',
                 autoWidth: false,
-                "language": {
-                          "decimal": ",",
-                          "thousands": "."},
+                language: {
+                    "decimal": ",",
+                    "thousands": ".",
+                    "sEmptyTable":   "Tidak ada data yang tersedia pada tabel ini",
+                    "sProcessing":   "Sedang memproses...",
+                    "sLengthMenu":   "Tampilkan _MENU_ entri",
+                    "sZeroRecords":  "Tidak ditemukan data yang sesuai",
+                    "sInfo":         "Menampilkan _START_ sampai _END_ dari _TOTAL_ entri",
+                    "sInfoEmpty":    "Menampilkan 0 sampai 0 dari 0 entri",
+                    "sInfoFiltered": "(disaring dari _MAX_ entri keseluruhan)",
+                    "sInfoPostFix":  "",
+                    "sSearch":       "Cari:",
+                    "sUrl":          "",
+                    "oPaginate": {
+                        "sFirst":    "Pertama",
+                        "sPrevious": "Sebelumnya",
+                        "sNext":     "Selanjutnya",
+                        "sLast":     "Terakhir"
+                    }
+                  },
                 "columns": [
                             { data: 'urut', sClass: "dt-center"},
                             { data: 'uraian_indikator_sasaran_rpjmd'},
@@ -524,9 +627,7 @@ $(document).on('click', '.btnHapusIndikator', function() {
       $('#nm_tujuan_indikator_hapus').html(data.nm_indikator);
       $('#HapusModal').modal('show');
 
-});
-    
-    
+}); 
     
 $('.modal-footer').on('click', '.delete', function() {
       $.ajaxSetup({
@@ -561,6 +662,26 @@ $('.modal-footer').on('click', '.delete', function() {
         serverSide: true,
         dom: 'bfrtIp',
         autoWidth : false,
+        language: {
+              "decimal": ",",
+              "thousands": ".",
+              "sEmptyTable":   "Tidak ada data yang tersedia pada tabel ini",
+              "sProcessing":   "Sedang memproses...",
+              "sLengthMenu":   "Tampilkan _MENU_ entri",
+              "sZeroRecords":  "Tidak ditemukan data yang sesuai",
+              "sInfo":         "Menampilkan _START_ sampai _END_ dari _TOTAL_ entri",
+              "sInfoEmpty":    "Menampilkan 0 sampai 0 dari 0 entri",
+              "sInfoFiltered": "(disaring dari _MAX_ entri keseluruhan)",
+              "sInfoPostFix":  "",
+              "sSearch":       "Cari:",
+              "sUrl":          "",
+              "oPaginate": {
+                  "sFirst":    "Pertama",
+                  "sPrevious": "Sebelumnya",
+                  "sNext":     "Selanjutnya",
+                  "sLast":     "Terakhir"
+              }
+            },
         "ajax": {"url": "./admin/parameter/getRefIndikator"},
         "columns": [
               { data: 'no_urut'},
@@ -638,8 +759,25 @@ tblSasaran = $('#tblSasaran').DataTable( {
           order: [[0, 'asc']],
           bDestroy: true,
           language: {
-                "decimal": ",",
-                "thousands": "."},
+              "decimal": ",",
+              "thousands": ".",
+              "sEmptyTable":   "Tidak ada data yang tersedia pada tabel ini",
+              "sProcessing":   "Sedang memproses...",
+              "sLengthMenu":   "Tampilkan _MENU_ entri",
+              "sZeroRecords":  "Tidak ditemukan data yang sesuai",
+              "sInfo":         "Menampilkan _START_ sampai _END_ dari _TOTAL_ entri",
+              "sInfoEmpty":    "Menampilkan 0 sampai 0 dari 0 entri",
+              "sInfoFiltered": "(disaring dari _MAX_ entri keseluruhan)",
+              "sInfoPostFix":  "",
+              "sSearch":       "Cari:",
+              "sUrl":          "",
+              "oPaginate": {
+                  "sFirst":    "Pertama",
+                  "sPrevious": "Sebelumnya",
+                  "sNext":     "Selanjutnya",
+                  "sLast":     "Terakhir"
+              }
+            },
           "ajax": {"url": "./rpjmd/sasaran/0"},
           "columns": [
                 {
@@ -668,9 +806,26 @@ tblSasaran = $('#tblSasaran').DataTable( {
                 ajax: data.details_url,
                 dom : 'BfRtIP',
                 autoWidth: false,
-                "language": {
-                          "decimal": ",",
-                          "thousands": "."},
+                language: {
+                    "decimal": ",",
+                    "thousands": ".",
+                    "sEmptyTable":   "Tidak ada data yang tersedia pada tabel ini",
+                    "sProcessing":   "Sedang memproses...",
+                    "sLengthMenu":   "Tampilkan _MENU_ entri",
+                    "sZeroRecords":  "Tidak ditemukan data yang sesuai",
+                    "sInfo":         "Menampilkan _START_ sampai _END_ dari _TOTAL_ entri",
+                    "sInfoEmpty":    "Menampilkan 0 sampai 0 dari 0 entri",
+                    "sInfoFiltered": "(disaring dari _MAX_ entri keseluruhan)",
+                    "sInfoPostFix":  "",
+                    "sSearch":       "Cari:",
+                    "sUrl":          "",
+                    "oPaginate": {
+                        "sFirst":    "Pertama",
+                        "sPrevious": "Sebelumnya",
+                        "sNext":     "Selanjutnya",
+                        "sLast":     "Terakhir"
+                    }
+                  },
                 "columns": [
                             { data: 'urut', sClass: "dt-center"},
                             { data: 'uraian_indikator_sasaran_rpjmd'},
@@ -850,8 +1005,6 @@ $(document).on('click', '.btnHapusIndikatorSasaran', function() {
 
 });
     
-    
-    
 $('.modal-footer').on('click', '.delSasaranIndikator', function() {
       $.ajaxSetup({
          headers: { 'X-CSRF-Token' : $('meta[name=_token]').attr('content') }
@@ -923,8 +1076,25 @@ $('#tblSasaran tbody').on( 'dblclick', 'tr', function () {
           order: [[0, 'asc']],
           bDestroy: true,
           language: {
-                "decimal": ",",
-                "thousands": "."},
+              "decimal": ",",
+              "thousands": ".",
+              "sEmptyTable":   "Tidak ada data yang tersedia pada tabel ini",
+              "sProcessing":   "Sedang memproses...",
+              "sLengthMenu":   "Tampilkan _MENU_ entri",
+              "sZeroRecords":  "Tidak ditemukan data yang sesuai",
+              "sInfo":         "Menampilkan _START_ sampai _END_ dari _TOTAL_ entri",
+              "sInfoEmpty":    "Menampilkan 0 sampai 0 dari 0 entri",
+              "sInfoFiltered": "(disaring dari _MAX_ entri keseluruhan)",
+              "sInfoPostFix":  "",
+              "sSearch":       "Cari:",
+              "sUrl":          "",
+              "oPaginate": {
+                  "sFirst":    "Pertama",
+                  "sPrevious": "Sebelumnya",
+                  "sNext":     "Selanjutnya",
+                  "sLast":     "Terakhir"
+              }
+            },
           "ajax": {"url": "./rpjmd/kebijakan/0"},
           "columns": [
                 { data: 'id_visi_rpjmd', sClass: "dt-center"},
@@ -989,8 +1159,25 @@ var Strategi = $('#tblStrategi').DataTable( {
           order: [[0, 'asc']],
           bDestroy: true,
           language: {
-                "decimal": ",",
-                "thousands": "."},
+              "decimal": ",",
+              "thousands": ".",
+              "sEmptyTable":   "Tidak ada data yang tersedia pada tabel ini",
+              "sProcessing":   "Sedang memproses...",
+              "sLengthMenu":   "Tampilkan _MENU_ entri",
+              "sZeroRecords":  "Tidak ditemukan data yang sesuai",
+              "sInfo":         "Menampilkan _START_ sampai _END_ dari _TOTAL_ entri",
+              "sInfoEmpty":    "Menampilkan 0 sampai 0 dari 0 entri",
+              "sInfoFiltered": "(disaring dari _MAX_ entri keseluruhan)",
+              "sInfoPostFix":  "",
+              "sSearch":       "Cari:",
+              "sUrl":          "",
+              "oPaginate": {
+                  "sFirst":    "Pertama",
+                  "sPrevious": "Sebelumnya",
+                  "sNext":     "Selanjutnya",
+                  "sLast":     "Terakhir"
+              }
+            },
           "ajax": {"url": "./rpjmd/strategi/0"},
           "columns": [
                 { data: 'id_visi_rpjmd', sClass: "dt-center"},
@@ -1057,12 +1244,26 @@ $.ajax({
           order: [[0, 'asc']],
           bDestroy: true,
           language: {
-                "decimal": ",",
-                "thousands": "."},
+              "decimal": ",",
+              "thousands": ".",
+              "sEmptyTable":   "Tidak ada data yang tersedia pada tabel ini",
+              "sProcessing":   "Sedang memproses...",
+              "sLengthMenu":   "Tampilkan _MENU_ entri",
+              "sZeroRecords":  "Tidak ditemukan data yang sesuai",
+              "sInfo":         "Menampilkan _START_ sampai _END_ dari _TOTAL_ entri",
+              "sInfoEmpty":    "Menampilkan 0 sampai 0 dari 0 entri",
+              "sInfoFiltered": "(disaring dari _MAX_ entri keseluruhan)",
+              "sInfoPostFix":  "",
+              "sSearch":       "Cari:",
+              "sUrl":          "",
+              "oPaginate": {
+                  "sFirst":    "Pertama",
+                  "sPrevious": "Sebelumnya",
+                  "sNext":     "Selanjutnya",
+                  "sLast":     "Terakhir"
+              }
+            },
           "ajax": {"url": "./rpjmd/program/0"},
-          "language": {
-                "decimal": ",",
-                "thousands": "."},
           "columns": [
                 {
                   "className":      'details-control',
@@ -1102,9 +1303,26 @@ $.ajax({
                 ajax: data.details_url,
                 dom : 'BfRtIP',
                 autoWidth: false,
-                "language": {
-                          "decimal": ",",
-                          "thousands": "."},
+                language: {
+                  "decimal": ",",
+                  "thousands": ".",
+                  "sEmptyTable":   "Tidak ada data yang tersedia pada tabel ini",
+                  "sProcessing":   "Sedang memproses...",
+                  "sLengthMenu":   "Tampilkan _MENU_ entri",
+                  "sZeroRecords":  "Tidak ditemukan data yang sesuai",
+                  "sInfo":         "Menampilkan _START_ sampai _END_ dari _TOTAL_ entri",
+                  "sInfoEmpty":    "Menampilkan 0 sampai 0 dari 0 entri",
+                  "sInfoFiltered": "(disaring dari _MAX_ entri keseluruhan)",
+                  "sInfoPostFix":  "",
+                  "sSearch":       "Cari:",
+                  "sUrl":          "",
+                  "oPaginate": {
+                      "sFirst":    "Pertama",
+                      "sPrevious": "Sebelumnya",
+                      "sNext":     "Selanjutnya",
+                      "sLast":     "Terakhir"
+                  }
+                },
                 "columns": [
                             { data: 'urut', sClass: "dt-center"},
                             { data: 'uraian_indikator_program_rpjmd'},
@@ -1420,8 +1638,25 @@ $('#tblProgram tbody').on( 'dblclick', 'tr', function () {
           order: [[0, 'asc']],
           bDestroy: true,
           language: {
-                "decimal": ",",
-                "thousands": "."},
+              "decimal": ",",
+              "thousands": ".",
+              "sEmptyTable":   "Tidak ada data yang tersedia pada tabel ini",
+              "sProcessing":   "Sedang memproses...",
+              "sLengthMenu":   "Tampilkan _MENU_ entri",
+              "sZeroRecords":  "Tidak ditemukan data yang sesuai",
+              "sInfo":         "Menampilkan _START_ sampai _END_ dari _TOTAL_ entri",
+              "sInfoEmpty":    "Menampilkan 0 sampai 0 dari 0 entri",
+              "sInfoFiltered": "(disaring dari _MAX_ entri keseluruhan)",
+              "sInfoPostFix":  "",
+              "sSearch":       "Cari:",
+              "sUrl":          "",
+              "oPaginate": {
+                  "sFirst":    "Pertama",
+                  "sPrevious": "Sebelumnya",
+                  "sNext":     "Selanjutnya",
+                  "sLast":     "Terakhir"
+              }
+            },
         "ajax": {"url": "./rpjmd/programurusan/0"},
         "columns": [
                 { data: 'kd_program', sClass: "dt-center"},
@@ -1713,8 +1948,25 @@ $('#tblProgram tbody').on( 'dblclick', 'tr', function () {
           order: [[0, 'asc']],
           bDestroy: true,
           language: {
-                "decimal": ",",
-                "thousands": "."},
+              "decimal": ",",
+              "thousands": ".",
+              "sEmptyTable":   "Tidak ada data yang tersedia pada tabel ini",
+              "sProcessing":   "Sedang memproses...",
+              "sLengthMenu":   "Tampilkan _MENU_ entri",
+              "sZeroRecords":  "Tidak ditemukan data yang sesuai",
+              "sInfo":         "Menampilkan _START_ sampai _END_ dari _TOTAL_ entri",
+              "sInfoEmpty":    "Menampilkan 0 sampai 0 dari 0 entri",
+              "sInfoFiltered": "(disaring dari _MAX_ entri keseluruhan)",
+              "sInfoPostFix":  "",
+              "sSearch":       "Cari:",
+              "sUrl":          "",
+              "oPaginate": {
+                  "sFirst":    "Pertama",
+                  "sPrevious": "Sebelumnya",
+                  "sNext":     "Selanjutnya",
+                  "sLast":     "Terakhir"
+              }
+            },
         "ajax": {"url": "./rpjmd/programpelaksana/0"},
         "columns": [
                 { data: 'kd_program', sClass: "dt-center"},
@@ -1733,9 +1985,26 @@ $('#tblProgram tbody').on( 'dblclick', 'tr', function () {
                   autoWidth : false,
                   dom : 'BFRtIp',
                   "ajax": {"url": "./rpjmd/getUnitPelaksana/"+id_program+"/"+id_bidang},
-                  "language": {
-                      "decimal": ",",
-                      "thousands": "."},
+                  language: {
+                    "decimal": ",",
+                    "thousands": ".",
+                    "sEmptyTable":   "Tidak ada data yang tersedia pada tabel ini",
+                    "sProcessing":   "Sedang memproses...",
+                    "sLengthMenu":   "Tampilkan _MENU_ entri",
+                    "sZeroRecords":  "Tidak ditemukan data yang sesuai",
+                    "sInfo":         "Menampilkan _START_ sampai _END_ dari _TOTAL_ entri",
+                    "sInfoEmpty":    "Menampilkan 0 sampai 0 dari 0 entri",
+                    "sInfoFiltered": "(disaring dari _MAX_ entri keseluruhan)",
+                    "sInfoPostFix":  "",
+                    "sSearch":       "Cari:",
+                    "sUrl":          "",
+                    "oPaginate": {
+                        "sFirst":    "Pertama",
+                        "sPrevious": "Sebelumnya",
+                        "sNext":     "Selanjutnya",
+                        "sLast":     "Terakhir"
+                    }
+                  },
                   "columns": [
                         { data: 'kd_unit', sClass: "dt-center"},
                         { data: 'nm_unit'},
@@ -1904,8 +2173,25 @@ $('#tblProgram tbody').on( 'dblclick', 'tr', function () {
           order: [[0, 'asc']],
           bDestroy: true,
           language: {
-                "decimal": ",",
-                "thousands": "."},
+              "decimal": ",",
+              "thousands": ".",
+              "sEmptyTable":   "Tidak ada data yang tersedia pada tabel ini",
+              "sProcessing":   "Sedang memproses...",
+              "sLengthMenu":   "Tampilkan _MENU_ entri",
+              "sZeroRecords":  "Tidak ditemukan data yang sesuai",
+              "sInfo":         "Menampilkan _START_ sampai _END_ dari _TOTAL_ entri",
+              "sInfoEmpty":    "Menampilkan 0 sampai 0 dari 0 entri",
+              "sInfoFiltered": "(disaring dari _MAX_ entri keseluruhan)",
+              "sInfoPostFix":  "",
+              "sSearch":       "Cari:",
+              "sUrl":          "",
+              "oPaginate": {
+                  "sFirst":    "Pertama",
+                  "sPrevious": "Sebelumnya",
+                  "sNext":     "Selanjutnya",
+                  "sLast":     "Terakhir"
+              }
+            },
           "ajax": {"url": "./rpjmd/pdtRpjmd/"+id_visi},
           "language": {
                 "decimal": ",",
@@ -1945,8 +2231,25 @@ $('#tblProgram tbody').on( 'dblclick', 'tr', function () {
           order: [[0, 'asc']],
           bDestroy: true,
           language: {
-                "decimal": ",",
-                "thousands": "."},
+              "decimal": ",",
+              "thousands": ".",
+              "sEmptyTable":   "Tidak ada data yang tersedia pada tabel ini",
+              "sProcessing":   "Sedang memproses...",
+              "sLengthMenu":   "Tampilkan _MENU_ entri",
+              "sZeroRecords":  "Tidak ditemukan data yang sesuai",
+              "sInfo":         "Menampilkan _START_ sampai _END_ dari _TOTAL_ entri",
+              "sInfoEmpty":    "Menampilkan 0 sampai 0 dari 0 entri",
+              "sInfoFiltered": "(disaring dari _MAX_ entri keseluruhan)",
+              "sInfoPostFix":  "",
+              "sSearch":       "Cari:",
+              "sUrl":          "",
+              "oPaginate": {
+                  "sFirst":    "Pertama",
+                  "sPrevious": "Sebelumnya",
+                  "sNext":     "Selanjutnya",
+                  "sLast":     "Terakhir"
+              }
+            },
           "ajax": {"url": "./rpjmd/btlRpjmd/"+id_visi},
           "language": {
                 "decimal": ",",
@@ -2010,19 +2313,218 @@ $('#tblProgram tbody').on( 'dblclick', 'tr', function () {
   });
 
   $(document).on('click', '.btnAddDokumen', function() {
-      // $('.actionBtn_visi').addClass('editVisi');
+      $('.btnDokumen').addClass('addDokumen');
+      $('.btnDokumen').removeClass('editDokumen');
       $('.modal-title').text('Data Dokumen Perencanaan Daerah');
       $('.form-horizontal').show();
-      // $('#id_visi_rpjmd_edit').val($(this).data('id_visi_rpjmd'));
-      // $('#thn_id_edit').val($(this).data('thn_id'));
-      // $('#no_urut_edit').val($(this).data('no_urut'));
-      // $('#id_rpjmd_edit').val($(this).data('id_rpjmd'));
-      // $('#id_perubahan_edit').val($(this).data('id_perubahan'));
-      // $('#ur_visi_rpjmd_edit').val($(this).data('uraian_visi_rpjmd'));
-      // $('#thn_periode_visi').val($('#periode_awal_rpjmd').text() + ' sampai dengan ' + $('#periode_akhir_rpjmd').text())
+      $('#id_rpjmd_dok').val(null);
+      $('#cb_jns_dokumen').val(-1);
+      $('#id_revisi_dok').val(0);
+      $('#thn_1_dok').val(2019);
+      $('#thn_5_dok').val(2024);
+      $('#no_perda_dok').val(null);
+      $('#tgl_perda_dok').val(hariIni());
+      $('#tgl_perda_dok_x').val(formatTgl(hariIni()));
+      $('#uraian_perda_dok').val(null);
+      $('#cb_ref_dokumen').val(-1);
+      $('#btnDelDokumen').hide();
       $('#ModalDokumen').modal('show');
     });
 
+  $('.modal-footer').on('click', '.addDokumen', function() {
+      $.ajaxSetup({
+         headers: { 'X-CSRF-Token' : $('meta[name=_token]').attr('content') }
+      });
+
+      $.ajax({
+          type: 'post',
+          url: './rpjmd/addDokumen',
+          data: {
+              '_token': $('input[name=_token]').val(),
+              'tahun_1' : $('#thn_1_dok').val(),
+              'tahun_5': $('#thn_5_dok').val(),
+              'no_perda': $('#no_perda_dok').val(),
+              'tgl_perda': $('#tgl_perda_dok').val(),
+              'keterangan_dokumen': $('#uraian_perda_dok').val(),
+              'jns_dokumen':$('#cb_jns_dokumen').val(),
+              'id_rpjmd_ref':$('#cb_ref_dokumen').val(),
+              'id_revisi':$('#id_revisi_dok').val(),
+          },
+          success: function(data) {             
+              tbl_Dokumen.ajax.reload(null,false);
+              if(data.status_pesan==1){
+                createPesan(data.pesan,"success");
+              } else {
+                createPesan(data.pesan,"danger"); 
+              }             
+          }
+      });
+    });
+
+  $(document).on('click', '.btnViewDok', function() {
+      var data = tbl_Dokumen.row( $(this).parents('tr') ).data();
+      var jns, xyz;
+      xyz = parseInt(data.jns_dokumen,10);
+      switch (xyz) {
+        case 1:
+          jns = 22;
+          break;
+        case 2:
+           jns = 1;
+          break;
+        case 3:
+          jns = 2;
+          break;
+        case 4:
+          jns = 3;
+          break;
+        case 5:
+          jns = 4;
+          break;
+        case 6:
+          jns = 5;
+          break;
+        case 22:
+          jns = 0;
+      }
+
+    $.ajax({
+          type: "GET",
+          url: './rpjmd/getDokumenRef?jns='+ jns,
+          dataType: "json",
+          success: function(data) {
+            var j = data.length;
+            var post, i;
+            $('select[name="cb_ref_dokumen"]').empty();
+            $('select[name="cb_ref_dokumen"]').append('<option value="-1">---Pilih Dokumen RPJMD Referensi---</option>');
+            $('select[name="cb_ref_dokumen"]').append('<option value="0">---Tidak ada Dokumen Referensi---</option>');
+            for (i = 0; i < j; i++) {
+              post = data[i];
+              $('select[name="cb_ref_dokumen"]').append('<option value="'+ post.id_rpjmd +'">'+ post.no_perda +'</option>');
+            }
+          }
+  });
+    
+      $('.btnDokumen').addClass('editDokumen');
+      $('.btnDokumen').removeClass('addDokumen');
+      $('.modal-title').text('Data Dokumen Perencanaan Daerah');
+      $('.form-horizontal').show();
+      $('#id_rpjmd_dok').val(data.id_rpjmd);
+      $('#cb_jns_dokumen').val(data.jns_dokumen);
+      $('#cb_ref_dokumen').val(data.id_rpjmd_ref);
+      $('#id_revisi_dok').val(data.id_revisi);
+      $('#thn_1_dok').val(data.tahun_1);
+      $('#thn_5_dok').val(data.tahun_5);
+      $('#no_perda_dok').val(data.no_perda);
+      $('#tgl_perda_dok').val(data.tgl_perda);
+      $('#tgl_perda_dok_x').val(formatTgl(data.tgl_perda));
+      $('#uraian_perda_dok').val(data.keterangan_dokumen);
+      $('#btnDelDokumen').show();
+      $('#ModalDokumen').modal('show');
+    });
+
+  $('.modal-footer').on('click', '.editDokumen', function() {
+      $.ajaxSetup({
+         headers: { 'X-CSRF-Token' : $('meta[name=_token]').attr('content') }
+      });
+
+      $.ajax({
+          type: 'post',
+          url: './rpjmd/editDokumen',
+          data: {
+              '_token': $('input[name=_token]').val(),
+              'id_rpjmd' : $('#id_rpjmd_dok').val(),
+              'tahun_1' : $('#thn_1_dok').val(),
+              'tahun_5': $('#thn_5_dok').val(),
+              'no_perda': $('#no_perda_dok').val(),
+              'tgl_perda': $('#tgl_perda_dok').val(),
+              'keterangan_dokumen': $('#uraian_perda_dok').val(),
+              'jns_dokumen':$('#cb_jns_dokumen').val(),
+              'id_rpjmd_ref':$('#cb_ref_dokumen').val(),
+              'id_revisi':$('#id_revisi_dok').val(),
+          },
+          success: function(data) {             
+              tbl_Dokumen.ajax.reload(null,false);
+              if(data.status_pesan==1){
+                createPesan(data.pesan,"success");
+              } else {
+                createPesan(data.pesan,"danger"); 
+              }             
+          }
+      });
+    });
+
+$('.modal-footer').on('click', '.btnDelDokumen', function() {
+  $.ajaxSetup({
+      headers: { 'X-CSRF-Token' : $('meta[name=_token]').attr('content') }
+  });
+
+    $.ajax({
+      type: 'post',
+      url: './rpjmd/deleteDokumen',
+      data: {
+        '_token': $('input[name=_token]').val(),
+        'id_rpjmd' : $('#id_rpjmd_dok').val(),
+      },
+      success: function(data) {
+        tbl_Dokumen.ajax.reload(null,false);
+        $('#ModalDokumen').modal('hide');
+        if(data.status_pesan==1){
+          createPesan(data.pesan,"success");
+        } else {
+          createPesan(data.pesan,"danger"); 
+        }
+      }
+    });
+});
+
+$('select[name="cb_ref_dokumen"]').empty();
+$('select[name="cb_ref_dokumen"]').append('<option value="-1">---Pilih Dokumen RPJMD Referensi---</option>');
+$('select[name="cb_ref_dokumen"]').append('<option value="0">---Tidak ada Dokumen Referensi---</option>');
+
+$( ".cb_jns_dokumen" ).change(function() {
+    var jns, xyz;
+    xyz = parseInt($( "#cb_jns_dokumen" ).val(),10);
+    switch (xyz) {
+      case 1:
+        jns = 22;
+        break;
+      case 2:
+         jns = 1;
+        break;
+      case 3:
+        jns = 2;
+        break;
+      case 4:
+        jns = 3;
+        break;
+      case 5:
+        jns = 4;
+        break;
+      case 6:
+        jns = 5;
+        break;
+      case 22:
+        jns = 0;
+    }
+
+    $.ajax({
+          type: "GET",
+          url: './rpjmd/getDokumenRef?jns='+ jns,
+          dataType: "json",
+          success: function(data) {
+            var j = data.length;
+            var post, i;
+            $('select[name="cb_ref_dokumen"]').empty();
+            $('select[name="cb_ref_dokumen"]').append('<option value="-1">---Pilih Dokumen RPJMD Referensi---</option>');
+            $('select[name="cb_ref_dokumen"]').append('<option value="0">---Tidak ada Dokumen Referensi---</option>');
+            for (i = 0; i < j; i++) {
+              post = data[i];
+              $('select[name="cb_ref_dokumen"]').append('<option value="'+ post.id_rpjmd +'">'+ post.no_perda +'</option>');
+            }
+          }
+  });
+});
 
   $(document).on('click', '.btnPrintRPJMDTSK', function() {  
    window.open('./printRPJMDTSK');  
