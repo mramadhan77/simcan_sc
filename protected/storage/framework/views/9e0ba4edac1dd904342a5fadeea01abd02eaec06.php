@@ -64,7 +64,7 @@
                 </div>
                 <div class="col-sm-10 text-right">
                   <div class="ui-group-buttons">
-                    <button id="btnDokumen" type="button" class="btn btn-success btn-labeled btnDokumen" data-dismiss="modal">
+                    <button id="btnDokumen" type="button"id="btnDokumen"  class="btn btn-success btn-labeled btnDokumen" data-dismiss="modal">
                     <span class="btn-label"><i class="fa fa-floppy-o fa-fw fa-lg"></i></span>Simpan</button>
                   <div class="or"></div>
                     <button type="button" class="btn btn-warning btn-labeled" data-dismiss="modal" aria-hidden="true">

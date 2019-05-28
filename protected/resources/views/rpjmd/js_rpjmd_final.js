@@ -56,6 +56,8 @@ $(document).ready(function() {
   $('.number').number(true,4,',', '.');
   $('#thn_1_dok').number(true,0,'','');
   $('#thn_5_dok').number(true,0,'','');
+  $('#no_urut_edit').number(true,0,'','');
+  $('#id_perubahan_edit').number(true,0,'','');
 
   $('.page-alert .close').click(function(e) {
           e.preventDefault();
@@ -246,6 +248,23 @@ $(document).ready(function() {
               ]
         } );
 };
+
+  
+  $(document).on('click', '.btnAddVisi', function() {
+    var data = tbl_Dokumen.row( $(this).parents('tr') ).data();
+      $('.actionBtn_visi').removeClass('editVisi');
+      $('.actionBtn_visi').addClass('addVisi');
+      $('.modal-title').text('Data Visi Daerah');
+      $('.form-horizontal').show();
+      $('#id_visi_rpjmd_edit').val(null);
+      $('#thn_id_edit').val(null);
+      $('#no_urut_edit').val(1);
+      $('#id_rpjmd_edit').val(data.id_rpjmd);
+      $('#id_perubahan_edit').val(0);
+      $('#ur_visi_rpjmd_edit').val(null);
+      $('#thn_periode_visi').val(data.tahun_1 + ' sampai dengan ' + data.tahun_5)
+      $('#EditVisi').modal('show');
+  });
 
   $(document).on('click', '.edit-visi', function() {
 	    $('.actionBtn_visi').addClass('editVisi');
@@ -2363,48 +2382,7 @@ $('#tblProgram tbody').on( 'dblclick', 'tr', function () {
 
   $(document).on('click', '.btnViewDok', function() {
       var data = tbl_Dokumen.row( $(this).parents('tr') ).data();
-      var jns, xyz;
-      xyz = parseInt(data.jns_dokumen,10);
-      switch (xyz) {
-        case 1:
-          jns = 22;
-          break;
-        case 2:
-           jns = 1;
-          break;
-        case 3:
-          jns = 2;
-          break;
-        case 4:
-          jns = 3;
-          break;
-        case 5:
-          jns = 4;
-          break;
-        case 6:
-          jns = 5;
-          break;
-        case 22:
-          jns = 0;
-      }
 
-    $.ajax({
-          type: "GET",
-          url: './rpjmd/getDokumenRef?jns='+ jns,
-          dataType: "json",
-          success: function(data) {
-            var j = data.length;
-            var post, i;
-            $('select[name="cb_ref_dokumen"]').empty();
-            $('select[name="cb_ref_dokumen"]').append('<option value="-1">---Pilih Dokumen RPJMD Referensi---</option>');
-            $('select[name="cb_ref_dokumen"]').append('<option value="0">---Tidak ada Dokumen Referensi---</option>');
-            for (i = 0; i < j; i++) {
-              post = data[i];
-              $('select[name="cb_ref_dokumen"]').append('<option value="'+ post.id_rpjmd +'">'+ post.no_perda +'</option>');
-            }
-          }
-  });
-    
       $('.btnDokumen').addClass('editDokumen');
       $('.btnDokumen').removeClass('addDokumen');
       $('.modal-title').text('Data Dokumen Perencanaan Daerah');
@@ -2477,10 +2455,41 @@ $('.modal-footer').on('click', '.btnDelDokumen', function() {
       }
     });
 });
+    $.ajax({
+          type: "GET",
+          url: './rpjmd/getDokumenRef?jns=0',
+          dataType: "json",
+          success: function(data) {
+            var j = data.length;
+            var post, i;
+            $('select[name="cb_ref_dokumen"]').empty();
+            $('select[name="cb_ref_dokumen"]').append('<option value="-1">---Pilih Dokumen RPJMD Referensi---</option>');
+            $('select[name="cb_ref_dokumen"]').append('<option value="0">---Tidak ada Dokumen Referensi---</option>');
+            for (i = 0; i < j; i++) {
+              post = data[i];
+              $('select[name="cb_ref_dokumen"]').append('<option value="'+ post.id_rpjmd +'">'+ post.no_perda +'</option>');
+            }
+          }
+  });
 
-$('select[name="cb_ref_dokumen"]').empty();
-$('select[name="cb_ref_dokumen"]').append('<option value="-1">---Pilih Dokumen RPJMD Referensi---</option>');
-$('select[name="cb_ref_dokumen"]').append('<option value="0">---Tidak ada Dokumen Referensi---</option>');
+  $('#ModalDokumen').on('hidden.bs.modal', function () {
+    $.ajax({
+          type: "GET",
+          url: './rpjmd/getDokumenRef?jns=0',
+          dataType: "json",
+          success: function(data) {
+            var j = data.length;
+            var post, i;
+            $('select[name="cb_ref_dokumen"]').empty();
+            $('select[name="cb_ref_dokumen"]').append('<option value="-1">---Pilih Dokumen RPJMD Referensi---</option>');
+            $('select[name="cb_ref_dokumen"]').append('<option value="0">---Tidak ada Dokumen Referensi---</option>');
+            for (i = 0; i < j; i++) {
+              post = data[i];
+              $('select[name="cb_ref_dokumen"]').append('<option value="'+ post.id_rpjmd +'">'+ post.no_perda +'</option>');
+            }
+          }
+  });
+  });
 
 $( ".cb_jns_dokumen" ).change(function() {
     var jns, xyz;
