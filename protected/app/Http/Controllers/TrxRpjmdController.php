@@ -283,7 +283,9 @@ class TrxRpjmdController extends Controller
 
     public function getVisiRPJMD($id_rpjmd)
     {
-      $rpjmdvisi = DB::select('SELECT * FROM trx_rpjmd_visi WHERE id_rpjmd='.$id_rpjmd.' ORDER BY id_rpjmd ASC');
+      $rpjmdvisi = DB::select('SELECT b.*, a.tahun_1, a.tahun_5, a.id_status_dokumen FROM trx_rpjmd_visi AS b
+                INNER JOIN trx_rpjmd_dokumen AS a ON b.id_rpjmd = a.id_rpjmd WHERE a.id_rpjmd='.$id_rpjmd.' 
+                ORDER BY a.id_rpjmd, b.no_urut ASC');
 
       return DataTables::of($rpjmdvisi)
         ->addColumn('action', function ($rpjmdvisi) {
@@ -292,7 +294,7 @@ class TrxRpjmdController extends Controller
             	<button type="button" class="btn btn-info dropdown-toggle btn-labeled" aria-haspopup="true" aria-expanded="false" data-toggle="dropdown"><span class="btn-label"><i class="fa fa-wrench fa-fw fa-lg"></i></span>Aksi <span class="caret"></span></button>
             	<ul class="dropdown-menu dropdown-menu-right">
             		<li>
-            			<a class="edit-visi dropdown-item" data-id_visi_rpjmd="'.$rpjmdvisi->id_visi_rpjmd.'" data-thn_id="'.$rpjmdvisi->thn_id.'" data-id_rpjmd="'.$rpjmdvisi->id_rpjmd.'" data-id_perubahan="'.$rpjmdvisi->id_perubahan.'"  data-uraian_visi_rpjmd="'.$rpjmdvisi->uraian_visi_rpjmd.'" data-no_urut="'.$rpjmdvisi->no_urut.'"><i class="fa fa-paper-plane-o fa-fw fa-lg text-success"></i> Lihat Data Visi</a>
+            			<a class="edit-visi dropdown-item"><i class="fa fa-paper-plane-o fa-fw fa-lg text-success"></i> Lihat Data Visi</a>
                     </li>
                     <li>
                         <a class="btnViewBtl dropdown-item" ><i class="fa fa-building fa-fw fa-lg text-warning"></i> Belanja Tidak Langsung </a>
@@ -309,7 +311,7 @@ class TrxRpjmdController extends Controller
         ->make(true);
     }
 
-    public function addVisi(Request $req)
+    public function addVisi(Request $request)
     {
         $rules = [
             'id_rpjmd_edit'=>'required',
@@ -332,10 +334,10 @@ class TrxRpjmdController extends Controller
         else {            
             $data = new TrxRpjmdVisi();
             $data->thn_id= Session::get('xIdPemda');
-            $data->id_rpjmd= $req->id_rpjmd_edit;
-            $data->uraian_visi_rpjmd= $req->ur_visi_rpjmd_edit;
-            $data->id_perubahan= $req->id_perubahan_edit;
-            $data->no_urut= $req->no_urut_edit;
+            $data->id_rpjmd= $request->id_rpjmd_edit;
+            $data->uraian_visi_rpjmd= $request->ur_visi_rpjmd_edit;
+            $data->id_perubahan= $request->id_perubahan_edit;
+            $data->no_urut= $request->no_urut_edit;
             $data->sumber_data= 1;
             try{
                 $data->save (['timestamps' => true]);
@@ -348,7 +350,7 @@ class TrxRpjmdController extends Controller
         }
     }
 
-    public function editVisi(Request $req)
+    public function editVisi(Request $request)
     {
         $rules = [
             'id_rpjmd_edit'=>'required',
@@ -370,14 +372,14 @@ class TrxRpjmdController extends Controller
             $errors = Fungsi::validationErrorsToString($validation->errors());
             return response ()->json (['pesan'=>$errors,'status_pesan'=>'0']);          
             } else {            
-                $cek = DB::SELECT('SELECT id_status_dokumen FROM `trx_rpjmd_dokumen` WHERE id_rpjmd ='.$req->id_rpjmd_edit);
+                $cek = DB::SELECT('SELECT id_status_dokumen FROM `trx_rpjmd_dokumen` WHERE id_rpjmd ='.$request->id_rpjmd_edit);
                 if($cek[0]->id_status_dokumen == 0){
-                    $data = TrxRpjmdVisi::find($req->id_visi_rpjmd_edit);
-                    $data->thn_id= $req->thn_id_edit;
-                    $data->id_rpjmd= $req->id_rpjmd_edit;
-                    $data->uraian_visi_rpjmd= $req->ur_visi_rpjmd_edit;
-                    $data->id_perubahan= $req->id_perubahan_edit;
-                    $data->no_urut= $req->no_urut_edit;
+                    $data = TrxRpjmdVisi::find($request->id_visi_rpjmd_edit);
+                    $data->thn_id= $request->thn_id_edit;
+                    $data->id_rpjmd= $request->id_rpjmd_edit;
+                    $data->uraian_visi_rpjmd= $request->ur_visi_rpjmd_edit;
+                    $data->id_perubahan= $request->id_perubahan_edit;
+                    $data->no_urut= $request->no_urut_edit;
                     try{
                         $data->save (['timestamps' => true]);
                         return response ()->json (['pesan'=>'Data Berhasil Disimpan','status_pesan'=>'1']);
@@ -392,6 +394,39 @@ class TrxRpjmdController extends Controller
         }
     }
 
+    public function deleteVisi(Request $request){
+        $rules = [
+            'id_rpjmd_edit'=>'required',
+            'id_visi_rpjmd_edit'=>'required',
+        ];
+        $messages =[
+            'id_rpjmd_edit.required'=>'ID Dokumen RPJMD Kosong',
+            'id_visi_rpjmd_edit.required'=>'ID Visi RPJMD Kosong',           
+        ];
+        $validation = Validator::make($request->all(),$rules,$messages);
+        
+        if($validation->fails()) {
+            $errors = Fungsi::validationErrorsToString($validation->errors());
+            return response ()->json (['pesan'=>$errors,'status_pesan'=>'0']);          
+            }
+        else {  
+            $cek = DB::SELECT('SELECT id_status_dokumen FROM `trx_rpjmd_dokumen` WHERE id_rpjmd ='.$request->id_rpjmd_edit);
+                if($cek[0]->id_status_dokumen == 0){
+                try{
+                    $data = TrxRpjmdVisi::find($request->id_visi_rpjmd_edit);
+                    $data->delete();
+                     return response ()->json (['pesan'=>'Data Berhasil Dihapus','status_pesan'=>'1']);
+                }
+                    catch(QueryException $e){
+                     $error_code = $e->errorInfo[1] ;
+                     return response ()->json (['pesan'=>'Data Gagal Dihapus ('.$error_code.')','status_pesan'=>'0']);
+                }
+            } else {
+                return response ()->json (['pesan'=>'Data Gagal Dihapus (Status Dokumen telah terposting)','status_pesan'=>'0']);
+            }
+        } 
+    }
+
     public function getMisiRPJMD($id_visi_rpjmd)
     {
       $rpjmdmisi = DB::select('SELECT * FROM trx_rpjmd_misi WHERE no_urut not in (98,99) AND id_visi_rpjmd = '.$id_visi_rpjmd.' ORDER BY no_urut desc');
@@ -402,7 +437,7 @@ class TrxRpjmdController extends Controller
             	<button type="button" class="btn btn-info dropdown-toggle btn-labeled" aria-haspopup="true" aria-expanded="false" data-toggle="dropdown"><span class="btn-label"><i class="fa fa-wrench fa-fw fa-lg"></i></span>Aksi <span class="caret"></span></button>
             	<ul class="dropdown-menu dropdown-menu-right">
             		<li>
-            			<a class="edit-misi dropdown-item" data-id_misi_rpjmd_misi="'.$rpjmdmisi->id_misi_rpjmd.'" data-thn_id_misi="'.$rpjmdmisi->thn_id_rpjmd.'" data-id_visi_rpjmd_misi="'.$rpjmdmisi->id_visi_rpjmd.'" data-id_perubahan_misi="'.$rpjmdmisi->id_perubahan.'"  data-uraian_misi_rpjmd_misi="'.$rpjmdmisi->uraian_misi_rpjmd.'" data-no_urut_misi="'.$rpjmdmisi->no_urut.'"><i class="fa fa-location-arrow fa-fw fa-lg text-success"></i> Lihat Data Misi</a>
+            			<a class="edit-misi dropdown-item"><i class="fa fa-location-arrow fa-fw fa-lg text-success"></i> Lihat Data Misi</a>
             		</li>
             	</ul>
             </div>';})
@@ -447,7 +482,7 @@ class TrxRpjmdController extends Controller
                 </button>
             		<ul class="dropdown-menu dropdown-menu-right">
             			<li>
-            				<a class="edit-tujuan dropdown-item" data-id_tujuan_rpjmd_tujuan="'.$rpjmdtujuan->id_tujuan_rpjmd.'" data-thn_id_tujuan="'.$rpjmdtujuan->thn_id_rpjmd.'" data-id_misi_rpjmd_tujuan="'.$rpjmdtujuan->id_misi_rpjmd.'" data-id_perubahan_tujuan="'.$rpjmdtujuan->id_perubahan.'"  data-uraian_tujuan_rpjmd_tujuan="'.$rpjmdtujuan->uraian_tujuan_rpjmd.'" data-no_urut_tujuan="'.$rpjmdtujuan->no_urut.'"><i class="fa fa-bullseye fa-fw fa-lg text-success"></i></i> Lihat Data Tujuan</a>
+            				<a class="edit-tujuan dropdown-item"><i class="fa fa-bullseye fa-fw fa-lg text-success"></i></i> Lihat Data Tujuan</a>
                         </li>
                         <li>
                             <a class="add-indikator dropdown-item"><i class="fa fa-plus fa-fw fa-lg"></i> Tambah Indikator Tujuan</a>
@@ -497,13 +532,13 @@ class TrxRpjmdController extends Controller
                 </button>
             		<ul class="dropdown-menu dropdown-menu-right">
             			<li>
-                            <a class="btnEditSasaran dropdown-item" data-id_sasaran_rpjmd_sasaran="'.$rpjmdsasaran->id_sasaran_rpjmd.'" data-thn_id_sasaran="'.$rpjmdsasaran->thn_id_rpjmd.'" data-id_tujuan_rpjmd_sasaran="'.$rpjmdsasaran->id_tujuan_rpjmd.'" data-id_perubahan_sasaran="'.$rpjmdsasaran->id_perubahan.'"  data-uraian_sasaran_rpjmd_sasaran="'.$rpjmdsasaran->uraian_sasaran_rpjmd.'" data-no_urut_sasaran="'.$rpjmdsasaran->no_urut.'"><i class="fa fa-pencil fa-fw fa-lg text-success"></i> Lihat Data Sasaran</a>
+                            <a class="btnEditSasaran dropdown-item"><i class="fa fa-pencil fa-fw fa-lg text-success"></i> Lihat Data Sasaran</a>
                         </li>
                         <li>
-                            <a class="view-rpjmdstrategi dropdown-item" data-id_sasaran="'.$rpjmdsasaran->id_sasaran_rpjmd.'" ><i class="fa fa-map-o fa-fw fa-lg text-info"></i> Lihat Strategi</a>
+                            <a class="view-rpjmdstrategi dropdown-item"><i class="fa fa-map-o fa-fw fa-lg text-info"></i> Lihat Strategi</a>
                         </li>
                         <li>
-                            <a class="view-rpjmdkebijakan dropdown-item" data-id_sasaran="'.$rpjmdsasaran->id_sasaran_rpjmd.'" ><i class="fa fa-gavel fa-fw fa-lg text-primary"></i> Lihat Kebijakan</a>
+                            <a class="view-rpjmdkebijakan dropdown-item"><i class="fa fa-gavel fa-fw fa-lg text-primary"></i> Lihat Kebijakan</a>
                         </li>
                         <li>
                             <a class="btnAddIndikatorSasaran dropdown-item"><i class="fa fa-plus fa-fw fa-lg"></i> Tambah Indikator Sasaran</a>

@@ -509,10 +509,10 @@ use hoaaah\LaravelBreadcrumb\Breadcrumb as Breadcrumb;
           <form class="form-horizontal" role="form" autocomplete='off' action="" method="post" >
               <input type="hidden" name="_token" value="<?php echo e(csrf_token()); ?>">
               <input type="hidden" class="form-control" id="id_visi_rpjmd_edit" name="id_visi_rpjmd_edit">
-              <input type="hidden" class="form-control" id="id_rpjmd_edit" name="id_rpjmd_edit" required="required" >
-              <input type="hidden" class="form-control" id="thn_id_edit" name="thn_id_edit" required="required" readonly>
+              <input type="hidden" class="form-control" id="id_rpjmd_edit" name="id_rpjmd_edit">
+              <input type="hidden" class="form-control" id="thn_id_edit" name="thn_id_edit">
               <div class="form-group">
-                <label for="thn_id_edit" class="col-sm-3 control-label" align='left'>Periode RPJMD :</label>
+                <label for="thn_periode_visi" class="col-sm-3 control-label" align='left'>Periode RPJMD :</label>
                 <div class="col-sm-7">
                   <input type="text" class="form-control" id="thn_periode_visi" name="thn_periode_visi" required="required" readonly>
                 </div>

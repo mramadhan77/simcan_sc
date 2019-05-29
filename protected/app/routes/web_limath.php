@@ -32,8 +32,7 @@ Route::group(['prefix' => 'rpjmd', 'middleware' => ['auth', 'menu:20']], functio
         Route::get('/getJnsDokumen', 'TrxRpjmdController@getJnsDokumen');
         Route::get('/getDokumen', 'TrxRpjmdController@getDokumen');
         Route::get('/getDokumenRef', 'TrxRpjmdController@getDokumenRef');
-        Route::get('/visi/{id_rpjmd}', 'TrxRpjmdController@getVisiRPJMD');
-        Route::post('/editVisi', ['uses'=>'TrxRpjmdController@editVisi','as'=>'EditVisi']);
+
         Route::get('/misi/{id_visi_rpjmd}','TrxRpjmdController@getMisiRPJMD');
         Route::post('/editMisi', ['uses'=>'TrxRpjmdController@editMisi','as'=>'EditMisi']);
         Route::get('/tujuan/{id_misi_rpjmd}','TrxRpjmdController@getTujuanRPJMD');
@@ -47,6 +46,11 @@ Route::group(['prefix' => 'rpjmd', 'middleware' => ['auth', 'menu:20']], functio
         Route::post('/editDokumen', 'TrxRpjmdController@editDokumen');
         Route::post('/deleteDokumen', 'TrxRpjmdController@deleteDokumen');
         // Route::post('/postingDokumen', 'TrxRpjmdController@postingDokumen');
+    //RPJMD Visi        
+        Route::get('/visi/{id_rpjmd}', 'TrxRpjmdController@getVisiRPJMD');
+        Route::post('/addVisi', ['uses'=>'TrxRpjmdController@addVisi','as'=>'AddVisi']);
+        Route::post('/editVisi', ['uses'=>'TrxRpjmdController@editVisi','as'=>'EditVisi']);
+        Route::post('/deleteVisi', ['uses'=>'TrxRpjmdController@deleteVisi','as'=>'DeleteVisi']);
 
     //RPJMD Sasaran
         Route::get('/sasaran/{id_tujuan_rpjmd}','TrxRpjmdController@getSasaranRPJMD');

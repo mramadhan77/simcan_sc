@@ -131,7 +131,7 @@ public function getDataASB()
                 INNER JOIN ref_unit AS d ON c.id_unit = d.id_unit
                 LEFT OUTER JOIN ref_satuan AS g ON b.id_satuan_1 = g.id_satuan
                 LEFT OUTER JOIN ref_satuan AS h ON b.id_satuan_2 = g.id_satuan, (SELECT @id:=0) z
-                WHERE i.status_data=1 and b.tahun_renja ='.Session::get('tahun'));
+                WHERE i.status_data=2 and b.tahun_renja ='.Session::get('tahun'));
 
         return DataTables::of($getDataRW)
             ->addColumn('action',function($getDataRW){

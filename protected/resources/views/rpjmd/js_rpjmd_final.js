@@ -177,7 +177,7 @@ $(document).ready(function() {
               }
             },
                 "columns": [
-                            { data: 'id_visi_rpjmd','searchable': false, 'orderable':false, sClass: "dt-center"},
+                            { data: 'no_urut','searchable': false, 'orderable':false, sClass: "dt-center"},
                             { data: 'uraian_visi_rpjmd','searchable': false, 'orderable':false},
                             { data: 'action', 'searchable': false, 'orderable':false }
                           ],
@@ -252,8 +252,8 @@ $(document).ready(function() {
   
   $(document).on('click', '.btnAddVisi', function() {
     var data = tbl_Dokumen.row( $(this).parents('tr') ).data();
-      $('.actionBtn_visi').removeClass('editVisi');
-      $('.actionBtn_visi').addClass('addVisi');
+      $('.btnSimpanVisi').removeClass('editVisi');
+      $('.btnSimpanVisi').addClass('addVisi');
       $('.modal-title').text('Data Visi Daerah');
       $('.form-horizontal').show();
       $('#id_visi_rpjmd_edit').val(null);
@@ -262,22 +262,51 @@ $(document).ready(function() {
       $('#id_rpjmd_edit').val(data.id_rpjmd);
       $('#id_perubahan_edit').val(0);
       $('#ur_visi_rpjmd_edit').val(null);
-      $('#thn_periode_visi').val(data.tahun_1 + ' sampai dengan ' + data.tahun_5)
+      $('#thn_periode_visi').val(data.tahun_1 + ' sampai dengan ' + data.tahun_5);      
+      $('#btnDelVisi').hide();
       $('#EditVisi').modal('show');
   });
 
+  $('.modal-footer').on('click', '.addVisi', function() {
+      $.ajaxSetup({
+         headers: { 'X-CSRF-Token' : $('meta[name=_token]').attr('content') }
+      });
+
+      $.ajax({
+          type: 'post',
+          url: './rpjmd/addVisi',
+          data: {
+              '_token': $('input[name=_token]').val(),
+              'no_urut_edit': $('#no_urut_edit').val(),
+              'id_rpjmd_edit': $('#id_rpjmd_edit').val(),
+              'id_perubahan_edit': $('#id_perubahan_edit').val(),
+              'ur_visi_rpjmd_edit': $('#ur_visi_rpjmd_edit').val(),
+          },
+          success: function(data) {
+              tblInDokumen.ajax.reload(null,false);
+              if(data.status_pesan==1){
+                createPesan(data.pesan,"success");
+                } else {
+                createPesan(data.pesan,"danger"); 
+              }
+          }
+      });
+  });
+
   $(document).on('click', '.edit-visi', function() {
-	    $('.actionBtn_visi').addClass('editVisi');
-      $('.actionBtn_visi').removeClass('addVisi');
+    var data = tblInDokumen.row( $(this).parents('tr') ).data();
+	    $('.btnSimpanVisi').addClass('editVisi');
+      $('.btnSimpanVisi').removeClass('addVisi');
 	    $('.modal-title').text('Data Visi Daerah');
 	    $('.form-horizontal').show();
-	    $('#id_visi_rpjmd_edit').val($(this).data('id_visi_rpjmd'));
-	    $('#thn_id_edit').val($(this).data('thn_id'));
-	    $('#no_urut_edit').val($(this).data('no_urut'));
-	    $('#id_rpjmd_edit').val($(this).data('id_rpjmd'));
-	    $('#id_perubahan_edit').val($(this).data('id_perubahan'));
-	    $('#ur_visi_rpjmd_edit').val($(this).data('uraian_visi_rpjmd'));
-      $('#thn_periode_visi').val($('#periode_awal_rpjmd').text() + ' sampai dengan ' + $('#periode_akhir_rpjmd').text())
+	    $('#id_visi_rpjmd_edit').val(data.id_visi_rpjmd);
+	    $('#thn_id_edit').val(data.thn_id);
+	    $('#no_urut_edit').val(data.no_urut);
+	    $('#id_rpjmd_edit').val(data.id_rpjmd);
+	    $('#id_perubahan_edit').val(data.id_perubahan);
+	    $('#ur_visi_rpjmd_edit').val(data.uraian_visi_rpjmd);
+      $('#thn_periode_visi').val(data.tahun_1 + ' sampai dengan ' + data.tahun_5);    
+      $('#btnDelVisi').show();
 	    $('#EditVisi').modal('show');
 	  });
 
@@ -299,7 +328,7 @@ $(document).ready(function() {
               'ur_visi_rpjmd_edit': $('#ur_visi_rpjmd_edit').val(),
           },
           success: function(data) {
-              $('#tblVisi').DataTable().ajax.reload(null,false);
+              tblInDokumen.ajax.reload(null,false);
               if(data.status_pesan==1){
                 createPesan(data.pesan,"success");
                 } else {
@@ -309,20 +338,34 @@ $(document).ready(function() {
       });
   });
 
-  $('#tblVisi tbody').on( 'dblclick', 'tr', function () {
-	    var data = tbl_Visi.row(this).data();
+  $('.modal-footer').on('click', '.btnDelVisi', function() {
+    $.ajaxSetup({
+        headers: { 'X-CSRF-Token' : $('meta[name=_token]').attr('content') }
+    });
 
-	    id_visi_rpjmd =  data.id_visi_rpjmd;
-      tahun_rpjmd = data.thn_id;
-	    $('.nav-tabs a[href="#misi"]').tab('show');
-	      // $('#tblMisi').DataTable().ajax.url("./rpjmd/misi/"+id_visi_rpjmd).load();
-      loadTblMisi(id_visi_rpjmd);
+      $.ajax({
+        type: 'post',
+        url: './rpjmd/deleteVisi',
+        data: {
+          '_token': $('input[name=_token]').val(),
+          'id_visi_rpjmd_edit': $('#id_visi_rpjmd_edit').val(),
+          'id_rpjmd_edit': $('#id_rpjmd_edit').val(),
+        },
+        success: function(data) {
+          tblInDokumen.ajax.reload(null,false);
+          $('#EditVisi').modal('hide');
+          if(data.status_pesan==1){
+            createPesan(data.pesan,"success");
+          } else {
+            createPesan(data.pesan,"danger"); 
+          }
+        }
+      });
+  });
 
-	});
-
-  var  tbl_Misi
+  var  tblMisi;
   function loadTblMisi(id_visi_rpjmd){
-  tbl_Misi = $('#tblMisi').DataTable( {
+  tblMisi = $('#tblMisi').DataTable( {
           processing: true,
           serverSide: true,
           dom: 'BFrtip',
@@ -360,6 +403,7 @@ $(document).ready(function() {
 }
 
   $(document).on('click', '.edit-misi', function() {
+    var data = tblMisi.row( $(this).parents('tr') ).data();
 	    $('.actionBtn_misi').addClass('editMisi');
 	    $('.modal-title').text('Data Misi Daerah');
 	    $('.form-horizontal').show();
@@ -388,7 +432,7 @@ $(document).ready(function() {
               'ur_misi_rpjmd_edit': $('#ur_misi_rpjmd_edit').val(),
           },
           success: function(data) {
-              $('#tblMisi').DataTable().ajax.reload(null,false);
+              tblMisi.ajax.reload(null,false);
               if(data.status_pesan==1){
                 createPesan(data.pesan,"success");
                 } else {
@@ -399,14 +443,15 @@ $(document).ready(function() {
   });
   $('#tblMisi tbody').on( 'dblclick', 'tr', function () {
 
-	    var data = tbl_Misi.row(this).data();
-
+	    var data = tblMisi.row(this).data();
 	    id_misi_rpjmd =  data.id_misi_rpjmd;
 	    $('.nav-tabs a[href="#tujuan"]').tab('show');
-	      $('#tblTujuan').DataTable().ajax.url("./rpjmd/tujuan/"+id_misi_rpjmd).load();
+      loadTblTujuan(id_misi_rpjmd);
+	      // $('#tblTujuan').DataTable().ajax.url("./rpjmd/tujuan/"+id_misi_rpjmd).load();
 	});
 
   var tblTujuan;
+  function loadTblTujuan(id_misi_rpjmd){
   tblTujuan = $('#tblTujuan').DataTable( {
           processing: true,
           serverSide: true,
@@ -435,7 +480,7 @@ $(document).ready(function() {
                   "sLast":     "Terakhir"
               }
             },
-          "ajax": {"url": "./rpjmd/tujuan/0"},
+          "ajax": {"url": "./rpjmd/tujuan/"+id_misi_rpjmd},
           "columns": [
                 {
                   "className":      'details-control',
@@ -453,6 +498,7 @@ $(document).ready(function() {
                 { data: 'action', 'searchable': false, 'orderable':false }
               ]
         });
+    }
     
     var tblInTujuan;
     function initInTujuan(tableId, data) {
@@ -490,7 +536,6 @@ $(document).ready(function() {
                 "order": [[0, 'asc']],
                 "bDestroy": true
             })
-
     }
 
   $('#tblTujuan tbody').on('click', 'td.details-control', function () {
@@ -565,12 +610,9 @@ $('.modal-footer').on('click', '.addTujuanIndikator', function() {
                 } else {
                 createPesan(data.pesan,"danger"); 
               }
-
         },
-        error: function(data){
-            
+        error: function(data){            
         }
-
     });
 });
 
@@ -717,7 +759,6 @@ $('.modal-footer').on('click', '.delete', function() {
   });
 
   $(document).on('click', '.edit-tujuan', function() {
-
     var data = tblTujuan.row( $(this).parents('tr') ).data();
 	    $('.actionBtn_tujuan').addClass('edittujuan');
 	    $('.modal-title').text('Data Tujuan Daerah');
@@ -750,13 +791,12 @@ $('.modal-footer').on('click', '.edittujuan', function() {
             'ur_tujuan_rpjmd_edit': $('#ur_tujuan_rpjmd_edit').val(),
         },
         success: function(data) {
-            $('#tblTujuan').DataTable().ajax.reload(null,false);
+           tblTujuan.ajax.reload(null,false);
               if(data.status_pesan==1){
                 createPesan(data.pesan,"success");
                 } else {
                 createPesan(data.pesan,"danger"); 
               }
-
         }
     });
 });
@@ -765,10 +805,11 @@ $('#tblTujuan tbody').on( 'dblclick', 'tr', function () {
 	    var data = tblTujuan.row(this).data();
 	    id_tujuan_rpjmd =  data.id_tujuan_rpjmd;
 	    $('.nav-tabs a[href="#sasaran"]').tab('show');
-      $('#tblSasaran').DataTable().ajax.url("./rpjmd/sasaran/"+id_tujuan_rpjmd).load();
+      loadTblSasaran(id_tujuan_rpjmd);
 });
 	  
-var tblSasaran
+var tblSasaran;
+function loadTblSasaran(id_tujuan_rpjmd){
 tblSasaran = $('#tblSasaran').DataTable( {
           processing: true,
           serverSide: true,
@@ -797,7 +838,7 @@ tblSasaran = $('#tblSasaran').DataTable( {
                   "sLast":     "Terakhir"
               }
             },
-          "ajax": {"url": "./rpjmd/sasaran/0"},
+          "ajax": {"url": "./rpjmd/sasaran/"+id_tujuan_rpjmd},
           "columns": [
                 {
                   "className":      'details-control',
@@ -816,6 +857,7 @@ tblSasaran = $('#tblSasaran').DataTable( {
                 { data: 'action', 'searchable': false, 'orderable':false }
               ]
         } );
+}
 
   var tblInSasaran;
     function initInSasaran(tableId, data) {
@@ -853,8 +895,7 @@ tblSasaran = $('#tblSasaran').DataTable( {
                 "order": [[0, 'asc']],
                 "bDestroy": true
             })
-
-    }
+    };
 
   $('#tblSasaran tbody').on('click', 'td.details-control', function () {
       var tr = $(this).closest('tr');
@@ -872,8 +913,7 @@ tblSasaran = $('#tblSasaran').DataTable( {
       }    
   });
 
-  $(document).on('click', '.btnEditSasaran', function() {
-    
+  $(document).on('click', '.btnEditSasaran', function() {    
     var data = tblSasaran.row( $(this).parents('tr') ).data();
 	    $('.actionBtn_sasaran').addClass('editsasaran');
 	    $('.modal-title').text('Edit Data sasaran Daerah');
@@ -893,8 +933,8 @@ $(document).on('click', '.btnAddIndikatorSasaran', function() {
     var data = tblSasaran.row( $(this).parents('tr') ).data();
     $('.btnSimpanSasaranIndikator').removeClass('editSasaranIndikator');
     $('.btnSimpanSasaranIndikator').addClass('addSasaranIndikator');
-  $('.modal-title').text('Data Indikator Sasaran Daerah');
-  $('.form-horizontal').show();
+    $('.modal-title').text('Data Indikator Sasaran Daerah');
+    $('.form-horizontal').show();
     $('#id_indikator_sasaran_rpjmd_edit').val(null);
     $('#thn_id_indikator_sasaran_edit').val(tahun_rpjmd);
     $('#id_sasaran_rpjmd_indikator_edit').val(data.id_sasaran_rpjmd);
@@ -939,13 +979,12 @@ $('.modal-footer').on('click', '.addSasaranIndikator', function() {
             'angka_akhir_periode': $('#indisasaran_akhir_edit').val(),    
         },
         success: function(data) {
-            $('#tblSasaran').DataTable().ajax.reload(null,false);
+            tblSasaran.ajax.reload(null,false);
               if(data.status_pesan==1){
                 createPesan(data.pesan,"success");
                 } else {
                 createPesan(data.pesan,"danger"); 
               }
-
         }
     });
 });
@@ -1002,13 +1041,12 @@ $('.modal-footer').on('click', '.editSasaranIndikator', function() {
             'angka_akhir_periode': $('#indisasaran_akhir_edit').val(),    
         },
         success: function(data) {
-            $('#tblSasaran').DataTable().ajax.reload(null,false);
+            tblSasaran.ajax.reload(null,false);
               if(data.status_pesan==1){
                 createPesan(data.pesan,"success");
                 } else {
                 createPesan(data.pesan,"danger"); 
               }
-
         }
     });
 });
@@ -1037,7 +1075,7 @@ $('.modal-footer').on('click', '.delSasaranIndikator', function() {
           'id_indikator_sasaran_rpjmd': $('#id_sasaran_indikator_hapus').val(),
         },
         success: function(data) {
-            $('#tblSasaran').DataTable().ajax.reload(null,false);
+            tblSasaran.ajax.reload(null,false);
             if(data.status_pesan==1){
               createPesan(data.pesan,"success");
               } else {
@@ -1065,7 +1103,7 @@ $('.modal-footer').on('click', '.editsasaran', function() {
           'ur_sasaran_rpjmd_edit': $('#ur_sasaran_rpjmd_edit').val(),
       },
       success: function(data) {
-          $('#tblSasaran').DataTable().ajax.reload(null,false);
+          tblSasaran.ajax.reload(null,false);
               if(data.status_pesan==1){
                 createPesan(data.pesan,"success");
                 } else {
@@ -1076,17 +1114,17 @@ $('.modal-footer').on('click', '.editsasaran', function() {
 });
 
 $('#tblSasaran tbody').on( 'dblclick', 'tr', function () {
-
     var data = tblSasaran.row(this).data();
-
     id_sasaran_rpjmd =  data.id_sasaran_rpjmd;
     $('.nav-tabs a[href="#program"]').tab('show');
-      $('#tblProgram').DataTable().ajax.url("./rpjmd/program/"+id_sasaran_rpjmd).load();
-
+    loadTblProgram(id_sasaran_rpjmd);
+    // $('#tblProgram').DataTable().ajax.url("./rpjmd/program/"+id_sasaran_rpjmd).load();
   } );
 
 
-  var Kebijakan = $('#tblKebijakan').DataTable( {
+  var tblKebijakan ;
+  function loadTblKebijakan(id_sasaran_rpjmd){
+  tblKebijakan = $('#tblKebijakan').DataTable( {
           processing: true,
           serverSide: true,          
           dom: 'BFrtip',
@@ -1114,7 +1152,7 @@ $('#tblSasaran tbody').on( 'dblclick', 'tr', function () {
                   "sLast":     "Terakhir"
               }
             },
-          "ajax": {"url": "./rpjmd/kebijakan/0"},
+          "ajax": {"url": "./rpjmd/kebijakan/"+id_sasaran_rpjmd},
           "columns": [
                 { data: 'id_visi_rpjmd', sClass: "dt-center"},
                 { data: 'id_misi', sClass: "dt-center"},
@@ -1124,9 +1162,11 @@ $('#tblSasaran tbody').on( 'dblclick', 'tr', function () {
                 { data: 'uraian_kebijakan_rpjmd'},
                 { data: 'action', 'searchable': false, 'orderable':false }
             ]
-        } );
+        });
+  };
+
   $(document).on('click', '.edit-kebijakan', function() {
-      var data = Kebijakan.row( $(this).parents('tr') ).data();
+      var data = tblKebijakan.row( $(this).parents('tr') ).data();
 
 	    $('.actionBtn_kebijakan').addClass('editkebijakan');
 	    $('.modal-title').text('Edit Data kebijakan Daerah');
@@ -1159,7 +1199,7 @@ $('.modal-footer').on('click', '.editkebijakan', function() {
           'ur_kebijakan_rpjmd_edit': $('#ur_kebijakan_rpjmd_edit').val(),
       },
       success: function(data) {
-          $('#tblKebijakan').DataTable().ajax.reload(null,false);
+          tblKebijakan.ajax.reload(null,false);
           if(data.status_pesan==1){
             createPesan(data.pesan,"success");
           } else {
@@ -1169,7 +1209,9 @@ $('.modal-footer').on('click', '.editkebijakan', function() {
   });
 });
 
-var Strategi = $('#tblStrategi').DataTable( {
+var tblStrategi;
+  function loadTblStrategi(id_sasaran_rpjmd){
+   tblStrategi = $('#tblStrategi').DataTable( {
           processing: true,
           serverSide: true,
           dom: 'BFrtip',
@@ -1197,7 +1239,7 @@ var Strategi = $('#tblStrategi').DataTable( {
                   "sLast":     "Terakhir"
               }
             },
-          "ajax": {"url": "./rpjmd/strategi/0"},
+          "ajax": {"url": "./rpjmd/strategi/"+id_sasaran_rpjmd},
           "columns": [
                 { data: 'id_visi_rpjmd', sClass: "dt-center"},
                 { data: 'id_misi', sClass: "dt-center"},
@@ -1207,10 +1249,11 @@ var Strategi = $('#tblStrategi').DataTable( {
                 { data: 'uraian_strategi_rpjmd'},
                 { data: 'action', 'searchable': false, 'orderable':false }
             ]
-        } );
+        });
+ };
 
   $(document).on('click', '.edit-strategi', function() {
-      var data = Strategi.row( $(this).parents('tr') ).data();
+      var data = tblStrategi.row( $(this).parents('tr') ).data();
 
 	    $('.actionBtn_strategi').addClass('editstrategi');
 	    $('.modal-title').text('Edit Data strategi Daerah');
@@ -1243,7 +1286,7 @@ $.ajax({
       'ur_strategi_rpjmd_edit': $('#ur_strategi_rpjmd_edit').val(),
   },
   success: function(data) {
-      $('#tblStrategi').DataTable().ajax.reload(null,false);
+      tblStrategi.ajax.reload(null,false);
       if(data.status_pesan==1){
         createPesan(data.pesan,"success");
       } else {
@@ -1254,6 +1297,7 @@ $.ajax({
 });
 
   var tblProgram;
+  function loadTblProgram(id_sasaran_rpjmd){
   tblProgram = $('#tblProgram').DataTable( {
           processing: true,
           serverSide: true,
@@ -1282,7 +1326,7 @@ $.ajax({
                   "sLast":     "Terakhir"
               }
             },
-          "ajax": {"url": "./rpjmd/program/0"},
+          "ajax": {"url": "./rpjmd/program/"+id_sasaran_rpjmd},
           "columns": [
                 {
                   "className":      'details-control',
@@ -1312,7 +1356,8 @@ $.ajax({
             "columnDefs": [ {
                   "visible": false
               } ]
-          } );
+          });
+  };
 
   var tblInProgram;
     function initInProgram(tableId, data) {
@@ -1547,9 +1592,7 @@ $.ajax({
 	    $('#ur_program_rpjmd_edit').val($(this).data('uraian_program_rpjmd_program'));
       $('#id_sasaran_program_edit').val(data.id_sasaran);
       $('#pagu_total_edit').val(data.total_pagua);
-
       // $('#thn_id_program_edit').setAttribute('readonly','readonly');
-
 	    $('#Editprogram').modal('show');
 	  });
 
@@ -1621,11 +1664,9 @@ $( "#pagu5_edit" ).change(function() {
 $('#tblProgram tbody').on( 'dblclick', 'tr', function () {
 
   var data = tblProgram.row(this).data();
-
   id_program_rpjmd =  data.id_program_rpjmd;
   $('.nav-tabs a[href="#urusan"]').tab('show');
-  $('#tblUrusan').DataTable().ajax.url("./rpjmd/programurusan/"+id_program_rpjmd).load();
-  $('#tblPelaksana').DataTable().ajax.url("./rpjmd/programpelaksana/0").load();
+  loadTblUrusan(id_program_rpjmd);
 
   $.ajax({
           type: "GET",
@@ -1648,7 +1689,9 @@ $('#tblProgram tbody').on( 'dblclick', 'tr', function () {
       });
 });
 
-  var UrusanProg = $('#tblUrusan').DataTable( {
+  var UrusanProg;
+  function loadTblUrusan(id_program_rpjmd){
+   UrusanProg= $('#tblUrusan').DataTable( {
         processing: true,
         serverSide: true,
           dom: 'BFrtip',
@@ -1676,7 +1719,7 @@ $('#tblProgram tbody').on( 'dblclick', 'tr', function () {
                   "sLast":     "Terakhir"
               }
             },
-        "ajax": {"url": "./rpjmd/programurusan/0"},
+        "ajax": {"url": "./rpjmd/programurusan/"+id_program_rpjmd},
         "columns": [
                 { data: 'kd_program', sClass: "dt-center"},
                 { data: 'kode_bid', sClass: "dt-center"},
@@ -1684,11 +1727,10 @@ $('#tblProgram tbody').on( 'dblclick', 'tr', function () {
                 { data: 'nm_bidang'},
                 { data: 'action', 'searchable': false, 'orderable':false }
               ]
-        } );
+        });
+  };
 
-  
   $(document).on('click', '.add-urbidprog', function() {
-
       $.ajax({
           type: "GET",
           url: './rpjmd/getBidang/0',
@@ -1752,7 +1794,6 @@ $('#tblProgram tbody').on( 'dblclick', 'tr', function () {
           url: './rpjmd/addUrusan',
           data: {
               '_token': $('input[name=_token]').val(),
-              // id_urbid_rpjmd_edit
               'thn_id': $('#thn_urbid_rpjmd_edit').val(),
               'no_urut': $('#no_urbid_rpjmd_edit').val(),
               'id_program_rpjmd': $('#id_prog_urbid_rpjmd_edit').val(),
@@ -1772,9 +1813,7 @@ $('#tblProgram tbody').on( 'dblclick', 'tr', function () {
   $(document).on('click', '.edit-urbidprog', function() {
 
       var data = UrusanProg.row( $(this).parents('tr') ).data();
-
       $.ajax({
-
           type: "GET",
           url: './rpjmd/getBidang/'+data.kd_urusan,
           dataType: "json",
@@ -1950,15 +1989,15 @@ $('#tblProgram tbody').on( 'dblclick', 'tr', function () {
   var id_bidang_temp;
   $('#tblUrusan tbody').on( 'dblclick', 'tr', function () {
     var data = UrusanProg.row(this).data();
-
     id_urusan_program =  data.id_urbid_rpjmd;
     id_bidang_temp = data.id_bidang;
-
     $('.nav-tabs a[href="#pelaksana"]').tab('show');
-    $('#tblPelaksana').DataTable().ajax.url("./rpjmd/programpelaksana/"+id_urusan_program).load();
+    loadTblPelaksana(id_urusan_program);
   });  
 
-  var PelaksanaProg = $('#tblPelaksana').DataTable( {
+  var PelaksanaProg;
+  function loadTblPelaksana(id_program_rpjmd){
+   PelaksanaProg= $('#tblPelaksana').DataTable( {
         processing: true,
         serverSide: true,
           dom: 'BFrtip',
@@ -1986,14 +2025,15 @@ $('#tblProgram tbody').on( 'dblclick', 'tr', function () {
                   "sLast":     "Terakhir"
               }
             },
-        "ajax": {"url": "./rpjmd/programpelaksana/0"},
+        "ajax": {"url": "./rpjmd/programpelaksana/"+id_program_rpjmd},
         "columns": [
                 { data: 'kd_program', sClass: "dt-center"},
                 { data: 'kd_unit', sClass: "dt-center"},
                 { data: 'nm_unit'},
                 { data: 'action', 'searchable': false, 'orderable':false }
               ]
-        } );
+        });
+  };
 
   var UnitPelaksana;
   function loadTblUnitPelaksana(id_program,id_bidang){
@@ -2032,7 +2072,7 @@ $('#tblProgram tbody').on( 'dblclick', 'tr', function () {
                   "order": [[0, 'asc']],
                   "bDestroy": true
         });
-  }
+  };
 
   $(document).on('click', '.add-pelaksanaprog', function() {
     // var data = UrusanProg.row( $(this).parents('tr') ).data();
@@ -2080,7 +2120,6 @@ $('#tblProgram tbody').on( 'dblclick', 'tr', function () {
 
   $(document).on('click', '.del-pelaksanaprog', function() {
     var data = PelaksanaProg.row( $(this).parents('tr') ).data();
-
     $('.btnDelPelaksana').addClass('delUnitPelaksana');
     $('.modal-title').text('Hapus Pelaksana pada RPJMD');
     $('#no_urut_hapus').val(data.no_urut);
@@ -2114,56 +2153,51 @@ $('#tblProgram tbody').on( 'dblclick', 'tr', function () {
   });  
   
   $(document).on('click', '.view-rpjmdtujuan', function() {
-      id_misi_rpjmd =  $(this).data('id_misi');
+      var data = tblMisi.row( $(this).parents('tr') ).data();      
+      id_misi_rpjmd =  data.id_misi_rpjmd;
       $('.nav-tabs a[href="#tujuan"]').tab('show');
-      $('#tblTujuan').DataTable().ajax.url("./rpjmd/tujuan/"+id_misi_rpjmd).load();
-      $('#tblSasaran').DataTable().ajax.url("./rpjmd/sasaran/0").load();
+      loadTblMisi(data.id_misi_rpjmd);
     });
 
   $(document).on('click', '.view-rpjmdsasaran', function() {
-      id_tujuan_rpjmd =  $(this).data('id_tujuan');
+      var data = tblTujuan.row( $(this).parents('tr') ).data();
+      id_tujuan_rpjmd = data.id_tujuan_rpjmd;
       $('.nav-tabs a[href="#sasaran"]').tab('show');
       $('.nav-tabs a[href="#sasaran1"]').tab('show');
-      $('#tblSasaran').DataTable().ajax.url("./rpjmd/sasaran/"+id_tujuan_rpjmd).load();
-      $('#tblKebijakan').DataTable().ajax.url("./rpjmd/kebijakan/0").load();
-      $('#tblStrategi').DataTable().ajax.url("./rpjmd/strategi/0").load();
+      loadTblSasaran(data.id_tujuan_rpjmd);
     });
 
   $(document).on('click', '.view-rpjmdkebijakan', function() {
-      id_sasaran_rpjmd =  $(this).data('id_sasaran');
+      var data = tblSasaran.row( $(this).parents('tr') ).data();
+      id_sasaran_rpjmd = data.id_sasaran_rpjmd;
       $('.nav-tabs a[href="#kebijakan"]').tab('show');
-      $('#tblKebijakan').DataTable().ajax.url("./rpjmd/kebijakan/"+id_sasaran_rpjmd).load();
+      loadTblKebijakan(data.id_sasaran_rpjmd);
     });
 
   $(document).on('click', '.view-rpjmdstrategi', function() {
-      id_sasaran_rpjmd =  $(this).data('id_sasaran');
+      var data = tblSasaran.row( $(this).parents('tr') ).data();
+      id_sasaran_rpjmd = data.id_sasaran_rpjmd;
       $('.nav-tabs a[href="#strategi"]').tab('show');
-      $('#tblStrategi').DataTable().ajax.url("./rpjmd/strategi/"+id_sasaran_rpjmd).load();
+      loadTblStrategi(data.id_sasaran_rpjmd);
     });
   $(document).on('click', '.view-rpjmdprogram', function() {
-      id_sasaran_rpjmd =  $(this).data('id_sasaran');
+      var data = tblSasaran.row( $(this).parents('tr') ).data();
+      id_sasaran_rpjmd = data.id_sasaran_rpjmd;
       $('.nav-tabs a[href="#program"]').tab('show');
       $('.nav-tabs a[href="#program1"]').tab('show');
-      $('#tblProgram').DataTable().ajax.url("./rpjmd/program/"+id_sasaran_rpjmd).load();
-      // $('#tblIndikatorProgram').DataTable().ajax.url("./rpjmd/programindikator/0").load();
-      $('#tblUrusan').DataTable().ajax.url("./rpjmd/programurusan/0").load();
-      $('#tblPelaksana').DataTable().ajax.url("./rpjmd/programpelaksana/0").load();
+      loadTblProgram(id_sasaran_rpjmd);
     });
-  // $(document).on('click', '.view-rpjmdindikator', function() {
-  //     id_program_rpjmd =  $(this).data('id_program');
-  //     $('.nav-tabs a[href="#indikatorprogram"]').tab('show');
-  //     $('#tblIndikatorProgram').DataTable().ajax.url("./rpjmd/programindikator/"+id_program_rpjmd).load();
-  //   });
   $(document).on('click', '.view-rpjmdurusan', function() {
-      id_program_rpjmd =  $(this).data('id_program');
+      var data = tblProgram.row( $(this).parents('tr') ).data();
+      id_program_rpjmd =  data.id_program_rpjmd;
       $('.nav-tabs a[href="#urusan"]').tab('show');
-      $('#tblUrusan').DataTable().ajax.url("./rpjmd/programurusan/"+id_program_rpjmd).load();
-      $('#tblPelaksana').DataTable().ajax.url("./rpjmd/programpelaksana/0").load();
+      loadTblUrusan(id_program_rpjmd);
     });
   $(document).on('click', '.view-rpjmdpelaksana', function() {
-      id_urusan_program =  $(this).data('id_urusan');
+      var data = UrusanProg.row( $(this).parents('tr') ).data();
+      id_urusan_program =  data.id_urbid_rpjmd;
       $('.nav-tabs a[href="#pelaksana"]').tab('show');
-      $('#tblPelaksana').DataTable().ajax.url("./rpjmd/programpelaksana/"+id_urusan_program).load();
+      loadTblPelaksana(id_urusan_program);
     });
 
   $('#tblCariIndikator tbody').on( 'dblclick', 'tr', function () {

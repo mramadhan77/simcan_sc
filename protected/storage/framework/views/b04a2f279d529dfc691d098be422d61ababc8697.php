@@ -206,9 +206,9 @@ use hoaaah\LaravelMenu\Menu;
                                         'items' => [
                                             [
                                                 'label' => 'Pra-Musrenbang',
-                                                'visible' => $akses->get(601) || $akses->get(602) || $akses->get(604) || $akses->get(605),
+                                                'visible' => $akses->get(699),
                                                 'items' => [
-                                                    ['label' => 'Usulan Kabupaten/Kota', 'url' => '/pramusren', 'visible' => $akses->get(605)],
+                                                    ['label' => 'Usulan Kabupaten/Kota', 'url' => '/pramusren', 'visible' => $akses->get(699)],
                                                 ]
                                             ],
                                             [
