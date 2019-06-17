@@ -77,11 +77,11 @@ class HomeController extends Controller
         $bx = $ax->reveal($menu['state']);
         $dx = $menu['ul'];
         if($bx == 'demo'){
-            $xPemda = "Pemda Simulasi";
+            $xPemda = "Pemerintah Daerah Simulasi";
           }else{
             $test = new SettingController;
             $result=$test->dePemda();
-            $xPemda = $result;
+            $xPemda = strtoupper(Session::get('xPemda'));
           }
 
         Session::forget('xPemda');
@@ -92,7 +92,7 @@ class HomeController extends Controller
         if(Auth::user()->status_user != 1) {
            return back();
         }  else {
-            Session::put('xPemda', $xPemda);
+            Session::put('xPemda', strtoupper($xPemda));
             Session::put('xAlamat', $pemda[0]->alamat);
             Session::put('xKontak', $pemda[0]->kontak);
             Session::put('xIdPemda', $pemda[0]->id_pemda);

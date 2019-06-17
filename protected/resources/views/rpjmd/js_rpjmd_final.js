@@ -2466,7 +2466,7 @@ $('#tblProgram tbody').on( 'dblclick', 'tr', function () {
       });
     });
 
-$('.modal-footer').on('click', '.btnDelDokumen', function() {
+  $('.modal-footer').on('click', '.btnDelDokumen', function() {
   $.ajaxSetup({
       headers: { 'X-CSRF-Token' : $('meta[name=_token]').attr('content') }
   });
@@ -2488,7 +2488,8 @@ $('.modal-footer').on('click', '.btnDelDokumen', function() {
         }
       }
     });
-});
+  });
+
     $.ajax({
           type: "GET",
           url: './rpjmd/getDokumenRef?jns=0',

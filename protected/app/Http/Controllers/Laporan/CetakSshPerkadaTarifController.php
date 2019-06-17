@@ -84,7 +84,7 @@ class CetakSshPerkadaTarifController extends Controller
     PDF::SetFont('helvetica', 'B', 10);
 
     //Header
-    PDF::Cell('150', 5, Session::get('xPemda'), 1, 0, 'C', 0);
+    PDF::Cell('150', 5, strtoupper(Session::get('xPemda')), 1, 0, 'C', 0);
     PDF::Ln();
     $countrow++;
     PDF::Cell('150', 5, 'STANDAR SATUAN HARGA TARIF', 1, 0, 'C', 0);

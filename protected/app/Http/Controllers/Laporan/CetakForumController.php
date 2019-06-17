@@ -3,21 +3,30 @@ namespace App\Http\Controllers\Laporan;
 
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
+
 use App\Http\Requests;
-// use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Input;
-use Yajra\Datatables\Datatables;
+use App\TemplateReport As Template_New;
+use App\Fungsi as Fungsi;
+use CekAkses;
+use Validator;
 use Response;
 use Session;
 use PDF;
-use DB;
+use Auth;
+
 use App\Models\RefUnit;
-use Yajra\Datatables\Html\Builder;
-use Yajra\Datatables\Services\DataTable;
 use App\Http\Controllers\Laporan\TemplateReport AS Template;
+
+
 
 class CetakForumController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware('auth');
+    }
 
     public function CekASBforum($id_unit)
     {
@@ -3173,7 +3182,7 @@ WHERE h.id_sub_unit=' . $sub_unit . ' and d.id_forum_program=' . $row->id_forum_
         $countrow = 0;
         $totalrow = 30;
         $id_unit = $sub_unit;
-        $pemda = Session::get('xPemda');
+        $pemda = strtoupper(Session::get('xPemda'));
         $tahunn1 = $tahun + 1;
         $nm_unit = "";
         $hitung = 0;
@@ -3254,7 +3263,7 @@ WHERE h.id_sub_unit=' . $sub_unit . ' and d.id_forum_program=' . $row->id_forum_
         PDF::Cell('275', 5, 'Tabel T-C.33', 1, 0, 'C', 0);
         PDF::Ln();
         $countrow ++;
-        PDF::Cell('275', 5, 'Rumusan Rencana Program dan Kegiatan Perangkat Daerah '.$tahun.' dan Prakiraan Maju Tahun '.$tahunn1, 1, 0, 'C', 0);
+        PDF::Cell('275', 5, 'Rumusan Rencana Program dan Kegiatan Perangkat Daerah Tahun '.$tahun.' dan Prakiraan Maju Tahun '.$tahunn1, 1, 0, 'C', 0);
         PDF::Ln();
         $countrow ++;
         PDF::Cell('275', 5, $pemda, 1, 0, 'C', 0);
@@ -3629,8 +3638,50 @@ WHERE h.id_sub_unit=' . $sub_unit . ' and d.id_forum_program=' . $row->id_forum_
                 }
                 // $fill=!$fill;
             }
+               
         }
         PDF::Cell(array_sum($w), 0, '', 'T');
+
+        $totalpagu = DB::SELECT('SELECT sum(p.jml_unit) as total, sum(p.jml_langsung) as langsung, sum(p.jml_tidak_langsung) as tdk_langsung
+                FROM (SELECT a.id_unit, a.jenis_belanja, d.pagu_aktivitas_forum AS jml_unit, 
+                CASE a.jenis_belanja WHEN 0 THEN d.pagu_aktivitas_forum ELSE 0 END AS jml_langsung, 
+                CASE a.jenis_belanja WHEN 1 THEN d.pagu_aktivitas_forum ELSE 0 END AS jml_pendapatan, 
+                CASE a.jenis_belanja WHEN 2 THEN d.pagu_aktivitas_forum ELSE 0 END AS jml_tidak_langsung 
+                FROM trx_forum_skpd_program AS a
+                INNER JOIN trx_forum_skpd AS b ON a.id_forum_program = b.id_forum_program
+                INNER JOIN trx_forum_skpd_pelaksana AS c ON b.id_forum_skpd = c.id_aktivitas_forum
+                INNER JOIN trx_forum_skpd_aktivitas AS d ON c.id_pelaksana_forum=d.id_forum_skpd
+                INNER JOIN ref_sub_unit AS t ON c.id_sub_unit = t.id_sub_unit
+                INNER JOIN ref_unit AS s ON t.id_unit = s.id_unit
+                WHERE a.jenis_belanja <> 1 AND c.id_sub_unit=' . $row->id_sub_unit . '   AND a.tahun_forum=' . $tahun . '
+                GROUP BY a.id_forum_program, a.id_unit, a.jenis_belanja, d.pagu_aktivitas_forum) AS p
+                GROUP BY p.id_unit');    
+
+        foreach ($totalpagu AS $pagu) {
+            PDF::SetFont('helvetica', 'B', 8);
+            PDF::Ln();
+            $countrow ++;
+            PDF::Ln();
+            $countrow ++;
+            PDF::Cell('80', 5, 'Rekapitulasi Jumlah Pagu ', '', 0, 'L', 0);
+            PDF::Ln();
+            $countrow ++;
+            PDF::Cell('70', 5, 'Jumlah Pagu Perangkat Daerah', '', 0, 'L', 0);
+            PDF::Cell('5', 5, ':', '', 0, 'C', 0);
+            PDF::Cell('50', 5, number_format($pagu->total, 2, ',', '.'), '', 0, 'R', 0);
+            PDF::Ln();
+            $countrow ++;
+             PDF::Cell('70', 5, 'Jumlah Belanja Tidak Langsung', '', 0, 'L', 0);
+            PDF::Cell('5', 5, ':', '', 0, 'C', 0);
+            PDF::Cell('50', 5, number_format($pagu->tdk_langsung, 2, ',', '.'), '', 0, 'R', 0);
+            PDF::Ln();
+            $countrow ++;
+             PDF::Cell('70', 5, 'Jumlah Belanja Langsung', '', 0, 'L', 0);
+            PDF::Cell('5', 5, ':', '', 0, 'C', 0);
+            PDF::Cell('50', 5, number_format($pagu->langsung, 2, ',', '.'), '', 0, 'R', 0);
+            PDF::Ln();
+            $countrow ++;
+        }
 
         PDF::Output('PrakiraanMaju-' . $sub_unit . '.pdf', 'I');
     }

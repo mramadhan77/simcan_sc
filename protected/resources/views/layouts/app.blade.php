@@ -156,7 +156,7 @@ use hoaaah\LaravelMenu\Menu;
                                                 'label' => 'Rancangan Awal Renja',
                                                 'visible' => $akses->get(501) || $akses->get(502),
                                                 'items' => [
-                                                    ['label' => 'Load Data Rancangan Awal Renja', 'url' => '/ranwalrenja/loadData', 'visible' => $akses->get(501)],
+                                                    ['label' => 'Load Data Rancangan Awal RKPD', 'url' => '/ranwalrenja/loadData', 'visible' => $akses->get(501)],
                                                     ['label' => 'Rancangan Awal Renja', 'url' => '/ranwalrenja/sesuai', 'visible' => $akses->get(502)],
                                                     ['label' => 'Dokumen Ranwal Renja', 'url' => '/ranwalrenja/dokumen', 'visible' => $akses->get(501)],
                                                 ]
@@ -165,7 +165,7 @@ use hoaaah\LaravelMenu\Menu;
                                                 'label' => 'Rancangan Renja',
                                                 'visible' => $akses->get(501) || $akses->get(502),
                                                 'items' => [
-                                                    ['label' => 'Load Data Rancangan Renja', 'url' => '/renja/loadData', 'visible' => $akses->get(501)],
+                                                    ['label' => 'Load Data Rancangan Awal Renja', 'url' => '/renja/loadData', 'visible' => $akses->get(501)],
                                                     ['label' => 'Rancangan Renja', 'url' => '/renja', 'visible' => $akses->get(502)],
                                                     ['label' => 'Dokumen Rancangan Renja', 'url' => '/renja/dokumen', 'visible' => $akses->get(502)],
                                                 ]
@@ -192,7 +192,7 @@ use hoaaah\LaravelMenu\Menu;
                                     ],
                                     [ 'label' => 'Forum Perangkat Daerah', 'visible' => $akses->get(606) || $akses->get(607) || $akses->get(401),
                                        'items' => [
-                                            ['label' => 'Load Rancangan Awal', 'url' => '/forumskpd/loadData', 'visible' => $akses->get(606)],
+                                            ['label' => 'Load Data Rancangan Renja', 'url' => '/forumskpd/loadData', 'visible' => $akses->get(606)],
                                             ['label' => 'Forum Perangkat Daerah', 'url' => '/forumskpd', 'visible' => $akses->get(607)],
                                             // ['label' => 'Verifikasi Bappeda', 'url' => '/forumskpd/verifikasi', 'visible' => $akses->get(401)],
                                             ['label' => 'Dokumen Forum Perangkat Daerah', 'url' => '/forumskpd/dokumen', 'visible' => $akses->get(607)],
@@ -324,7 +324,7 @@ use hoaaah\LaravelMenu\Menu;
                                                 'label' => 'Rancangan Awal Renja',
                                                 'visible' => $akses->get(501) || $akses->get(502),
                                                 'items' => [
-                                                    ['label' => 'Load Data Rancangan Awal Renja', 'url' => '/ranwalrenja/loadData', 'visible' => $akses->get(501)],
+                                                    ['label' => 'Load Data Rancangan Awal RKPD', 'url' => '/ranwalrenja/loadData', 'visible' => $akses->get(501)],
                                                     ['label' => 'Rancangan Awal Renja', 'url' => '/ranwalrenja/sesuai', 'visible' => $akses->get(502)],
                                                     ['label' => 'Dokumen Ranwal Renja', 'url' => '/ranwalrenja/dokumen', 'visible' => $akses->get(501)],
                                                 ]
@@ -333,7 +333,7 @@ use hoaaah\LaravelMenu\Menu;
                                                 'label' => 'Rancangan Renja',
                                                 'visible' => $akses->get(501) || $akses->get(502),
                                                 'items' => [
-                                                    ['label' => 'Load Data Rancangan Renja', 'url' => '/renja/loadData', 'visible' => $akses->get(501)],
+                                                    ['label' => 'Load Data Rancangan Awal Renja', 'url' => '/renja/loadData', 'visible' => $akses->get(501)],
                                                     ['label' => 'Rancangan Renja', 'url' => '/renja', 'visible' => $akses->get(502)],
                                                     ['label' => 'Dokumen Rancangan Renja', 'url' => '/renja/dokumen', 'visible' => $akses->get(502)],
                                                 ]
@@ -360,7 +360,7 @@ use hoaaah\LaravelMenu\Menu;
                                     ],
                                     [ 'label' => 'Forum Perangkat Daerah', 'visible' => $akses->get(606) || $akses->get(607) || $akses->get(401),
                                        'items' => [
-                                            ['label' => 'Load Rancangan Awal', 'url' => '/forumskpd/loadData', 'visible' => $akses->get(606)],
+                                            ['label' => 'Load Rancangan Renja', 'url' => '/forumskpd/loadData', 'visible' => $akses->get(606)],
                                             ['label' => 'Forum Perangkat Daerah', 'url' => '/forumskpd', 'visible' => $akses->get(607)],
                                             // ['label' => 'Verifikasi Bappeda', 'url' => '/forumskpd/verifikasi', 'visible' => $akses->get(401)],
                                             ['label' => 'Dokumen Forum', 'url' => '/forumskpd/dokumen', 'visible' => $akses->get(607)],

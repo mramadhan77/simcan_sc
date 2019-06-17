@@ -38,10 +38,10 @@ class CetakSshPerkadaTarif2Controller extends Controller
 		PDF::SetLineWidth(0);
 		PDF::SetFont('helvetica', 'B', 12);
 		
-		PDF::Cell('180', 5, Session::get('xPemda'), 1, 0, 'C', 0);
+		PDF::Cell('180', 5, strtoupper(Session::get('xPemda')), 1, 0, 'C', 0);
 		PDF::Ln();
 		$countrow++;
-		PDF::Cell('180', 5, 'DAFTAR ITEM STANDAR SATUAN HARGA', 1, 0, 'C', 0);
+		PDF::Cell('180', 5, 'DAFTAR ITEM STANDAR SATUAN HARGA ', 1, 0, 'C', 0);
 		PDF::Ln();
 		PDF::Ln();
 		$countrow++;
@@ -215,7 +215,7 @@ class CetakSshPerkadaTarif2Controller extends Controller
 	PDF::SetLineWidth(0);
 	PDF::SetFont('helvetica', 'B', 12);
 	
-	PDF::Cell('180', 5, Session::get('xPemda'), 1, 0, 'C', 0);
+	PDF::Cell('180', 5, strtoupper(Session::get('xPemda')), 1, 0, 'C', 0);
 	PDF::Ln();
 	$countrow++;
 	PDF::Cell('180', 5, 'DAFTAR TARIF ITEM STANDAR SATUAN HARGA', 1, 0, 'C', 0);

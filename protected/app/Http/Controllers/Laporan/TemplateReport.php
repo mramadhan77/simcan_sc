@@ -88,7 +88,7 @@ class TemplateReport{
          public static function headerPotrait(){
 
             $nama_image  = 'default.png';
-            $nama_pemda = 'Pemerintah Daerah ' .Session::get('xPemda');
+            $nama_pemda = 'PEMERINTAH ' .strtoupper(Session::get('xPemda'));
             $alamat_pemda     = Session::get('xAlamat'); 
             $kontak_pemda     = Session::get('xKontak'); 
             
