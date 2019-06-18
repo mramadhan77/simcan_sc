@@ -35,7 +35,7 @@ use hoaaah\LaravelBreadcrumb\Breadcrumb as Breadcrumb;
             <li><a href="#tujuan" aria-controls="tujuan" role="tab" data-toggle="tab">Tujuan</a></li>
             <li><a href="#sasaran" aria-controls="sasaran" role="tab" data-toggle="tab">Sasaran</a></li>
             <li><a href="#program" aria-controls="program" role="tab" data-toggle="tab">Program Daerah</a></li>
-            <li><a href="#btl" aria-controls="btl" role="tab" data-toggle="tab">Belanja Tidak Langsung</a></li>
+            <li><a href="#btl" aria-controls="btl" role="tab" data-toggle="tab">Belanja Non Program</a></li>
             <li><a href="#pendapatan" aria-controls="pendapatan" role="tab" data-toggle="tab">Pendapatan</a></li>
           </ul>
 
@@ -113,6 +113,10 @@ use hoaaah\LaravelBreadcrumb\Breadcrumb as Breadcrumb;
             </div>
 
             <div role="tabpanel" class="tab-pane" id="misi">
+               <br>
+                  <div class="add">
+                    <button class="btnAddMisi btn-labeled btn btn-sm btn-success"><span class="btn-label"><i class="fa fa-plus-square-o fa-fw fa-lg"></i></span>Tambah Misi</button>
+              </div>
               <br>
               <table id="tblMisi" class="table display table-striped table-bordered table-responsive" cellspacing="0" width="100%">
                   <thead>
@@ -130,6 +134,10 @@ use hoaaah\LaravelBreadcrumb\Breadcrumb as Breadcrumb;
             </div>
 
             <div role="tabpanel" class="tab-pane" id="tujuan">
+              <br>
+                  <div class="add">
+                    <button class="btnAddTujuan btn-labeled btn btn-sm btn-success"><span class="btn-label"><i class="fa fa-plus-square-o fa-fw fa-lg"></i></span>Tambah Tujuan</button>
+              </div>
             <br>
             <table id="tblTujuan" class="table display table-striped table-bordered table-responsive"  cellspacing="0" width="100%">
                   <thead>
@@ -149,6 +157,10 @@ use hoaaah\LaravelBreadcrumb\Breadcrumb as Breadcrumb;
             </div>
 
             <div role="tabpanel" class="tab-pane" id="sasaran">
+              <br>
+                  <div class="add">
+                    <button class="btnAddSasaran btn-labeled btn btn-sm btn-success"><span class="btn-label"><i class="fa fa-plus-square-o fa-fw fa-lg"></i></span>Tambah Sasaran</button>
+              </div>
             <br>
             <ul class="nav nav-tabs" role="tablist">
                 <li class="active"><a href="#sasaran1" aria-controls="visi" role="tab" data-toggle="tab">Sasaran</a></li>
@@ -224,6 +236,10 @@ use hoaaah\LaravelBreadcrumb\Breadcrumb as Breadcrumb;
             </ul>
             <div class="tab-content">
               <div role="tabpanel" class="tab-pane active" id="program1">
+                <br>
+                  <div class="add">
+                    <button class="btnAddProgram btn-labeled btn btn-sm btn-success"><span class="btn-label"><i class="fa fa-plus-square-o fa-fw fa-lg"></i></span>Tambah Program</button>
+              </div>
               <br>
                 <table id="tblProgram" class="table display table-striped table-bordered table-responsive"  cellspacing="0" width="100%">
                   <thead>
@@ -291,6 +307,10 @@ use hoaaah\LaravelBreadcrumb\Breadcrumb as Breadcrumb;
             </div>
 
             <div role="tabpanel" class="tab-pane" id="btl">
+              <br>
+                  <div class="add">
+                    <button class="btnAddBtl btn-labeled btn btn-sm btn-success"><span class="btn-label"><i class="fa fa-plus-square-o fa-fw fa-lg"></i></span>Tambah Belanja Non Program</button>
+              </div>
             <br>
             <ul class="nav nav-tabs" role="tablist">
                 <li class="active"><a href="#uraianBtl" aria-controls="visi" role="tab" data-toggle="tab">Belanja</a></li>
@@ -363,6 +383,10 @@ use hoaaah\LaravelBreadcrumb\Breadcrumb as Breadcrumb;
             </div>
 
             <div role="tabpanel" class="tab-pane" id="pendapatan">
+              <br>
+                  <div class="add">
+                    <button class="btnAddPdt btn-labeled btn btn-sm btn-success"><span class="btn-label"><i class="fa fa-plus-square-o fa-fw fa-lg"></i></span>Tambah Pendapatan</button>
+              </div>
             <br>
             <ul class="nav nav-tabs" role="tablist">
                 <li class="active"><a href="#sumberdana" aria-controls="visi" role="tab" data-toggle="tab">Sumber Dana</a></li>

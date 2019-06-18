@@ -45,7 +45,8 @@ class WelcomeController extends Controller
 
 		$trxVisi = DB::SELECT('SELECT b.no_urut, b.uraian_visi_rpjmd, a.tahun_1, a.tahun_5
 					FROM trx_rpjmd_dokumen AS a
-					INNER JOIN trx_rpjmd_visi AS b ON b.id_rpjmd = a.id_rpjmd');
+					INNER JOIN trx_rpjmd_visi AS b ON b.id_rpjmd = a.id_rpjmd
+					LIMIT 1');
 
 		$test = new SettingController;
         $rPemda=$test->dePemda();
