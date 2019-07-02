@@ -795,12 +795,24 @@ public function getHitungASB(Request $req){
         INNER JOIN trx_musrenkab_pelaksana c ON b.id_pelaksana_rkpd = c.id_pelaksana_rkpd
         WHERE e.id_aktivitas_pd='.$req->id_aktivitas_pd);
 
+     if($req->volume_1 == null || $req->volume_1 == 0){
+          $volume_1 = 1;
+      } else {
+          $volume_1 = $req->volume_1;
+      };
+
+      if($req->volume_2 == null || $req->volume_2 == 0){
+          $volume_2 = 1;
+      } else {
+          $volume_2 = $req->volume_2;
+      };
+
     if($cekProgramRkpd != NULL && $cekProgramRkpd[0]->status_rkpd == 0 && $cekProgramRkpd[0]->status_program == 0 && $cekProgramRkpd[0]->status_kegiatan == 0 && $cekProgramRkpd[0]->status_aktivitas == 0) {
         $getHitung=DB::INSERT('INSERT INTO trx_musrenkab_belanja_pd (tahun_forum, no_urut, id_aktivitas_pd, id_belanja_forum, id_zona_ssh, id_belanja_renja, sumber_belanja, id_aktivitas_asb, 
             id_item_ssh, id_rekening_ssh, uraian_belanja, volume_1, id_satuan_1, volume_2, id_satuan_2, harga_satuan, jml_belanja, volume_1_forum, id_satuan_1_forum, volume_2_forum, 
             id_satuan_2_forum, harga_satuan_forum, jml_belanja_forum, status_data, sumber_data)
-            SELECT '.Session::get('tahun').', (@id:=@id+1) as no_urut,'.$req->id_aktivitas_pd.',0,1,0,0, a.id_aktivitas_asb, a.id_tarif_ssh, a.id_rekening, a.nm_aktivitas_asb,0,0,0,0,0,0,'.$req->volume_1.','.$req->id_satuan_1.','.$req->volume_2.','.$req->id_satuan_2.',a.harga_satuan,a.jml_pagu,0,1 FROM (
-                SELECT a.id_aktivitas_asb, b.nm_aktivitas_asb,b.id_satuan_1,b.id_satuan_2,a.id_tarif_ssh, PaguASB(b.jenis_biaya,b.hub_driver,'.$req->volume_1.','.$req->volume_2.',b.r1,b.r2,b.km1,b.km2,b.kf1,b.kf2,b.kf3,a.harga_satuan) AS jml_pagu, a.harga_satuan, b.koef, b.id_rekening
+            SELECT '.Session::get('tahun').', (@id:=@id+1) as no_urut,'.$req->id_aktivitas_pd.',0,1,0,0, a.id_aktivitas_asb, a.id_tarif_ssh, a.id_rekening, a.nm_aktivitas_asb,0,0,0,0,0,0,'.$volume_1.','.$req->id_satuan_1.','.$volume_2.','.$req->id_satuan_2.',a.harga_satuan,a.jml_pagu,0,1 FROM (
+                SELECT a.id_aktivitas_asb, b.nm_aktivitas_asb,b.id_satuan_1,b.id_satuan_2,a.id_tarif_ssh, PaguASB(b.jenis_biaya,b.hub_driver,'.$volume_1.','.$volume_2.',b.r1,b.r2,b.km1,b.km2,b.kf1,b.kf2,b.kf3,a.harga_satuan) AS jml_pagu, a.harga_satuan, b.koef, b.id_rekening
                 FROM trx_asb_perhitungan_rinci a
                 INNER JOIN (SELECT a.id_komponen_asb_rinci,c.id_aktivitas_asb,c.nm_aktivitas_asb,b.id_komponen_asb,a.id_tarif_ssh,a.jenis_biaya,a.hub_driver,a.koefisien1 * a.koefisien2*a.koefisien3 as koef,
                 c.range_max as r1, c.range_max1 as r2,c.id_satuan_1,c.sat_derivatif_1,c.id_satuan_2,c.sat_derivatif_2,

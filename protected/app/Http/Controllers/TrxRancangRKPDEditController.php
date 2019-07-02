@@ -110,59 +110,61 @@ class TrxRancangRKPDEditController extends Controller
 
     public function getData(Request $req)
     {   
-        $dataranwal=DB::Select('SELECT (@id:=@id+1) as urut,a.* FROM (SELECT a.id_rkpd_rancangan, a.id_rkpd_ranwal, a.id_forum_rkpdprog, a.no_urut, a.tahun_rkpd, a.jenis_belanja, a.id_rkpd_rpjmd, 
-        a.thn_id_rpjmd, a.id_visi_rpjmd, a.id_misi_rpjmd, a.id_tujuan_rpjmd, a.id_sasaran_rpjmd, a.id_program_rpjmd, a.uraian_program_rpjmd, a.pagu_rpjmd, a.pagu_ranwal, a.keterangan_program, 
-        a.status_pelaksanaan, a.status_data, a.ket_usulan, a.sumber_data, a.id_dokumen, 
-        COALESCE((SELECT COUNT(*) AS jml_indi FROM trx_rkpd_rancangan_indikator b
-            WHERE b.tahun_rkpd=a.tahun_rkpd AND b.id_rkpd_rancangan=a.id_rkpd_rancangan
-            GROUP BY b.tahun_rkpd, b.id_rkpd_rancangan),0) as jml_indikator, 
-        COALESCE((SELECT COUNT(*) AS jml_indi FROM trx_rkpd_rancangan_indikator b
-            WHERE b.tahun_rkpd=a.tahun_rkpd AND b.id_rkpd_rancangan=a.id_rkpd_rancangan AND b.status_data=1
-            GROUP BY b.tahun_rkpd, b.id_rkpd_rancangan),0) as indikator_0, 
-        COALESCE((SELECT COUNT(*) AS jml_indi FROM trx_rkpd_rancangan_pelaksana b
-            WHERE b.tahun_rkpd=a.tahun_rkpd AND b.id_rkpd_rancangan=a.id_rkpd_rancangan
-            GROUP BY b.tahun_rkpd, b.id_rkpd_rancangan),0) as jml_unit, 
-        COALESCE((SELECT COUNT(*) AS jml_indi FROM trx_rkpd_rancangan_pelaksana b
-            WHERE b.tahun_rkpd=a.tahun_rkpd AND b.id_rkpd_rancangan=a.id_rkpd_rancangan AND b.status_data=1
-            GROUP BY b.tahun_rkpd, b.id_rkpd_rancangan),0) as unit_0, b.no_urut as no_misi, 
-           c.uraian_program_rpjmd as "program_pemda",
-        CASE a.status_data
-            WHEN 0 THEN "Draft"
-            WHEN 1 THEN "Posting"
-        END AS ur_usulan,    
-        CASE a.sumber_data 
-            WHEN 0 THEN "RPJMD" 
-            WHEN 1 THEN "Baru" 
-            WHEN 2 THEN "Tahun Sebelumnya" 
-        END AS sumber_display, 
-        CASE a.status_data
-            WHEN 0 THEN "fa fa-question"
-            WHEN 1 THEN "fa fa-check-square-o"
-            WHEN 2 THEN "fa fa-thumbs-o-up"
-            ELSE "fa fa-exclamation"
-        END AS status_icon,
-        CASE a.status_data
-            WHEN 0 THEN "red"
-            WHEN 1 THEN "green"
-            WHEN 2 THEN "blue"
-            ELSE "red"
-        END AS warna,        
-        CASE a.status_pelaksanaan 
-            WHEN 0 THEN "Tepat Waktu" 
-            WHEN 1 THEN "Dimajukan" 
-            WHEN 2 THEN "Ditunda" 
-            WHEN 3 THEN "Dibatalkan"  
-            WHEN 5 THEN "Tanpa Anggaran"  
-        END AS pelaksanaan_display,
-        COALESCE((SELECT SUM(d.pagu_forum) FROM trx_rkpd_rancangan_program_pd d
-            INNER JOIN trx_rkpd_rancangan_pelaksana c ON c.id_pelaksana_rkpd = d.id_rkpd_rancangan
-            INNER JOIN trx_rkpd_rancangan_urusan b ON c.id_urusan_rkpd = b.id_urusan_rkpd
-            WHERE b.id_rkpd_rancangan = a.id_rkpd_rancangan AND (d.status_pelaksanaan <> 2 AND d.status_pelaksanaan <> 3)
-            GROUP BY b.id_rkpd_rancangan),0) AS pagu_prog_renja        
-        FROM trx_rkpd_rancangan AS a
-        LEFT OUTER JOIN trx_rpjmd_misi b ON  a.id_misi_rpjmd = b.id_misi_rpjmd and a.id_visi_rpjmd = b.id_visi_rpjmd
-        LEFT OUTER JOIN trx_rpjmd_program c ON a.id_sasaran_rpjmd = c.id_sasaran_rpjmd AND a.id_program_rpjmd = c.id_program_rpjmd
-        WHERE a.tahun_rkpd='.Session::get('tahun').') a,(SELECT @id:=0) x');
+        $dataranwal=DB::Select('SELECT (@id:=@id+1) as urut,a.* 
+            FROM (SELECT a.id_rkpd_rancangan, a.id_rkpd_ranwal, a.id_forum_rkpdprog, a.no_urut, a.tahun_rkpd, a.jenis_belanja, a.id_rkpd_rpjmd, 
+            a.thn_id_rpjmd, a.id_visi_rpjmd, a.id_misi_rpjmd, a.id_tujuan_rpjmd, a.id_sasaran_rpjmd, a.id_program_rpjmd, a.uraian_program_rpjmd, 
+            a.pagu_rpjmd , a.pagu_ranwal, a.keterangan_program, 
+            a.status_pelaksanaan, a.status_data, a.ket_usulan, a.sumber_data, a.id_dokumen,
+            COALESCE((SELECT SUM(d.pagu_forum) FROM trx_rkpd_rancangan_program_pd d
+                INNER JOIN trx_rkpd_rancangan_pelaksana c ON c.id_pelaksana_rkpd = d.id_rkpd_rancangan
+                INNER JOIN trx_rkpd_rancangan_urusan b ON c.id_urusan_rkpd = b.id_urusan_rkpd
+                WHERE b.id_rkpd_rancangan = a.id_rkpd_rancangan AND (d.status_pelaksanaan <> 2 AND d.status_pelaksanaan <> 3)
+                GROUP BY b.id_rkpd_rancangan),0) AS pagu_unit , 
+            COALESCE((SELECT COUNT(*) AS jml_indi FROM trx_rkpd_rancangan_indikator b
+                WHERE b.tahun_rkpd=a.tahun_rkpd AND b.id_rkpd_rancangan=a.id_rkpd_rancangan
+                GROUP BY b.tahun_rkpd, b.id_rkpd_rancangan),0) as jml_indikator, 
+            COALESCE((SELECT COUNT(*) AS jml_indi FROM trx_rkpd_rancangan_indikator b
+                WHERE b.tahun_rkpd=a.tahun_rkpd AND b.id_rkpd_rancangan=a.id_rkpd_rancangan AND b.status_data=1
+                GROUP BY b.tahun_rkpd, b.id_rkpd_rancangan),0) as indikator_0, 
+            COALESCE((SELECT COUNT(*) AS jml_indi FROM trx_rkpd_rancangan_pelaksana b
+                WHERE b.tahun_rkpd=a.tahun_rkpd AND b.id_rkpd_rancangan=a.id_rkpd_rancangan
+                GROUP BY b.tahun_rkpd, b.id_rkpd_rancangan),0) as jml_unit, 
+            COALESCE((SELECT COUNT(*) AS jml_indi FROM trx_rkpd_rancangan_pelaksana b
+                WHERE b.tahun_rkpd=a.tahun_rkpd AND b.id_rkpd_rancangan=a.id_rkpd_rancangan AND b.status_data=1
+                GROUP BY b.tahun_rkpd, b.id_rkpd_rancangan),0) as unit_0, b.no_urut as no_misi, 
+               c.uraian_program_rpjmd as "program_pemda",
+            CASE a.status_data
+                WHEN 0 THEN "Draft"
+                WHEN 1 THEN "Posting"
+            END AS ur_usulan,    
+            CASE a.sumber_data 
+                WHEN 0 THEN "RPJMD" 
+                WHEN 1 THEN "Baru" 
+                WHEN 2 THEN "Tahun Sebelumnya" 
+            END AS sumber_display, 
+            CASE a.status_data
+                WHEN 0 THEN "fa fa-question"
+                WHEN 1 THEN "fa fa-check-square-o"
+                WHEN 2 THEN "fa fa-thumbs-o-up"
+                ELSE "fa fa-exclamation"
+            END AS status_icon,
+            CASE a.status_data
+                WHEN 0 THEN "red"
+                WHEN 1 THEN "green"
+                WHEN 2 THEN "blue"
+                ELSE "red"
+            END AS warna,        
+            CASE a.status_pelaksanaan 
+                WHEN 0 THEN "Tepat Waktu" 
+                WHEN 1 THEN "Dimajukan" 
+                WHEN 2 THEN "Ditunda" 
+                WHEN 3 THEN "Dibatalkan"  
+                WHEN 5 THEN "Tanpa Anggaran"  
+            END AS pelaksanaan_display       
+            FROM trx_rkpd_rancangan AS a
+            LEFT OUTER JOIN trx_rpjmd_misi b ON  a.id_misi_rpjmd = b.id_misi_rpjmd and a.id_visi_rpjmd = b.id_visi_rpjmd
+            LEFT OUTER JOIN trx_rpjmd_program c ON a.id_sasaran_rpjmd = c.id_sasaran_rpjmd AND a.id_program_rpjmd = c.id_program_rpjmd
+            WHERE a.tahun_rkpd='.Session::get('tahun').') a,(SELECT @id:=0) x');
 
       return DataTables::of($dataranwal)
       ->addColumn('action', function ($dataranwal) {

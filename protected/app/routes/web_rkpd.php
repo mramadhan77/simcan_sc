@@ -67,8 +67,7 @@ Route::group(['prefix' => 'ranwalrkpd'], function () {
 
         Route::post('/tambahProgramRKPD', 'TrxRanwalRKPDController@addProgramRkpd');
         Route::post('/editProgramRKPD', 'TrxRanwalRKPDController@editProgramRKPD');
-        Route::post('/hapusProgramRKPD', 'TrxRanwalRKPDController@hapusProgramRKPD');
-        
+        Route::post('/hapusProgramRKPD', 'TrxRanwalRKPDController@hapusProgramRKPD');        
     });
 
 

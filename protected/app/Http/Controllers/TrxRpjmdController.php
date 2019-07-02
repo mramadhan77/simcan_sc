@@ -297,13 +297,13 @@ class TrxRpjmdController extends Controller
             			<a class="edit-visi dropdown-item"><i class="fa fa-paper-plane-o fa-fw fa-lg text-success"></i> Lihat Data Visi</a>
                     </li>
                     <li>
-                        <a class="btnViewBtl dropdown-item" ><i class="fa fa-building fa-fw fa-lg text-warning"></i> Belanja Tidak Langsung </a>
+                        <a class="btnViewBtl dropdown-item" ><i class="fa fa-building fa-fw fa-lg text-warning"></i> Belanja Non Program</a>
                     </li>
                     <li>
-                        <a class="btnViewPendapatan dropdown-item"><i class="fa fa-money fa-fw fa-lg text-success"></i> Pendapatan </a>
+                        <a class="btnViewPendapatan dropdown-item"><i class="fa fa-money fa-fw fa-lg text-success"></i> Pendapatan</a>
                     </li>
                     <li>
-                        <a class="btnLihatChart dropdown-item" href="'.url('rpjmd/getRpjmdChart/'.$rpjmdvisi->id_rpjmd).'"><i class="fa fa-sitemap fa-fw fa-lg text-primary"></i> Pohon Kinerja RPJMD </a>
+                        <a class="btnLihatChart dropdown-item" href="'.url('rpjmd/getRpjmdChart/'.$rpjmdvisi->id_rpjmd).'"><i class="fa fa-sitemap fa-fw fa-lg text-primary"></i> Pohon Kinerja RPJMD</a>
                     </li>
             	</ul>
             </div>';
@@ -339,6 +339,7 @@ class TrxRpjmdController extends Controller
             $data->id_perubahan= $request->id_perubahan_edit;
             $data->no_urut= $request->no_urut_edit;
             $data->sumber_data= 1;
+            $data->status_data= 0;
             try{
                 $data->save (['timestamps' => true]);
                 return response ()->json (['pesan'=>'Data Berhasil Disimpan','status_pesan'=>'1']);
@@ -358,6 +359,7 @@ class TrxRpjmdController extends Controller
             'ur_visi_rpjmd_edit'=>'required',
             'id_perubahan_edit'=>'required',
             'no_urut_edit'=>'required',
+            'status_data'=>'required',
         ];
         $messages =[
             'id_rpjmd_edit.required'=>'ID Dokumen RPJMD Kosong',
@@ -365,21 +367,23 @@ class TrxRpjmdController extends Controller
             'ur_visi_rpjmd_edit.required'=>'Uraian Visi Kosong',
             'id_perubahan_edit.required'=>'ID Revisi Kosong',
             'no_urut_edit.required'=>'Nomor Urut Visi Kosong',
+            'status_data.required'=>'Status Data Kosong',
         ];
         $validation = Validator::make($request->all(),$rules,$messages);
         
         if($validation->fails()) {
             $errors = Fungsi::validationErrorsToString($validation->errors());
             return response ()->json (['pesan'=>$errors,'status_pesan'=>'0']);          
-            } else {            
-                $cek = DB::SELECT('SELECT id_status_dokumen FROM `trx_rpjmd_dokumen` WHERE id_rpjmd ='.$request->id_rpjmd_edit);
+            } else {   
+                $cek = $this->checkVisi($request->id_rpjmd_edit);
+
                 if($cek[0]->id_status_dokumen == 0){
                     $data = TrxRpjmdVisi::find($request->id_visi_rpjmd_edit);
-                    $data->thn_id= $request->thn_id_edit;
                     $data->id_rpjmd= $request->id_rpjmd_edit;
                     $data->uraian_visi_rpjmd= $request->ur_visi_rpjmd_edit;
                     $data->id_perubahan= $request->id_perubahan_edit;
                     $data->no_urut= $request->no_urut_edit;
+                    $data->status_data= $request->status_data;
                     try{
                         $data->save (['timestamps' => true]);
                         return response ()->json (['pesan'=>'Data Berhasil Disimpan','status_pesan'=>'1']);
@@ -410,17 +414,23 @@ class TrxRpjmdController extends Controller
             return response ()->json (['pesan'=>$errors,'status_pesan'=>'0']);          
             }
         else {  
-            $cek = DB::SELECT('SELECT id_status_dokumen FROM `trx_rpjmd_dokumen` WHERE id_rpjmd ='.$request->id_rpjmd_edit);
+            $cek = $this->checkVisi($request->id_rpjmd_edit);
+
                 if($cek[0]->id_status_dokumen == 0){
-                try{
-                    $data = TrxRpjmdVisi::find($request->id_visi_rpjmd_edit);
-                    $data->delete();
-                     return response ()->json (['pesan'=>'Data Berhasil Dihapus','status_pesan'=>'1']);
-                }
-                    catch(QueryException $e){
-                     $error_code = $e->errorInfo[1] ;
-                     return response ()->json (['pesan'=>'Data Gagal Dihapus ('.$error_code.')','status_pesan'=>'0']);
-                }
+                    $xData=DB::select('SELECT * FROM trx_rpjmd_visi WHERE id_visi_rpjmd ='.$request->id_visi_rpjmd_edit.' AND sumber_data = 0');
+                    if ($xData == null){
+                        try{
+                            $data = TrxRpjmdVisi::find($request->id_visi_rpjmd_edit);
+                            $data->delete();
+                             return response ()->json (['pesan'=>'Data Berhasil Dihapus','status_pesan'=>'1']);
+                        }
+                            catch(QueryException $e){
+                             $error_code = $e->errorInfo[1] ;
+                             return response ()->json (['pesan'=>'Data Gagal Dihapus ('.$error_code.')','status_pesan'=>'0']);
+                        }
+                    } else {
+                        return response ()->json (['pesan'=>'Data Gagal Dihapus (Data Hasil Import Aplikasi 5 tahunan)','status_pesan'=>'0']);
+                    }
             } else {
                 return response ()->json (['pesan'=>'Data Gagal Dihapus (Status Dokumen telah terposting)','status_pesan'=>'0']);
             }
@@ -429,7 +439,9 @@ class TrxRpjmdController extends Controller
 
     public function getMisiRPJMD($id_visi_rpjmd)
     {
-      $rpjmdmisi = DB::select('SELECT * FROM trx_rpjmd_misi WHERE no_urut not in (98,99) AND id_visi_rpjmd = '.$id_visi_rpjmd.' ORDER BY no_urut desc');
+      $rpjmdmisi = DB::select('SELECT a.uraian_visi_rpjmd, a.no_urut AS no_visi, b.* FROM trx_rpjmd_visi AS a
+            INNER JOIN trx_rpjmd_misi AS b On a.id_visi_rpjmd = b.id_visi_rpjmd 
+            WHERE b.no_urut not in (98,99) AND a.id_visi_rpjmd = '.$id_visi_rpjmd.' ORDER BY a.no_urut, b.no_urut DESC');
 
       return DataTables::of($rpjmdmisi)
         ->addColumn('action', function ($rpjmdmisi) {
@@ -443,32 +455,138 @@ class TrxRpjmdController extends Controller
             </div>';})
         ->make(true);
     }
-    public function editMisi(Request $req)
+
+    public function addMisi(Request $request)
     {
-    	$data = TrxRpjmdMisi::find($req->id_misi_rpjmd_edit);
-    	$data->thn_id_rpjmd= $req->thn_id_misi_edit;
-    	$data->id_visi_rpjmd= $req->id_visi_rpjmd_misi_edit;
-    	$data->uraian_misi_rpjmd= $req->ur_misi_rpjmd_edit;
-    	$data->id_perubahan= $req->id_perubahan_misi_edit;
-    	$data->no_urut= $req->no_urut_misi_edit;
-    	try{
-            $data->save (['timestamps' => true]);
-            return response ()->json (['pesan'=>'Data Berhasil Disimpan','status_pesan'=>'1']);
-        }
-          catch(QueryException $e){
-             $error_code = $e->errorInfo[1] ;
-             return response ()->json (['pesan'=>'Data Gagal Disimpan ('.$error_code.')','status_pesan'=>'0']);
+        $rules = [
+            'id_visi_rpjmd_edit'=>'required',
+            'ur_misi_rpjmd_edit'=>'required',
+            'id_perubahan_edit'=>'required',
+            'no_urut_edit'=>'required',
+        ];
+        $messages =[
+            'id_visi_rpjmd_edit.required'=>'ID Visi RPJMD Kosong',
+            'ur_misi_rpjmd_edit.required'=>'Uraian Misi Kosong',
+            'id_perubahan_edit.required'=>'ID Revisi Kosong',
+            'no_urut_edit.required'=>'Nomor Urut Misi Kosong',
+        ];
+        $validation = Validator::make($request->all(),$rules,$messages);
+        
+        if($validation->fails()) {
+            $errors = Fungsi::validationErrorsToString($validation->errors());
+            return response ()->json (['pesan'=>$errors,'status_pesan'=>'0']);          
+            }
+        else {            
+            $data = new TrxRpjmdMisi();
+            $data->thn_id_rpjmd= Session::get('xIdPemda');
+            $data->id_visi_rpjmd= $request->id_visi_rpjmd_edit;
+            $data->uraian_misi_rpjmd= $request->ur_misi_rpjmd_edit;
+            $data->id_perubahan= $request->id_perubahan_edit;
+            $data->no_urut= $request->no_urut_edit;
+            $data->status_data= 0;            
+            $data->sumber_data= 1;
+            try{
+                $data->save (['timestamps' => true]);
+                return response ()->json (['pesan'=>'Data Berhasil Disimpan','status_pesan'=>'1']);
+            }
+              catch(QueryException $e){
+                 $error_code = $e->errorInfo[1] ;
+                 return response ()->json (['pesan'=>'Data Gagal Disimpan ('.$error_code.')','status_pesan'=>'0']);
+            }
         }
     }
+
+    public function editMisi(Request $request)
+    {
+        $rules = [
+            'id_misi_rpjmd_edit'=>'required',
+            'id_visi_rpjmd_edit'=>'required',
+            'ur_misi_rpjmd_edit'=>'required',
+            'id_perubahan_edit'=>'required',
+            'no_urut_edit'=>'required',
+            // 'status_data'=>'required',
+        ];
+        $messages =[
+            'id_misi_rpjmd_edit.required'=>'ID Misi RPJMD Kosong',
+            'id_visi_rpjmd_edit.required'=>'ID Visi RPJMD Kosong',
+            'ur_misi_rpjmd_edit.required'=>'Uraian Misi Kosong',
+            'id_perubahan_edit.required'=>'ID Revisi Kosong',
+            'no_urut_edit.required'=>'Nomor Urut Misi Kosong',
+            // 'status_data.required'=>'Status Data Kosong',
+        ];
+        $validation = Validator::make($request->all(),$rules,$messages);
+        
+        if($validation->fails()) {
+            $errors = Fungsi::validationErrorsToString($validation->errors());
+            return response ()->json (['pesan'=>$errors,'status_pesan'=>'0']);          
+            }
+        else {      
+        	$data = TrxRpjmdMisi::find($request->id_misi_rpjmd_edit);
+        	$data->id_visi_rpjmd= $request->id_visi_rpjmd_edit;
+        	$data->uraian_misi_rpjmd= $request->ur_misi_rpjmd_edit;
+        	$data->id_perubahan= $request->id_perubahan_edit;
+        	$data->no_urut= $request->no_urut_edit;            
+            // $data->status_data= $request->status_data;
+        	try{
+                $data->save (['timestamps' => true]);
+                return response ()->json (['pesan'=>'Data Berhasil Disimpan','status_pesan'=>'1']);
+            }
+              catch(QueryException $e){
+                 $error_code = $e->errorInfo[1] ;
+                 return response ()->json (['pesan'=>'Data Gagal Disimpan ('.$error_code.')','status_pesan'=>'0']);
+            }
+        }
+    }
+
+    public function deleteMisi(Request $request){
+        $rules = [
+            'id_misi_rpjmd_edit'=>'required',
+            'id_visi_rpjmd_edit'=>'required',
+        ];
+        $messages =[
+            'id_misi_rpjmd_edit.required'=>'ID Misi RPJMD Kosong',
+            'id_visi_rpjmd_edit.required'=>'ID Visi RPJMD Kosong',           
+        ];
+        $validation = Validator::make($request->all(),$rules,$messages);
+        
+        if($validation->fails()) {
+            $errors = Fungsi::validationErrorsToString($validation->errors());
+            return response ()->json (['pesan'=>$errors,'status_pesan'=>'0']);          
+            }
+        else {  
+            $cek = $this->checkMisi($request->id_visi_rpjmd_edit);
+
+                if($cek[0]->id_status_dokumen == 0){
+                    $xData=DB::select('SELECT * FROM trx_rpjmd_misi WHERE id_misi_rpjmd ='.$request->id_misi_rpjmd_edit.' AND sumber_data = 0');
+                    if ($xData == null){
+                        try{
+                            $data = TrxRpjmdMisi::find($request->id_misi_rpjmd_edit);
+                            $data->delete();
+                             return response ()->json (['pesan'=>'Data Berhasil Dihapus','status_pesan'=>'1']);
+                        }
+                            catch(QueryException $e){
+                             $error_code = $e->errorInfo[1] ;
+                             return response ()->json (['pesan'=>'Data Gagal Dihapus ('.$error_code.')','status_pesan'=>'0']);
+                        }
+                    } else {
+                        return response ()->json (['pesan'=>'Data Gagal Dihapus (Data Hasil Import Aplikasi 5 tahunan)','status_pesan'=>'0']);
+                    }
+            } else {
+                return response ()->json (['pesan'=>'Data Gagal Dihapus (Status Dokumen telah terposting)','status_pesan'=>'0']);
+            }
+        } 
+    }
+
     public function getTujuanRPJMD($id_misi_rpjmd)
     {
-      $rpjmdtujuan = DB::select('SELECT c.thn_id_rpjmd, c.no_urut, c.id_misi_rpjmd, c.id_tujuan_rpjmd, c.id_perubahan, c.uraian_tujuan_rpjmd, 
-                        b.id_visi_rpjmd, b.id_misi_rpjmd, b.no_urut as id_misi, COALESCE(d.jml_indikator,0) as jml_indikator
+      $rpjmdtujuan = DB::SELECT('SELECT a.uraian_visi_rpjmd, a.no_urut AS no_visi, b.uraian_misi_rpjmd, b.no_urut AS no_misi, 
+                        c.thn_id_rpjmd, c.no_urut, c.id_misi_rpjmd, c.id_tujuan_rpjmd, c.id_perubahan, c.uraian_tujuan_rpjmd, 
+                        a.id_visi_rpjmd, b.id_misi_rpjmd,  COALESCE(d.jml_indikator,0) as jml_indikator
                         FROM trx_rpjmd_visi AS a
                         INNER JOIN trx_rpjmd_misi AS b ON b.id_visi_rpjmd = a.id_visi_rpjmd
                         INNER JOIN trx_rpjmd_tujuan AS c ON c.id_misi_rpjmd = b.id_misi_rpjmd
                         LEFT OUTER JOIN 
-                            (SELECT id_tujuan_rpjmd, COUNT(id_indikator_tujuan_rpjmd) as jml_indikator FROM trx_rpjmd_tujuan_indikator GROUP BY id_tujuan_rpjmd) AS d 
+                        (SELECT id_tujuan_rpjmd, COUNT(id_indikator_tujuan_rpjmd) as jml_indikator FROM trx_rpjmd_tujuan_indikator GROUP BY id_tujuan_rpjmd) AS d 
                         ON c.id_tujuan_rpjmd = d.id_tujuan_rpjmd 
                         WHERE c.id_misi_rpjmd = '.$id_misi_rpjmd.' ORDER BY c.no_urut ASC');
 
@@ -492,27 +610,127 @@ class TrxRpjmdController extends Controller
         ->make(true);
     }
 
-    public function editTujuan(Request $req)
+    public function addTujuan(Request $request)
     {
-    	$data = TrxRpjmdTujuan::find($req->id_tujuan_rpjmd_edit);
-    	$data->thn_id_rpjmd= $req->thn_id_tujuan_edit;
-    	$data->id_misi_rpjmd= $req->id_misi_rpjmd_tujuan_edit;
-    	$data->uraian_tujuan_rpjmd= $req->ur_tujuan_rpjmd_edit;
-    	$data->id_perubahan= $req->id_perubahan_tujuan_edit;
-    	$data->no_urut= $req->no_urut_tujuan_edit;
-    	try{
-            $data->save (['timestamps' => true]);
-            return response ()->json (['pesan'=>'Data Berhasil Disimpan','status_pesan'=>'1']);
-        }
-          catch(QueryException $e){
-             $error_code = $e->errorInfo[1] ;
-             return response ()->json (['pesan'=>'Data Gagal Disimpan ('.$error_code.')','status_pesan'=>'0']);
+        $rules = [
+            'id_misi_rpjmd_edit'=>'required',
+            'ur_tujuan_rpjmd_edit'=>'required',
+            'id_perubahan_edit'=>'required',
+            'no_urut_edit'=>'required',
+        ];
+        $messages =[
+            'id_misi_rpjmd_edit.required'=>'ID Misi RPJMD Kosong',
+            'ur_tujuan_rpjmd_edit.required'=>'Uraian Tujuan Kosong',
+            'id_perubahan_edit.required'=>'ID Revisi Kosong',
+            'no_urut_edit.required'=>'Nomor Urut Tujuan Kosong',
+        ];
+        $validation = Validator::make($request->all(),$rules,$messages);
+        
+        if($validation->fails()) {
+            $errors = Fungsi::validationErrorsToString($validation->errors());
+            return response ()->json (['pesan'=>$errors,'status_pesan'=>'0']);          
+            }
+        else {            
+            $data = new TrxRpjmdTujuan();
+            $data->thn_id_rpjmd= Session::get('xIdPemda');
+            $data->id_misi_rpjmd= $request->id_misi_rpjmd_edit;
+            $data->uraian_tujuan_rpjmd= $request->ur_tujuan_rpjmd_edit;
+            $data->id_perubahan= $request->id_perubahan_edit;
+            $data->no_urut= $request->no_urut_edit;
+            $data->sumber_data= 1;
+            try{
+                $data->save (['timestamps' => true]);
+                return response ()->json (['pesan'=>'Data Berhasil Disimpan','status_pesan'=>'1']);
+            }
+              catch(QueryException $e){
+                 $error_code = $e->errorInfo[1] ;
+                 return response ()->json (['pesan'=>'Data Gagal Disimpan ('.$error_code.')','status_pesan'=>'0']);
+            }
         }
     }
+
+    public function editTujuan(Request $request)
+    {
+        $rules = [
+            'id_misi_rpjmd_edit'=>'required',
+            'id_tujuan_rpjmd_edit'=>'required',
+            'ur_tujuan_rpjmd_edit'=>'required',
+            'id_perubahan_edit'=>'required',
+            'no_urut_edit'=>'required',
+        ];
+        $messages =[
+            'id_misi_rpjmd_edit.required'=>'ID Misi RPJMD Kosong',
+            'id_tujuan_rpjmd_edit.required'=>'ID Tujuan RPJMD Kosong',
+            'ur_tujuan_rpjmd_edit.required'=>'Uraian Tujuan Kosong',
+            'id_perubahan_edit.required'=>'ID Revisi Kosong',
+            'no_urut_edit.required'=>'Nomor Urut Tujuan Kosong',
+        ];
+        $validation = Validator::make($request->all(),$rules,$messages);
+        
+        if($validation->fails()) {
+            $errors = Fungsi::validationErrorsToString($validation->errors());
+            return response ()->json (['pesan'=>$errors,'status_pesan'=>'0']);          
+            }
+        else {   
+            $data = TrxRpjmdTujuan::find($request->id_tujuan_rpjmd_edit);
+            $data->id_misi_rpjmd= $request->id_misi_rpjmd_edit;
+            $data->uraian_tujuan_rpjmd= $request->ur_tujuan_rpjmd_edit;
+            $data->id_perubahan= $request->id_perubahan_edit;
+            $data->no_urut= $request->no_urut_edit;
+            try{
+                $data->save (['timestamps' => true]);
+                return response ()->json (['pesan'=>'Data Berhasil Disimpan','status_pesan'=>'1']);
+            }
+              catch(QueryException $e){
+                 $error_code = $e->errorInfo[1] ;
+                 return response ()->json (['pesan'=>'Data Gagal Disimpan ('.$error_code.')','status_pesan'=>'0']);
+            }
+        }
+    }
+
+    public function deleteTujuan(Request $request){
+        $rules = [
+            'id_misi_rpjmd_edit'=>'required',
+            'id_tujuan_rpjmd_edit'=>'required',
+        ];
+        $messages =[
+            'id_misi_rpjmd_edit.required'=>'ID Misi RPJMD Kosong',
+            'id_tujuan_rpjmd_edit.required'=>'ID Tujuan RPJMD Kosong',           
+        ];
+        $validation = Validator::make($request->all(),$rules,$messages);
+        
+        if($validation->fails()) {
+            $errors = Fungsi::validationErrorsToString($validation->errors());
+            return response ()->json (['pesan'=>$errors,'status_pesan'=>'0']);          
+            }
+        else {  
+            $cek = $this->checkTujuan($request->id_misi_rpjmd_edit);
+
+                if($cek[0]->id_status_dokumen == 0){
+                    $xData=DB::select('SELECT * FROM trx_rpjmd_tujuan WHERE id_tujuan_rpjmd ='.$request->id_tujuan_rpjmd_edit.' AND sumber_data = 0');
+                    if ($xData == null){
+                        try{
+                            $data = TrxRpjmdTujuan::find($request->id_tujuan_rpjmd_edit);
+                            $data->delete();
+                             return response ()->json (['pesan'=>'Data Berhasil Dihapus','status_pesan'=>'1']);
+                        }
+                            catch(QueryException $e){
+                             $error_code = $e->errorInfo[1] ;
+                             return response ()->json (['pesan'=>'Data Gagal Dihapus ('.$error_code.')','status_pesan'=>'0']);
+                        }
+                    } else {
+                        return response ()->json (['pesan'=>'Data Gagal Dihapus (Data Hasil Import Aplikasi 5 tahunan)','status_pesan'=>'0']);
+                    }
+            } else {
+                return response ()->json (['pesan'=>'Data Gagal Dihapus (Status Dokumen telah terposting)','status_pesan'=>'0']);
+            }
+        } 
+    }
+
     public function getSasaranRPJMD($id_tujuan_rpjmd)
     {
       $rpjmdsasaran = DB::select('SELECT d.thn_id_rpjmd, d.no_urut, d.id_tujuan_rpjmd, d.id_sasaran_rpjmd, d.id_perubahan, d.uraian_sasaran_rpjmd, b.id_visi_rpjmd,
-                        b.id_misi_rpjmd, b.no_urut as id_misi, c.no_urut as id_tujuan, COALESCE(e.jml_indikator,0) as jml_indikator
+                        b.id_misi_rpjmd, b.no_urut as no_misi, c.no_urut as no_tujuan, a.no_urut as no_visi, COALESCE(e.jml_indikator,0) as jml_indikator
                         FROM trx_rpjmd_visi AS a
                         INNER JOIN trx_rpjmd_misi AS b ON b.id_visi_rpjmd = a.id_visi_rpjmd
                         INNER JOIN trx_rpjmd_tujuan AS c ON c.id_misi_rpjmd = b.id_misi_rpjmd
@@ -548,23 +766,124 @@ class TrxRpjmdController extends Controller
 					';})
         ->make(true);
     }
-    public function editSasaran(Request $req)
+
+    public function addSasaran(Request $request)
     {
-    	$data = TrxRpjmdSasaran::find($req->id_sasaran_rpjmd_edit);
-    	$data->thn_id_rpjmd= $req->thn_id_sasaran_edit;
-    	$data->id_tujuan_rpjmd= $req->id_tujuan_rpjmd_sasaran_edit;
-    	$data->uraian_sasaran_rpjmd= $req->ur_sasaran_rpjmd_edit;
-    	$data->id_perubahan= $req->id_perubahan_sasaran_edit;
-    	$data->no_urut= $req->no_urut_sasaran_edit;
-    	try{
-            $data->save (['timestamps' => true]);
-            return response ()->json (['pesan'=>'Data Berhasil Disimpan','status_pesan'=>'1']);
-        }
-          catch(QueryException $e){
-             $error_code = $e->errorInfo[1] ;
-             return response ()->json (['pesan'=>'Data Gagal Disimpan ('.$error_code.')','status_pesan'=>'0']);
+        $rules = [
+            'id_tujuan_rpjmd_edit'=>'required',
+            'ur_sasaran_rpjmd_edit'=>'required',
+            'id_perubahan_edit'=>'required',
+            'no_urut_edit'=>'required',
+        ];
+        $messages =[
+            'id_tujuan_rpjmd_edit.required'=>'ID Tujuan RPJMD Kosong',
+            'ur_sasaran_rpjmd_edit.required'=>'Uraian Sasaran Kosong',
+            'id_perubahan_edit.required'=>'ID Revisi Kosong',
+            'no_urut_edit.required'=>'Nomor Urut Sasaran Kosong',
+        ];
+        $validation = Validator::make($request->all(),$rules,$messages);
+        
+        if($validation->fails()) {
+            $errors = Fungsi::validationErrorsToString($validation->errors());
+            return response ()->json (['pesan'=>$errors,'status_pesan'=>'0']);          
+            }
+        else {            
+            $data = new TrxRpjmdSasaran();
+            $data->thn_id_rpjmd= Session::get('xIdPemda');
+            $data->id_tujuan_rpjmd= $request->id_tujuan_rpjmd_edit;
+            $data->uraian_sasaran_rpjmd= $request->ur_sasaran_rpjmd_edit;
+            $data->id_perubahan= $request->id_perubahan_edit;
+            $data->no_urut= $request->no_urut_edit;
+            $data->sumber_data= 1;
+            try{
+                $data->save (['timestamps' => true]);
+                return response ()->json (['pesan'=>'Data Berhasil Disimpan','status_pesan'=>'1']);
+            }
+              catch(QueryException $e){
+                 $error_code = $e->errorInfo[1] ;
+                 return response ()->json (['pesan'=>'Data Gagal Disimpan ('.$error_code.')','status_pesan'=>'0']);
+            }
         }
     }
+
+    public function editSasaran(Request $request)
+    {
+        $rules = [
+            'id_sasaran_rpjmd_edit'=>'required',
+            'id_tujuan_rpjmd_edit'=>'required',
+            'ur_sasaran_rpjmd_edit'=>'required',
+            'id_perubahan_edit'=>'required',
+            'no_urut_edit'=>'required',
+        ];
+        $messages =[
+            'id_sasaran_rpjmd_edit.required'=>'ID Sasaran RPJMD Kosong',
+            'id_tujuan_rpjmd_edit.required'=>'ID Tujuan RPJMD Kosong',
+            'ur_sasaran_rpjmd_edit.required'=>'Uraian Sasarn Kosong',
+            'id_perubahan_edit.required'=>'ID Revisi Kosong',
+            'no_urut_edit.required'=>'Nomor Urut Sasaran Kosong',
+        ];
+        $validation = Validator::make($request->all(),$rules,$messages);
+        
+        if($validation->fails()) {
+            $errors = Fungsi::validationErrorsToString($validation->errors());
+            return response ()->json (['pesan'=>$errors,'status_pesan'=>'0']);          
+            }
+        else {   
+            $data = TrxRpjmdSasaran::find($request->id_sasaran_rpjmd_edit);
+            $data->id_tujuan_rpjmd= $request->id_tujuan_rpjmd_edit;
+            $data->uraian_sasaran_rpjmd= $request->ur_sasaran_rpjmd_edit;
+            $data->id_perubahan= $request->id_perubahan_edit;
+            $data->no_urut= $request->no_urut_edit;
+            try{
+                $data->save (['timestamps' => true]);
+                return response ()->json (['pesan'=>'Data Berhasil Disimpan','status_pesan'=>'1']);
+            }
+              catch(QueryException $e){
+                 $error_code = $e->errorInfo[1] ;
+                 return response ()->json (['pesan'=>'Data Gagal Disimpan ('.$error_code.')','status_pesan'=>'0']);
+            }
+        }
+    }
+
+    public function deleteSasaran(Request $request){
+        $rules = [
+            'id_sasaran_rpjmd_edit'=>'required',
+            'id_tujuan_rpjmd_edit'=>'required',
+        ];
+        $messages =[
+            'id_sasaran_rpjmd_edit.required'=>'ID Sasaran RPJMD Kosong',
+            'id_tujuan_rpjmd_edit.required'=>'ID Tujuan RPJMD Kosong',           
+        ];
+        $validation = Validator::make($request->all(),$rules,$messages);
+        
+        if($validation->fails()) {
+            $errors = Fungsi::validationErrorsToString($validation->errors());
+            return response ()->json (['pesan'=>$errors,'status_pesan'=>'0']);          
+            }
+        else {  
+            $cek = $this->checkSasaran($request->id_tujuan_rpjmd_edit);
+
+                if($cek[0]->id_status_dokumen == 0){
+                    $xData=DB::select('SELECT * FROM trx_rpjmd_sasaran WHERE id_sasaran_rpjmd ='.$request->id_sasaran_rpjmd_edit.' AND sumber_data = 0');
+                    if ($xData == null){
+                        try{
+                            $data = TrxRpjmdSasaran::find($request->id_sasaran_rpjmd_edit);
+                            $data->delete();
+                             return response ()->json (['pesan'=>'Data Berhasil Dihapus','status_pesan'=>'1']);
+                        }
+                            catch(QueryException $e){
+                             $error_code = $e->errorInfo[1] ;
+                             return response ()->json (['pesan'=>'Data Gagal Dihapus ('.$error_code.')','status_pesan'=>'0']);
+                        }
+                    } else {
+                        return response ()->json (['pesan'=>'Data Gagal Dihapus (Data Hasil Import Aplikasi 5 tahunan)','status_pesan'=>'0']);
+                    }
+            } else {
+                return response ()->json (['pesan'=>'Data Gagal Dihapus (Status Dokumen telah terposting)','status_pesan'=>'0']);
+            }
+        } 
+    }
+
     public function getKebijakanRPJMD($id_sasaran_rpjmd)
     {
       $rpjmdkebijakan = DB::select('SELECT d.no_urut AS id_sasaran, b.id_visi_rpjmd, b.id_misi_rpjmd, b.no_urut AS id_misi, c.no_urut AS id_tujuan,
@@ -590,23 +909,125 @@ class TrxRpjmdController extends Controller
 					';})
         ->make(true);
     }
-    public function editKebijakan(Request $req)
+
+    public function addKebijakan(Request $request)
     {
-    	$data = TrxRpjmdKebijakan::find($req->id_kebijakan_rpjmd_edit);
-    	$data->thn_id= $req->thn_id_kebijakan_edit;
-    	$data->id_sasaran_rpjmd= $req->id_sasaran_rpjmd_kebijakan_edit;
-    	$data->uraian_kebijakan_rpjmd= $req->ur_kebijakan_rpjmd_edit;
-    	$data->id_perubahan= $req->id_perubahan_kebijakan_edit;
-    	$data->no_urut= $req->no_urut_kebijakan_edit;
-    	try{
-            $data->save (['timestamps' => true]);
-            return response ()->json (['pesan'=>'Data Berhasil Disimpan','status_pesan'=>'1']);
-        }
-          catch(QueryException $e){
-             $error_code = $e->errorInfo[1] ;
-             return response ()->json (['pesan'=>'Data Gagal Disimpan ('.$error_code.')','status_pesan'=>'0']);
+        $rules = [
+            'id_sasaran_rpjmd_edit'=>'required',
+            'ur_kebijakan_rpjmd_edit'=>'required',
+            'id_perubahan_edit'=>'required',
+            'no_urut_edit'=>'required',
+        ];
+        $messages =[
+            'id_sasaran_rpjmd_edit.required'=>'ID Sasaran RPJMD Kosong',
+            'ur_kebijakan_rpjmd_edit.required'=>'Uraian Kebijakan Kosong',
+            'id_perubahan_edit.required'=>'ID Revisi Kosong',
+            'no_urut_edit.required'=>'Nomor Urut Kebijakan Kosong',
+        ];
+        $validation = Validator::make($request->all(),$rules,$messages);
+        
+        if($validation->fails()) {
+            $errors = Fungsi::validationErrorsToString($validation->errors());
+            return response ()->json (['pesan'=>$errors,'status_pesan'=>'0']);          
+            }
+        else {            
+            $data = new TrxRpjmdKebijakan();
+            $data->thn_id= Session::get('xIdPemda');
+            $data->id_sasaran_rpjmd= $request->id_sasaran_rpjmd_edit;
+            $data->uraian_kebijakan_rpjmd= $request->ur_kebijakan_rpjmd_edit;
+            $data->id_perubahan= $request->id_perubahan_edit;
+            $data->no_urut= $request->no_urut_edit;
+            $data->sumber_data= 1;
+            try{
+                $data->save (['timestamps' => true]);
+                return response ()->json (['pesan'=>'Data Berhasil Disimpan','status_pesan'=>'1']);
+            }
+              catch(QueryException $e){
+                 $error_code = $e->errorInfo[1] ;
+                 return response ()->json (['pesan'=>'Data Gagal Disimpan ('.$error_code.')','status_pesan'=>'0']);
+            }
         }
     }
+
+    public function editKebijakan(Request $request)
+    {
+        $rules = [
+            'id_sasaran_rpjmd_edit'=>'required',
+            'id_kebijakan_rpjmd_edit'=>'required',
+            'ur_kebijakan_rpjmd_edit'=>'required',
+            'id_perubahan_edit'=>'required',
+            'no_urut_edit'=>'required',
+        ];
+        $messages =[
+            'id_sasaran_rpjmd_edit.required'=>'ID Sasaran RPJMD Kosong',
+            'id_kebijakan_rpjmd_edit.required'=>'ID Kebijakan RPJMD Kosong',
+            'ur_kebijakan_rpjmd_edit.required'=>'Uraian Kebijakan Kosong',
+            'id_perubahan_edit.required'=>'ID Revisi Kosong',
+            'no_urut_edit.required'=>'Nomor Urut Kebijakan Kosong',
+        ];
+        $validation = Validator::make($request->all(),$rules,$messages);
+        
+        if($validation->fails()) {
+            $errors = Fungsi::validationErrorsToString($validation->errors());
+            return response ()->json (['pesan'=>$errors,'status_pesan'=>'0']);          
+            }
+        else {   
+            $data = TrxRpjmdKebijakan::find($request->id_kebijakan_rpjmd_edit);
+            $data->id_sasaran_rpjmd= $request->id_sasaran_rpjmd_edit;
+            $data->uraian_kebijakan_rpjmd= $request->ur_kebijakan_rpjmd_edit;
+            $data->id_perubahan= $request->id_perubahan_edit;
+            $data->no_urut= $request->no_urut_edit;
+            try{
+                $data->save (['timestamps' => true]);
+                return response ()->json (['pesan'=>'Data Berhasil Disimpan','status_pesan'=>'1']);
+            }
+              catch(QueryException $e){
+                 $error_code = $e->errorInfo[1] ;
+                 return response ()->json (['pesan'=>'Data Gagal Disimpan ('.$error_code.')','status_pesan'=>'0']);
+            }
+        }
+    }
+
+    public function deleteKebijakan(Request $request){
+        $rules = [
+            'id_sasaran_rpjmd_edit'=>'required',
+            'id_kebijakan_rpjmd_edit'=>'required',
+        ];
+        $messages =[
+            'id_sasaran_rpjmd_edit.required'=>'ID Sasaran RPJMD Kosong',
+            'id_kebijakan_rpjmd_edit.required'=>'ID Kebijakan RPJMD Kosong',           
+        ];
+        $validation = Validator::make($request->all(),$rules,$messages);
+        
+        if($validation->fails()) {
+            $errors = Fungsi::validationErrorsToString($validation->errors());
+            return response ()->json (['pesan'=>$errors,'status_pesan'=>'0']);          
+            }
+        else {  
+            $cek = $this->checkProgram($request->id_sasaran_rpjmd_edit);
+
+                if($cek[0]->id_status_dokumen == 0){
+                    $xData=DB::select('SELECT * FROM trx_rpjmd_kebijakan WHERE id_kebijakan_rpjmd ='.$request->id_kebijakan_rpjmd_edit.' AND sumber_data = 0');
+                    if ($xData == null){
+                        try{
+                            $data = TrxRpjmdKebijakan::find($request->id_kebijakan_rpjmd_edit);
+                            $data->delete();
+                             return response ()->json (['pesan'=>'Data Berhasil Dihapus','status_pesan'=>'1']);
+                        }
+                            catch(QueryException $e){
+                             $error_code = $e->errorInfo[1] ;
+                             return response ()->json (['pesan'=>'Data Gagal Dihapus ('.$error_code.')','status_pesan'=>'0']);
+                        }
+                    } else {
+                        return response ()->json (['pesan'=>'Data Gagal Dihapus (Data Hasil Import Aplikasi 5 tahunan)','status_pesan'=>'0']);
+                    }
+
+            } else {
+                return response ()->json (['pesan'=>'Data Gagal Dihapus (Status Dokumen telah terposting)','status_pesan'=>'0']);
+            }
+        } 
+    }
+
     public function getStrategiRPJMD($id_sasaran_rpjmd)
     {
       $rpjmdstrategi = DB::select('SELECT d.no_urut AS id_sasaran, b.id_visi_rpjmd, b.id_misi_rpjmd, b.no_urut AS id_misi, c.no_urut AS id_tujuan, e.thn_id,
@@ -633,22 +1054,122 @@ class TrxRpjmdController extends Controller
 					';})
         ->make(true);
     }
-    public function editStrategi(Request $req)
+
+    public function addStrategi(Request $request)
     {
-    	$data = TrxRpjmdStrategi::find($req->id_strategi_rpjmd_edit);
-    	$data->thn_id= $req->thn_id_strategi_edit;
-    	$data->id_sasaran_rpjmd= $req->id_sasaran_rpjmd_strategi_edit;
-    	$data->uraian_strategi_rpjmd= $req->ur_strategi_rpjmd_edit;
-    	$data->id_perubahan= $req->id_perubahan_strategi_edit;
-    	$data->no_urut= $req->no_urut_strategi_edit;
-    	try{
-            $data->save (['timestamps' => true]);
-            return response ()->json (['pesan'=>'Data Berhasil Disimpan','status_pesan'=>'1']);
+        $rules = [
+            'id_sasaran_rpjmd_edit'=>'required',
+            'ur_strategi_rpjmd_edit'=>'required',
+            'id_perubahan_edit'=>'required',
+            'no_urut_edit'=>'required',
+        ];
+        $messages =[
+            'id_sasaran_rpjmd_edit.required'=>'ID Sasaran RPJMD Kosong',
+            'ur_strategi_rpjmd_edit.required'=>'Uraian Strategi Kosong',
+            'id_perubahan_edit.required'=>'ID Revisi Kosong',
+            'no_urut_edit.required'=>'Nomor Urut Strategi Kosong',
+        ];
+        $validation = Validator::make($request->all(),$rules,$messages);
+        
+        if($validation->fails()) {
+            $errors = Fungsi::validationErrorsToString($validation->errors());
+            return response ()->json (['pesan'=>$errors,'status_pesan'=>'0']);          
+            }
+        else {            
+            $data = new TrxRpjmdStrategi();
+            $data->thn_id= Session::get('xIdPemda');
+            $data->id_sasaran_rpjmd= $request->id_sasaran_rpjmd_edit;
+            $data->uraian_strategi_rpjmd= $request->ur_strategi_rpjmd_edit;
+            $data->id_perubahan= $request->id_perubahan_edit;
+            $data->no_urut= $request->no_urut_edit;
+            $data->sumber_data= 1;
+            try{
+                $data->save (['timestamps' => true]);
+                return response ()->json (['pesan'=>'Data Berhasil Disimpan','status_pesan'=>'1']);
+            }
+              catch(QueryException $e){
+                 $error_code = $e->errorInfo[1] ;
+                 return response ()->json (['pesan'=>'Data Gagal Disimpan ('.$error_code.')','status_pesan'=>'0']);
+            }
         }
-          catch(QueryException $e){
-             $error_code = $e->errorInfo[1] ;
-             return response ()->json (['pesan'=>'Data Gagal Disimpan ('.$error_code.')','status_pesan'=>'0']);
+    }
+
+    public function editStrategi(Request $request)
+    {
+        $rules = [
+            'id_sasaran_rpjmd_edit'=>'required',
+            'id_strategi_rpjmd_edit'=>'required',
+            'ur_strategi_rpjmd_edit'=>'required',
+            'id_perubahan_edit'=>'required',
+            'no_urut_edit'=>'required',
+        ];
+        $messages =[
+            'id_sasaran_rpjmd_edit.required'=>'ID Sasaran RPJMD Kosong',
+            'id_strategi_rpjmd_edit.required'=>'ID Strategi RPJMD Kosong',
+            'ur_strategi_rpjmd_edit.required'=>'Uraian Strategi Kosong',
+            'id_perubahan_edit.required'=>'ID Revisi Kosong',
+            'no_urut_edit.required'=>'Nomor Urut Strategi Kosong',
+        ];
+        $validation = Validator::make($request->all(),$rules,$messages);
+        
+        if($validation->fails()) {
+            $errors = Fungsi::validationErrorsToString($validation->errors());
+            return response ()->json (['pesan'=>$errors,'status_pesan'=>'0']);          
+            }
+        else {   
+            $data = TrxRpjmdStrategi::find($request->id_strategi_rpjmd_edit);
+            $data->id_sasaran_rpjmd= $request->id_sasaran_rpjmd_edit;
+            $data->uraian_strategi_rpjmd= $request->ur_strategi_rpjmd_edit;
+            $data->id_perubahan= $request->id_perubahan_edit;
+            $data->no_urut= $request->no_urut_edit;
+            try{
+                $data->save (['timestamps' => true]);
+                return response ()->json (['pesan'=>'Data Berhasil Disimpan','status_pesan'=>'1']);
+            }
+              catch(QueryException $e){
+                 $error_code = $e->errorInfo[1] ;
+                 return response ()->json (['pesan'=>'Data Gagal Disimpan ('.$error_code.')','status_pesan'=>'0']);
+            }
         }
+    }
+
+    public function deleteStrategi(Request $request){
+        $rules = [
+            'id_sasaran_rpjmd_edit'=>'required',
+            'id_strategi_rpjmd_edit'=>'required',
+        ];
+        $messages =[
+            'id_sasaran_rpjmd_edit.required'=>'ID Sasaran RPJMD Kosong',
+            'id_strategi_rpjmd_edit.required'=>'ID Strategi RPJMD Kosong',           
+        ];
+        $validation = Validator::make($request->all(),$rules,$messages);
+        
+        if($validation->fails()) {
+            $errors = Fungsi::validationErrorsToString($validation->errors());
+            return response ()->json (['pesan'=>$errors,'status_pesan'=>'0']);          
+            }
+        else {  
+            $cek = $this->checkProgram($request->id_sasaran_rpjmd_edit);
+
+                if($cek[0]->id_status_dokumen == 0){
+                    $xData=DB::select('SELECT * FROM trx_rpjmd_strategi WHERE id_strategi_rpjmd ='.$request->id_strategi_rpjmd_edit.' AND sumber_data = 0');
+                    if ($xData == null){
+                        try{
+                            $data = TrxRpjmdStrategi::find($request->id_strategi_rpjmd_edit);
+                            $data->delete();
+                             return response ()->json (['pesan'=>'Data Berhasil Dihapus','status_pesan'=>'1']);
+                        }
+                            catch(QueryException $e){
+                             $error_code = $e->errorInfo[1] ;
+                             return response ()->json (['pesan'=>'Data Gagal Dihapus ('.$error_code.')','status_pesan'=>'0']);
+                        }
+                    } else {
+                        return response ()->json (['pesan'=>'Data Gagal Dihapus (Data Hasil Import Aplikasi 5 tahunan)','status_pesan'=>'0']);
+                    }
+            } else {
+                return response ()->json (['pesan'=>'Data Gagal Dihapus (Status Dokumen telah terposting)','status_pesan'=>'0']);
+            }
+        } 
     }
 
     public function getProgramRPJMD($id_sasaran_rpjmd)
@@ -685,7 +1206,7 @@ class TrxRpjmdController extends Controller
                             <a class="view-rpjmdurusan dropdown-item" data-id_program="'.$rpjmdprogram->id_program_rpjmd.'" ><i class="fa fa-puzzle-piece fa-fw fa-lg text-info"></i> Lihat Urusan</a>
                         </li>
                         <li>
-                            <a class="repivot-renstra dropdown-item"><i class="fa fa-refresh fa-fw fa-lg text-warning"></i> Re-Pivot Renstra</a>
+                            <a class="repivot-renstra dropdown-item hidden"><i class="fa fa-refresh fa-fw fa-lg text-warning"></i> Re-Pivot Renstra</a>
                         </li>
                         <li>
                             <a class="post-urbidprog dropdown-item"><i class="fa fa-check-square-o fa-fw fa-lg text-success"></i> Posting Program Urusan</a>
@@ -696,9 +1217,503 @@ class TrxRpjmdController extends Controller
 				->make(true);
     }
 
+    public function addProgram(Request $request)
+    {
+        $rules = [
+            'id_sasaran_rpjmd_edit'=>'required',
+            'ur_program_rpjmd_edit'=>'required',
+            'id_perubahan_edit'=>'required',
+            'no_urut_edit'=>'required',
+            'pagu1_edit'=>'required | numeric',
+            'pagu2_edit'=>'required | numeric',
+            'pagu3_edit'=>'required | numeric',
+            'pagu4_edit'=>'required | numeric',
+            'pagu5_edit'=>'required | numeric',
+        ];
+        $messages =[
+            'id_sasaran_rpjmd_edit.required'=>'ID Sasaran RPJMD Kosong',
+            'ur_program_rpjmd_edit.required'=>'Uraian Program Kosong',
+            'id_perubahan_edit.required'=>'ID Revisi Kosong',
+            'no_urut_edit.required'=>'Nomor Urut Program Kosong',
+            'pagu1_edit.required'=>'Nilai Pagu Tahun ke-1 Kosong',
+            'pagu2_edit.required'=>'Nilai Pagu Tahun ke-2 Kosong',
+            'pagu3_edit.required'=>'Nilai Pagu Tahun ke-3 Kosong',
+            'pagu4_edit.required'=>'Nilai Pagu Tahun ke-4 Kosong',
+            'pagu5_edit.required'=>'Nilai Pagu Tahun ke-5 Kosong',
+            'pagu1_edit.numeric'=>'Nilai Pagu Tahun ke-1 Harus Angka',
+            'pagu2_edit.numeric'=>'Nilai Pagu Tahun ke-2 Harus Angka',
+            'pagu3_edit.numeric'=>'Nilai Pagu Tahun ke-3 Harus Angka',
+            'pagu4_edit.numeric'=>'Nilai Pagu Tahun ke-4 Harus Angka',
+            'pagu5_edit.numeric'=>'Nilai Pagu Tahun ke-5 Harus Angka',
+        ];
+        $validation = Validator::make($request->all(),$rules,$messages);
+        
+        if($validation->fails()) {
+            $errors = Fungsi::validationErrorsToString($validation->errors());
+            return response ()->json (['pesan'=>$errors,'status_pesan'=>'0']);          
+            }
+        else {            
+            $data = new TrxRpjmdProgram();
+            $data->thn_id= Session::get('xIdPemda');
+            $data->id_sasaran_rpjmd= $request->id_sasaran_rpjmd_edit;
+            $data->uraian_program_rpjmd= $request->ur_program_rpjmd_edit;
+            $data->id_perubahan= $request->id_perubahan_edit;
+            $data->no_urut= $request->no_urut_edit;
+            $data->pagu_tahun1= $request->pagu1_edit;
+            $data->pagu_tahun2= $request->pagu2_edit;
+            $data->pagu_tahun3= $request->pagu3_edit;
+            $data->pagu_tahun4= $request->pagu4_edit;
+            $data->pagu_tahun5= $request->pagu5_edit;
+            $data->total_pagu= $request->pagu1_edit+$request->pagu2_edit+$request->pagu3_edit+$request->pagu4_edit+$request->pagu5_edit;
+            $data->sumber_data= 1;
+            try{
+                $data->save (['timestamps' => true]);
+                return response ()->json (['pesan'=>'Data Berhasil Disimpan','status_pesan'=>'1']);
+            }
+              catch(QueryException $e){
+                 $error_code = $e->errorInfo[1] ;
+                 return response ()->json (['pesan'=>'Data Gagal Disimpan ('.$error_code.')','status_pesan'=>'0']);
+            }
+        }
+    }
+
+    public function editProgram(Request $request)
+    {
+        $rules = [
+            'id_program_rpjmd_edit'=>'required',
+            'id_sasaran_rpjmd_edit'=>'required',
+            'ur_program_rpjmd_edit'=>'required',
+            'id_perubahan_edit'=>'required',
+            'no_urut_edit'=>'required',
+            'pagu1_edit'=>'required | numeric',
+            'pagu2_edit'=>'required | numeric',
+            'pagu3_edit'=>'required | numeric',
+            'pagu4_edit'=>'required | numeric',
+            'pagu5_edit'=>'required | numeric',
+        ];
+        $messages =[
+            'id_program_rpjmd_edit.required'=>'ID Program RPJMD Kosong',
+            'id_sasaran_rpjmd_edit.required'=>'ID Sasaran RPJMD Kosong',
+            'ur_program_rpjmd_edit.required'=>'Uraian Program Kosong',
+            'id_perubahan_edit.required'=>'ID Revisi Kosong',
+            'no_urut_edit.required'=>'Nomor Urut Program Kosong',
+            'pagu1_edit.required'=>'Nilai Pagu Tahun ke-1 Kosong',
+            'pagu2_edit.required'=>'Nilai Pagu Tahun ke-2 Kosong',
+            'pagu3_edit.required'=>'Nilai Pagu Tahun ke-3 Kosong',
+            'pagu4_edit.required'=>'Nilai Pagu Tahun ke-4 Kosong',
+            'pagu5_edit.required'=>'Nilai Pagu Tahun ke-5 Kosong',
+            'pagu1_edit.numeric'=>'Nilai Pagu Tahun ke-1 Harus Angka',
+            'pagu2_edit.numeric'=>'Nilai Pagu Tahun ke-2 Harus Angka',
+            'pagu3_edit.numeric'=>'Nilai Pagu Tahun ke-3 Harus Angka',
+            'pagu4_edit.numeric'=>'Nilai Pagu Tahun ke-4 Harus Angka',
+            'pagu5_edit.numeric'=>'Nilai Pagu Tahun ke-5 Harus Angka',
+        ];
+        $validation = Validator::make($request->all(),$rules,$messages);
+        
+        if($validation->fails()) {
+            $errors = Fungsi::validationErrorsToString($validation->errors());
+            return response ()->json (['pesan'=>$errors,'status_pesan'=>'0']);          
+            }
+        else {   
+            $data = TrxRpjmdProgram::find($request->id_program_rpjmd_edit);
+            $data->id_sasaran_rpjmd= $request->id_sasaran_rpjmd_edit;
+            $data->uraian_program_rpjmd= $request->ur_program_rpjmd_edit;
+            $data->id_perubahan= $request->id_perubahan_edit;
+            $data->no_urut= $request->no_urut_edit;
+            $data->pagu_tahun1= $request->pagu1_edit;
+            $data->pagu_tahun2= $request->pagu2_edit;
+            $data->pagu_tahun3= $request->pagu3_edit;
+            $data->pagu_tahun4= $request->pagu4_edit;
+            $data->pagu_tahun5= $request->pagu5_edit;
+            $data->total_pagu= $request->pagu1_edit+$request->pagu2_edit+$request->pagu3_edit+$request->pagu4_edit+$request->pagu5_edit;
+            try{
+                $data->save (['timestamps' => true]);
+                return response ()->json (['pesan'=>'Data Berhasil Disimpan','status_pesan'=>'1']);
+            }
+              catch(QueryException $e){
+                 $error_code = $e->errorInfo[1] ;
+                 return response ()->json (['pesan'=>'Data Gagal Disimpan ('.$error_code.')','status_pesan'=>'0']);
+            }
+        }
+    }
+
+    public function deleteProgram(Request $request){
+        $rules = [
+            'id_sasaran_rpjmd_edit'=>'required',
+            'id_program_rpjmd_edit'=>'required',
+        ];
+        $messages =[
+            'id_sasaran_rpjmd_edit.required'=>'ID Sasaran RPJMD Kosong',
+            'id_program_rpjmd_edit.required'=>'ID Program RPJMD Kosong',           
+        ];
+        $validation = Validator::make($request->all(),$rules,$messages);
+        
+        if($validation->fails()) {
+            $errors = Fungsi::validationErrorsToString($validation->errors());
+            return response ()->json (['pesan'=>$errors,'status_pesan'=>'0']);          
+            }
+        else {  
+            $cek = $this->checkProgram($request->id_sasaran_rpjmd_edit);
+
+                if($cek[0]->id_status_dokumen == 0){
+                    $xData=DB::select('SELECT * FROM trx_rpjmd_program WHERE id_program_rpjmd ='.$request->id_program_rpjmd_edit.' AND sumber_data = 0');
+                    if ($xData == null){
+                        try{
+                            $data = TrxRpjmdProgram::find($request->id_program_rpjmd_edit);
+                            $data->delete();
+                             return response ()->json (['pesan'=>'Data Berhasil Dihapus','status_pesan'=>'1']);
+                        }
+                            catch(QueryException $e){
+                             $error_code = $e->errorInfo[1] ;
+                             return response ()->json (['pesan'=>'Data Gagal Dihapus ('.$error_code.')','status_pesan'=>'0']);
+                        }
+                    } else {
+                        return response ()->json (['pesan'=>'Data Gagal Dihapus (Data Hasil Import Aplikasi 5 tahunan)','status_pesan'=>'0']);
+                    }
+            } else {
+                return response ()->json (['pesan'=>'Data Gagal Dihapus (Status Dokumen telah terposting)','status_pesan'=>'0']);
+            }
+        } 
+    }
+
+    public function getIndikatorProgramRPJMD($id_program_rpjmd)
+    {
+      $rpjmdindikator = DB::Select('SELECT b.thn_id, b.no_urut,b.id_program_rpjmd,b.id_indikator_program_rpjmd,b.id_perubahan,b.id_indikator,b.uraian_indikator_program_rpjmd,
+                        b.tolok_ukur_indikator,b.angka_awal_periode,b.angka_tahun1,b.angka_tahun2,b.angka_tahun3,b.angka_tahun4,b.angka_tahun5,b.angka_akhir_periode,a.no_urut,
+                        CONCAT(f.no_urut,".",e.no_urut,".",d.no_urut,".",c.no_urut,".",a.no_urut) as kd_program
+                        FROM trx_rpjmd_program AS a
+                        INNER JOIN trx_rpjmd_program_indikator AS b ON b.id_program_rpjmd = a.id_program_rpjmd
+                        INNER JOIN trx_rpjmd_sasaran AS c ON a.id_sasaran_rpjmd = c.id_sasaran_rpjmd
+                        INNER JOIN trx_rpjmd_tujuan AS d ON c.id_tujuan_rpjmd = d.id_tujuan_rpjmd
+                        INNER JOIN trx_rpjmd_misi AS e ON d.id_misi_rpjmd = e.id_misi_rpjmd
+                        INNER JOIN trx_rpjmd_visi AS f ON e.id_visi_rpjmd = f.id_visi_rpjmd 
+                        WHERE b.id_program_rpjmd='.$id_program_rpjmd.' ORDER BY b.no_urut DESC');
+
+      return DataTables::of($rpjmdindikator)
+            ->addColumn('action', function ($rpjmdindikator) {
+            return '<div class="btn-group">
+                    <button type="button" class="btn btn-info dropdown-toggle btn-labeled" aria-haspopup="true" aria-expanded="false" data-toggle="dropdown"><span class="btn-label"><i class="fa fa-wrench fa-fw fa-lg"></i></span>Aksi <span class="caret"></span></button>
+                    </button>
+                        <ul class="dropdown-menu dropdown-menu-right">
+                            <li>
+                                <a class="edit-indikatorprog dropdown-item"><i class="fa fa-pencil fa-fw fa-lg text-success"></i> Lihat Indikator</a>
+                            </li>
+                        </ul>
+                    </div>';})
+            ->make(true);
+    }
+
+    public function getUrusanProgramRPJMD($id_program_rpjmd)
+    {
+      $rpjmdurusan = DB::Select('SELECT CONCAT(f.no_urut,".",e.no_urut,".",d.no_urut,".",c.no_urut,".",a.no_urut) AS kd_program,
+                    CONCAT(h.kd_urusan,".",h.kd_bidang) AS kode_bid,h.kd_urusan,
+                    g.thn_id,g.no_urut,g.id_urbid_rpjmd,g.id_program_rpjmd,g.id_bidang,h.nm_bidang,i.nm_urusan
+                    FROM trx_rpjmd_program AS a
+                    INNER JOIN trx_rpjmd_sasaran AS c ON a.id_sasaran_rpjmd = c.id_sasaran_rpjmd
+                    INNER JOIN trx_rpjmd_tujuan AS d ON c.id_tujuan_rpjmd = d.id_tujuan_rpjmd
+                    INNER JOIN trx_rpjmd_misi AS e ON d.id_misi_rpjmd = e.id_misi_rpjmd
+                    INNER JOIN trx_rpjmd_visi AS f ON e.id_visi_rpjmd = f.id_visi_rpjmd
+                    INNER JOIN trx_rpjmd_program_urusan AS g ON g.id_program_rpjmd = a.id_program_rpjmd
+                    INNER JOIN ref_bidang AS h ON g.id_bidang = h.id_bidang
+                    INNER JOIN ref_urusan AS i ON h.kd_urusan = i.kd_urusan
+                    WHERE g.id_program_rpjmd='.$id_program_rpjmd.' ORDER BY g.id_bidang DESC');
+
+      return DataTables::of($rpjmdurusan)
+            ->addColumn('action', function ($rpjmdurusan) {
+                
+            return '<div class="btn-group">
+                    <button type="button" class="btn btn-info dropdown-toggle btn-labeled" aria-haspopup="true" aria-expanded="false" data-toggle="dropdown"><span class="btn-label"><i class="fa fa-wrench fa-fw fa-lg"></i></span>Aksi <span class="caret"></span></button>
+                    </button>
+                        <ul class="dropdown-menu dropdown-menu-right">
+                            <li>
+                                <a class="edit-urbidprog dropdown-item"><i class="fa fa-pencil fa-fw fa-lg text-success"></i> Edit Urusan</a>
+                                <a class="del-urbidprog dropdown-item"><i class="fa fa-trash fa-fw fa-lg text-danger"></i> Hapus Urusan</a>
+                                <a class="view-rpjmdpelaksana dropdown-item" data-id_urusan="'.$rpjmdurusan->id_urbid_rpjmd.'"><i class="fa fa-users fa-fw fa-lg text-warning"></i> Lihat Pelaksana</a>
+                            </li>
+                        </ul>
+                    </div>';})
+            ->make(true);
+    }
+
+    public function addUrusan(Request $request)
+    {
+        $rules = [
+            'no_urut'=>'required',
+            'id_program_rpjmd'=>'required',
+            'id_bidang'=>'required',
+        ];
+        $messages =[
+            'no_urut.required'=>'Nomor Urut Kosong',
+            'id_program_rpjmd.required'=>'ID Program RPJMD Kosong',  
+            'id_bidang.required'=>'ID Bidang Kosong',          
+        ];
+        $validation = Validator::make($request->all(),$rules,$messages);
+        
+        if($validation->fails()) {
+            $errors = Fungsi::validationErrorsToString($validation->errors());
+            return response ()->json (['pesan'=>$errors,'status_pesan'=>'0']);          
+            }
+        else {              
+            $xData=DB::select('SELECT * FROM trx_rpjmd_program_urusan WHERE thn_id ='.Session::get('xIdPemda').' AND id_program_rpjmd = '.$request->id_program_rpjmd.' AND id_bidang ='.$request->id_bidang);
+
+            if ($xData != null){
+                return response ()->json (['pesan'=>'Data Gagal Disimpan (Urusan - Bidang sudah dipakai)','status_pesan'=>'0']);
+            } else {
+                $data = new TrxRpjmdProgramUrusan ();
+                $data->thn_id= Session::get('xIdPemda');
+                $data->no_urut= $request->no_urut;
+                $data->id_program_rpjmd= $request->id_program_rpjmd;
+                $data->id_bidang= $request->id_bidang;
+                $data->status_data= 0;
+                $data->sumber_data= 1;
+                try{
+                    $data->save (['timestamps' => true]);
+                    return response ()->json (['pesan'=>'Data Berhasil Disimpan','status_pesan'=>'1']);
+                }
+                  catch(QueryException $e){
+                     $error_code = $e->errorInfo[1] ;
+                     return response ()->json (['pesan'=>'Data Gagal Disimpan ('.$error_code.')','status_pesan'=>'0']);
+                }
+            }
+        }         
+    }
+
+    public function editUrusan(Request $request)
+    {  
+        $rules = [
+            'no_urut'=>'required',
+            'id_program_rpjmd'=>'required',
+            'id_bidang'=>'required',
+            'id_urbid_rpjmd'=>'required',
+            'status_data'=>'required',
+        ];
+        $messages =[
+            'no_urut.required'=>'Nomor Urut Kosong',
+            'id_program_rpjmd.required'=>'ID Program RPJMD Kosong',  
+            'id_bidang.required'=>'ID Bidang Kosong',        
+            'id_urbid_rpjmd.required'=>'ID Urusan RPJMD Kosong',  
+            'status_data.required'=>'Status Data Urusan RPJMD Kosong',       
+        ];
+        $validation = Validator::make($request->all(),$rules,$messages);
+        
+        if($validation->fails()) {
+            $errors = Fungsi::validationErrorsToString($validation->errors());
+            return response ()->json (['pesan'=>$errors,'status_pesan'=>'0']);          
+            }
+        else {              
+              $xData=DB::select('SELECT * FROM trx_rpjmd_program_urusan 
+                    WHERE id_program_rpjmd = '.$request->id_program_rpjmd.' AND no_urut ='.$request->no_urut.' AND id_bidang ='.$request->id_bidang.' AND id_urbid_rpjmd ='.$request->id_urbid_rpjmd);
+
+              if ($xData != null){
+                    return response ()->json (['pesan'=>'Data Tetap Sama Tidak Ada Perubahan','status_pesan'=>'0']);
+                } else {
+                  $data = TrxRpjmdProgramUrusan::find($request->id_urbid_rpjmd);
+                  $data->no_urut= $request->no_urut;
+                  $data->id_program_rpjmd= $request->id_program_rpjmd;
+                  $data->id_bidang= $request->id_bidang;
+                  $data->status_data= $request->status_data;
+                  try{
+                      $data->save (['timestamps' => true]);
+                      return response ()->json (['pesan'=>'Data Berhasil Disimpan','status_pesan'=>'1']);
+                  }
+                    catch(QueryException $e){
+                       $error_code = $e->errorInfo[1] ;
+                       return response ()->json (['pesan'=>'Data Gagal Disimpan ('.$error_code.')','status_pesan'=>'0']);
+                  }
+              }   
+        }       
+    }
+
+    public function delUrusan(Request $request)
+    {
+        $rules = [
+            'id_urbid_rpjmd'=>'required',
+            'id_program_rpjmd_edit'=>'required',
+        ];
+        $messages =[
+            'id_urbid_rpjmd.required'=>'ID Urusan RPJMD Kosong',
+            'id_program_rpjmd_edit.required'=>'ID Program RPJMD Kosong',           
+        ];
+        $validation = Validator::make($request->all(),$rules,$messages);
+        
+        if($validation->fails()) {
+            $errors = Fungsi::validationErrorsToString($validation->errors());
+            return response ()->json (['pesan'=>$errors,'status_pesan'=>'0']);          
+            }
+        else {  
+            $cek = $this->checkUrusan($request->id_program_rpjmd_edit);
+
+            if($cek[0]->id_status_dokumen == 0){
+                $xData=DB::select('SELECT * FROM trx_rpjmd_program_urusan WHERE id_urbid_rpjmd ='.$request->id_urbid_rpjmd.' AND sumber_data = 0');
+                if ($xData == null){
+                    $data = TrxRpjmdProgramUrusan::where('id_urbid_rpjmd',$request->id_urbid_rpjmd)->delete();
+                    if($data != 0){
+                      return response ()->json (['pesan'=>'Data Berhasil Dihapus','status_pesan'=>'1']);
+                    } else {
+                      return response ()->json (['pesan'=>'Data Gagal Dihapus','status_pesan'=>'0']);
+                    }
+                } else {
+                    return response ()->json (['pesan'=>'Data Gagal Dihapus (Data Hasil Import Aplikasi 5 tahunan)','status_pesan'=>'0']);
+                }   
+            } else {
+                return response ()->json (['pesan'=>'Data Gagal Dihapus (Status Dokumen telah terposting)','status_pesan'=>'0']);
+            }
+        } 
+    }
+
+    public function getPelaksanaProgramRPJMD($id_urbid_rpjmd)
+    {
+      $rpjmdpelaksana = DB::Select('SELECT CONCAT(f.no_urut,".",e.no_urut,".",d.no_urut,".",c.no_urut,".",a.no_urut) AS kd_program,
+                        CONCAT(h.kd_urusan,".",h.kd_bidang,".",i.kd_unit) AS kd_unit,i.nm_unit,j.thn_id, j.no_urut, j.id_urbid_rpjmd,
+                        j.id_pelaksana_rpjmd,j.id_unit,j.id_perubahan,j.pagu_tahun1,j.pagu_tahun2,j.pagu_tahun3,j.pagu_tahun4,j.pagu_tahun5
+                        FROM trx_rpjmd_program AS a
+                        INNER JOIN trx_rpjmd_sasaran AS c ON a.id_sasaran_rpjmd = c.id_sasaran_rpjmd
+                        INNER JOIN trx_rpjmd_tujuan AS d ON c.id_tujuan_rpjmd = d.id_tujuan_rpjmd
+                        INNER JOIN trx_rpjmd_misi AS e ON d.id_misi_rpjmd = e.id_misi_rpjmd
+                        INNER JOIN trx_rpjmd_visi AS f ON e.id_visi_rpjmd = f.id_visi_rpjmd
+                        INNER JOIN trx_rpjmd_program_urusan AS g ON g.id_program_rpjmd = a.id_program_rpjmd
+                        INNER JOIN trx_rpjmd_program_pelaksana AS j ON j.id_urbid_rpjmd = g.id_urbid_rpjmd
+                        INNER JOIN ref_unit AS i ON i.id_unit = j.id_unit
+                        INNER JOIN ref_bidang AS h ON h.id_bidang = i.id_bidang
+                        WHERE g.id_urbid_rpjmd = '.$id_urbid_rpjmd.' ORDER BY i.id_unit DESC');
+
+      return DataTables::of($rpjmdpelaksana)
+            ->addColumn('action', function ($rpjmdpelaksana) {
+            return '<div class="btn-group">
+                    <button type="button" class="btn btn-info dropdown-toggle btn-labeled" aria-haspopup="true" aria-expanded="false" data-toggle="dropdown"><span class="btn-label"><i class="fa fa-wrench fa-fw fa-lg"></i></span>Aksi <span class="caret"></span></button>
+                    </button>
+                        <ul class="dropdown-menu dropdown-menu-right">
+                            <li>  
+                                <a class="edit-pelaksanaprog dropdown-item"><i class="fa fa-pencil fa-fw fa-lg text-success"></i> Edit Pelaksana</a>                              
+                                <a class="del-pelaksanaprog dropdown-item"><i class="fa fa-trash fa-fw fa-lg text-danger"></i> Hapus Pelaksana</a>
+                            </li>
+                        </ul>
+                    </div>';})
+            ->make(true);
+    }
+
+    public function addPelaksana(Request $request)
+    {
+        $rules = [
+            'id_urbid_rpjmd'=>'required',
+            'no_urut'=>'required',
+            'id_unit'=>'required',
+        ];
+        $messages =[
+            'id_urbid_rpjmd.required'=>'ID Urusan RPJMD Kosong',
+            'no_urut.required'=>'Nomor Urut Kosong',  
+            'id_unit.required'=>'Unit Perangkat Daerah Kosong',          
+        ];
+        $validation = Validator::make($request->all(),$rules,$messages);
+        
+        if($validation->fails()) {
+            $errors = Fungsi::validationErrorsToString($validation->errors());
+            return response ()->json (['pesan'=>$errors,'status_pesan'=>'0']);          
+            }
+        else {  
+            $xData=DB::select('SELECT * FROM trx_rpjmd_program_pelaksana WHERE thn_id ='.Session::get('xIdPemda').' AND id_urbid_rpjmd = '.$request->id_urbid_rpjmd.' AND id_unit ='.$request->id_unit);
+
+            if ($xData != null){
+                return response ()->json (['pesan'=>'Data Gagal Disimpan (Unit Pelaksana sudah dipakai)','status_pesan'=>'0']);
+            } else {
+                $data = new TrxRpjmdProgramPelaksana();
+                $data->thn_id= Session::get('xIdPemda');
+                $data->id_urbid_rpjmd= $request->id_urbid_rpjmd;
+                $data->no_urut= $request->no_urut;
+                $data->id_unit= $request->id_unit;
+                $data->status_data= 0;
+                $data->sumber_data= 1;
+                try{
+                    $data->save (['timestamps' => true]);
+                    return response ()->json (['pesan'=>'Data Berhasil Disimpan','status_pesan'=>'1']);
+                }
+                  catch(QueryException $e){
+                     $error_code = $e->errorInfo[1] ;
+                     return response ()->json (['pesan'=>'Data Gagal Disimpan ('.$error_code.')','status_pesan'=>'0']);
+                }
+            } 
+        }  
+    }
+
+    public function editPelaksana(Request $request)
+    {
+        $rules = [
+            'id_urbid_rpjmd'=>'required',
+            'no_urut'=>'required',
+            'id_unit'=>'required',
+            'id_pelaksana_rpjmd'=>'required',
+            'status_data'=>'required',
+        ];
+        $messages =[
+            'id_urbid_rpjmd.required'=>'ID Urusan RPJMD Kosong',
+            'no_urut.required'=>'Nomor Urut Kosong',  
+            'id_unit.required'=>'Unit Perangkat Daerah Kosong',  
+            'id_pelaksana_rpjmd.required'=>'ID Pelaksana RPJMD Kosong',  
+            'status_data.required'=>'Status Data Pelaksana RPJMD Kosong',          
+        ];
+        $validation = Validator::make($request->all(),$rules,$messages);
+        
+        if($validation->fails()) {
+            $errors = Fungsi::validationErrorsToString($validation->errors());
+            return response ()->json (['pesan'=>$errors,'status_pesan'=>'0']);          
+            }
+        else { 
+
+                $data = TrxRpjmdProgramPelaksana::find($request->id_pelaksana_rpjmd);
+                $data->id_urbid_rpjmd= $request->id_urbid_rpjmd;
+                $data->no_urut= $request->no_urut;
+                $data->id_unit= $request->id_unit;
+                $data->status_data= $request->status_data;
+                try{
+                    $data->save (['timestamps' => true]);
+                    return response ()->json (['pesan'=>'Data Berhasil Disimpan','status_pesan'=>'1']);
+                }
+                  catch(QueryException $e){
+                     $error_code = $e->errorInfo[1] ;
+                     return response ()->json (['pesan'=>'Data Gagal Disimpan ('.$error_code.')','status_pesan'=>'0']);
+                }
+        }  
+    }
+
+    public function delPelaksana(Request $request)
+    {
+        $rules = [
+            'id_urbid_rpjmd'=>'required',
+            'id_pelaksana_rpjmd'=>'required',
+        ];
+        $messages =[
+            'id_urbid_rpjmd.required'=>'ID Urusan RPJMD Kosong',
+            'id_pelaksana_rpjmd.required'=>'ID Pelaksana RPJMD Kosong',           
+        ];
+        $validation = Validator::make($request->all(),$rules,$messages);
+        
+        if($validation->fails()) {
+            $errors = Fungsi::validationErrorsToString($validation->errors());
+            return response ()->json (['pesan'=>$errors,'status_pesan'=>'0']);          
+            }
+        else {  
+            $cek = $this->checkPelaksana($request->id_urbid_rpjmd);
+
+            if($cek[0]->id_status_dokumen == 0){
+                $xData=DB::select('SELECT * FROM trx_rpjmd_program_pelaksana WHERE id_pelaksana_rpjmd ='.$request->id_pelaksana_rpjmd.' AND sumber_data = 0');
+                if ($xData == null){
+                    $data = TrxRpjmdProgramPelaksana::where('id_pelaksana_rpjmd',$request->id_pelaksana_rpjmd)->delete();
+                    if($data != 0){
+                      return response ()->json (['pesan'=>'Data Berhasil Dihapus','status_pesan'=>'1']);
+                    } else {
+                      return response ()->json (['pesan'=>'Data Gagal Dihapus','status_pesan'=>'0']);
+                    }
+                } else {
+                    return response ()->json (['pesan'=>'Data Gagal Dihapus (Data Hasil Import Aplikasi 5 tahunan)','status_pesan'=>'0']);
+                }   
+            } else {
+                return response ()->json (['pesan'=>'Data Gagal Dihapus (Status Dokumen telah terposting)','status_pesan'=>'0']);
+            }
+        }               
+    }
+
     public function getPendapatanRPJMD($id_visi_rpjmd)
     {
-
       $rpjmdprogram = DB::Select('SELECT CONCAT(a.no_urut,".",b.no_urut,".",c.no_urut,".",d.no_urut) as kd_sasaran,e.id_program_rpjmd, 
                         e.no_urut,e.uraian_program_rpjmd,e.thn_id,e.id_sasaran_rpjmd,e.id_perubahan,(e.pagu_tahun1/1000000) as pagu_tahun1,(e.pagu_tahun2/1000000) as pagu_tahun2, 
                         (e.pagu_tahun3/1000000) as pagu_tahun3,(e.pagu_tahun4/1000000) as pagu_tahun4,(e.pagu_tahun5/1000000) as pagu_tahun5,(e.total_pagu/1000000) as total_pagu,
@@ -1038,107 +2053,40 @@ class TrxRpjmdController extends Controller
       }
     }
 
-
-    public function editProgram(Request $req)
+    public function getUnitPelaksana($id_program_rpjmd,$id_bidang)
     {
-        $xData=DB::select('SELECT * FROM trx_rpjmd_program WHERE thn_id ='.$req->thn_id_program_edit.' AND id_sasaran_rpjmd = '.$req->id_sasaran_rpjmd_program_edit.' AND no_urut ='.$req->no_urut_program_edit);
+      $rpjmdpelaksana = DB::Select('SELECT DISTINCT f.id_unit, f.id_bidang, f.kd_unit, f.nm_unit
+                        FROM trx_renstra_visi AS a
+                        INNER JOIN trx_renstra_misi AS b ON b.id_visi_renstra = a.id_visi_renstra
+                        INNER JOIN trx_renstra_tujuan AS c ON c.id_misi_renstra = b.id_misi_renstra
+                        INNER JOIN trx_renstra_sasaran AS d ON d.id_tujuan_renstra = c.id_tujuan_renstra
+                        INNER JOIN trx_renstra_program AS e ON e.id_sasaran_renstra = d.id_sasaran_renstra
+                        INNER JOIN ref_unit AS f ON a.id_unit = f.id_unit
+                        INNER JOIN ref_program AS g ON e.id_program_ref = g.id_program
+                        WHERE e.id_program_rpjmd = '.$id_program_rpjmd.' AND g.id_bidang = '.$id_bidang.' ORDER BY f.id_bidang ASC');
 
-    	if ($xData != null){
-            $data = TrxRpjmdProgram::find($req->id_program_rpjmd_edit);
-        	$data->thn_id= $req->thn_id_program_edit;
-        	$data->id_sasaran_rpjmd= $req->id_sasaran_rpjmd_program_edit;
-        	$data->uraian_program_rpjmd= $req->ur_program_rpjmd_edit;
-        	$data->id_perubahan= $req->id_perubahan_program_edit;
-        	$data->pagu_tahun1= $req->pagu1_edit;
-        	$data->pagu_tahun2= $req->pagu2_edit;
-        	$data->pagu_tahun3= $req->pagu3_edit;
-        	$data->pagu_tahun4= $req->pagu4_edit;
-        	$data->pagu_tahun5= $req->pagu5_edit;
-          $data->total_pagu= $req->pagu_total_edit;
-        	$data->no_urut= $req->no_urut_program_edit;
-        } else {
-            $data = new TrxRpjmdProgram ();
-            $data->thn_id= $req->thn_id_program_edit;
-            $data->id_sasaran_rpjmd= $req->id_sasaran_rpjmd_program_edit;
-            $data->uraian_program_rpjmd= $req->ur_program_rpjmd_edit;
-            $data->id_perubahan= $req->id_perubahan_program_edit;
-            $data->pagu_tahun1= $req->pagu1_edit;
-            $data->pagu_tahun2= $req->pagu2_edit;
-            $data->pagu_tahun3= $req->pagu3_edit;
-            $data->pagu_tahun4= $req->pagu4_edit;
-            $data->pagu_tahun5= $req->pagu5_edit;
-            $data->total_pagu= $req->pagu_total_edit;
-            $data->no_urut= $req->no_urut_program_edit;
-        }
-
-    	try{
-            $data->save (['timestamps' => true]);
-            return response ()->json (['pesan'=>'Data Berhasil Disimpan','status_pesan'=>'1']);
-        }
-          catch(QueryException $e){
-             $error_code = $e->errorInfo[1] ;
-             return response ()->json (['pesan'=>'Data Gagal Disimpan ('.$error_code.')','status_pesan'=>'0']);
-        }
-    }
-
-
-    public function getIndikatorProgramRPJMD($id_program_rpjmd)
-    {
-      $rpjmdindikator = DB::Select('SELECT b.thn_id, b.no_urut,b.id_program_rpjmd,b.id_indikator_program_rpjmd,b.id_perubahan,b.id_indikator,b.uraian_indikator_program_rpjmd,
-                        b.tolok_ukur_indikator,b.angka_awal_periode,b.angka_tahun1,b.angka_tahun2,b.angka_tahun3,b.angka_tahun4,b.angka_tahun5,b.angka_akhir_periode,a.no_urut,
-                        CONCAT(f.no_urut,".",e.no_urut,".",d.no_urut,".",c.no_urut,".",a.no_urut) as kd_program
-                        FROM trx_rpjmd_program AS a
-                        INNER JOIN trx_rpjmd_program_indikator AS b ON b.id_program_rpjmd = a.id_program_rpjmd
-                        INNER JOIN trx_rpjmd_sasaran AS c ON a.id_sasaran_rpjmd = c.id_sasaran_rpjmd
-                        INNER JOIN trx_rpjmd_tujuan AS d ON c.id_tujuan_rpjmd = d.id_tujuan_rpjmd
-                        INNER JOIN trx_rpjmd_misi AS e ON d.id_misi_rpjmd = e.id_misi_rpjmd
-                        INNER JOIN trx_rpjmd_visi AS f ON e.id_visi_rpjmd = f.id_visi_rpjmd 
-                        WHERE b.id_program_rpjmd='.$id_program_rpjmd.' ORDER BY b.no_urut DESC');
-
-      return DataTables::of($rpjmdindikator)
-            ->addColumn('action', function ($rpjmdindikator) {
-            return '<div class="btn-group">
-                    <button type="button" class="btn btn-info dropdown-toggle btn-labeled" aria-haspopup="true" aria-expanded="false" data-toggle="dropdown"><span class="btn-label"><i class="fa fa-wrench fa-fw fa-lg"></i></span>Aksi <span class="caret"></span></button>
-                    </button>
-                        <ul class="dropdown-menu dropdown-menu-right">
-                            <li>
-                                <a class="edit-indikatorprog dropdown-item"><i class="fa fa-pencil fa-fw fa-lg text-success"></i> Lihat Indikator</a>
-                            </li>
-                        </ul>
-                    </div>';})
+      return DataTables::of($rpjmdpelaksana)
+            ->addColumn('action', function ($rpjmdpelaksana) {
+            return '<a class="add-unitpelaksana btn btn-success btn-labeled"><span class="btn-label"><i class="fa fa-plus fa-fw fa-lg"></i></span>Tambahkan</a>';})
             ->make(true);
     }
-
-    public function getUrusanProgramRPJMD($id_program_rpjmd)
+    
+    public function getCheckSum2()
     {
-      $rpjmdurusan = DB::Select('SELECT CONCAT(f.no_urut,".",e.no_urut,".",d.no_urut,".",c.no_urut,".",a.no_urut) AS kd_program,
-                    CONCAT(h.kd_urusan,".",h.kd_bidang) AS kode_bid,h.kd_urusan,
-                    g.thn_id,g.no_urut,g.id_urbid_rpjmd,g.id_program_rpjmd,g.id_bidang,h.nm_bidang,i.nm_urusan
-                    FROM trx_rpjmd_program AS a
-                    INNER JOIN trx_rpjmd_sasaran AS c ON a.id_sasaran_rpjmd = c.id_sasaran_rpjmd
-                    INNER JOIN trx_rpjmd_tujuan AS d ON c.id_tujuan_rpjmd = d.id_tujuan_rpjmd
-                    INNER JOIN trx_rpjmd_misi AS e ON d.id_misi_rpjmd = e.id_misi_rpjmd
-                    INNER JOIN trx_rpjmd_visi AS f ON e.id_visi_rpjmd = f.id_visi_rpjmd
-                    INNER JOIN trx_rpjmd_program_urusan AS g ON g.id_program_rpjmd = a.id_program_rpjmd
-                    INNER JOIN ref_bidang AS h ON g.id_bidang = h.id_bidang
-                    INNER JOIN ref_urusan AS i ON h.kd_urusan = i.kd_urusan
-                    WHERE g.id_program_rpjmd='.$id_program_rpjmd.' ORDER BY g.id_bidang DESC');
+    	$tahun=2017;
+    	$sumtahun=substr($tahun,0,1)+substr($tahun,1,1)+substr($tahun,2,1)+substr($tahun,3,1);
+    	$tahap=2;
+    	$no_urut=1;
+    	$pagu=15098324900.89;    	
+    	$nilai=$sumtahun.substr($pagu,2,1).$no_urut.substr($pagu,1,1).$tahap.substr($pagu,-1,1);
+    	return $nilai;
+    }
 
-      return DataTables::of($rpjmdurusan)
-            ->addColumn('action', function ($rpjmdurusan) {
-                
-            return '<div class="btn-group">
-                    <button type="button" class="btn btn-info dropdown-toggle btn-labeled" aria-haspopup="true" aria-expanded="false" data-toggle="dropdown"><span class="btn-label"><i class="fa fa-wrench fa-fw fa-lg"></i></span>Aksi <span class="caret"></span></button>
-                    </button>
-                        <ul class="dropdown-menu dropdown-menu-right">
-                            <li>
-                                <a class="edit-urbidprog dropdown-item"><i class="fa fa-pencil fa-fw fa-lg text-success"></i> Edit Urusan</a>
-                                <a class="del-urbidprog dropdown-item"><i class="fa fa-trash fa-fw fa-lg text-danger"></i> Hapus Urusan</a>
-                                <a class="view-rpjmdpelaksana dropdown-item" data-id_urusan="'.$rpjmdurusan->id_urbid_rpjmd.'"><i class="fa fa-users fa-fw fa-lg text-warning"></i> Lihat Pelaksana</a>
-                            </li>
-                        </ul>
-                    </div>';})
-            ->make(true);
+    public function getCheckSum($tahun,$tahap,$no_urut,$pagu)
+    {    	
+    	$sumtahun=substr($tahun,0,1)+substr($tahun,1,1)+substr($tahun,2,1)+substr($tahun,3,1);    	
+    	$nilai=$sumtahun.substr($pagu,2,1).$no_urut.substr($pagu,1,1).$tahap.substr($pagu,-1,1);
+    	return $nilai;
     }
 
     public function getUrusan($id_program_rpjmd){
@@ -1161,176 +2109,73 @@ class TrxRpjmdController extends Controller
         return json_encode($bidang);
     }
 
-    public function addUrusan(Request $req)
-    {
-        $xData=DB::select('SELECT * FROM trx_rpjmd_program_urusan WHERE thn_id ='.$req->thn_id.' AND id_program_rpjmd = '.$req->id_program_rpjmd.' AND no_urut ='.$req->no_urut.' AND id_bidang ='.$req->id_bidang);
-
-        if ($xData != null){
-            return response ()->json (['pesan'=>'Data Gagal Disimpan (Urusan - Bidang sudah dipakai)','status_pesan'=>'0']);
-        } else {
-            $data = new TrxRpjmdProgramUrusan ();
-            $data->thn_id= $req->thn_id;
-            $data->no_urut= $req->no_urut;
-            $data->id_program_rpjmd= $req->id_program_rpjmd;
-            $data->id_bidang= $req->id_bidang;
-            try{
-                $data->save (['timestamps' => true]);
-                return response ()->json (['pesan'=>'Data Berhasil Disimpan','status_pesan'=>'1']);
-            }
-              catch(QueryException $e){
-                 $error_code = $e->errorInfo[1] ;
-                 return response ()->json (['pesan'=>'Data Gagal Disimpan ('.$error_code.')','status_pesan'=>'0']);
-            }
-        }
-        
+    public function checkVisi($id)
+    {       
+        $cek = DB::SELECT('SELECT id_status_dokumen FROM trx_rpjmd_dokumen WHERE id_rpjmd ='.$id);
+        return $cek;
     }
 
-    public function editUrusan(Request $req)
-    {        
-      $xData=DB::select('SELECT * FROM trx_rpjmd_program_urusan 
-            WHERE thn_id ='.$req->thn_id.' AND id_program_rpjmd = '.$req->id_program_rpjmd.' AND no_urut ='.$req->no_urut.' AND id_bidang ='.$req->id_bidang.' AND id_urbid_rpjmd ='.$req->id_urbid_rpjmd);
-
-      if ($xData != null){
-            return response ()->json (['pesan'=>'Data Tetap Sama Tidak Ada Perubahan','status_pesan'=>'0']);
-        } else {
-          $data = TrxRpjmdProgramUrusan::find($req->id_urbid_rpjmd);;
-          $data->thn_id= $req->thn_id;
-          $data->no_urut= $req->no_urut;
-          $data->id_program_rpjmd= $req->id_program_rpjmd;
-          $data->id_bidang= $req->id_bidang;
-          try{
-              $data->save (['timestamps' => true]);
-              return response ()->json (['pesan'=>'Data Berhasil Disimpan','status_pesan'=>'1']);
-          }
-            catch(QueryException $e){
-               $error_code = $e->errorInfo[1] ;
-               return response ()->json (['pesan'=>'Data Gagal Disimpan ('.$error_code.')','status_pesan'=>'0']);
-          }
-      }        
+    public function checkMisi($id)
+    {       
+        $cek = DB::SELECT('SELECT a.id_status_dokumen FROM trx_rpjmd_dokumen AS a
+                INNER JOIN trx_rpjmd_visi AS b ON a.id_rpjmd = b.id_rpjmd
+                WHERE b.id_visi_rpjmd ='.$id);
+        return $cek;
     }
 
-    public function delUrusan(Request $req){
-
-        $xData=DB::select('SELECT * FROM trx_rpjmd_program_urusan WHERE id_urbid_rpjmd ='.$req->id_urbid_rpjmd.' AND no_urut > 50');
-
-        if ($xData != null){
-            $data = TrxRpjmdProgramUrusan::where('id_urbid_rpjmd',$req->id_urbid_rpjmd)->delete();
-            if($data != 0){
-              return response ()->json (['pesan'=>'Data Berhasil Dihapus','status_pesan'=>'1']);
-            } else {
-              return response ()->json (['pesan'=>'Data Gagal Dihapus','status_pesan'=>'0']);
-            }
-        } else {
-            return response ()->json (['pesan'=>'Data Gagal Dihapus (Data Hasil Import Aplikasi 5 tahunan)','status_pesan'=>'0']);
-        }       
+    public function checkTujuan($id)
+    {       
+        $cek = DB::SELECT('SELECT a.id_status_dokumen FROM trx_rpjmd_dokumen AS a
+                INNER JOIN trx_rpjmd_visi AS b ON a.id_rpjmd = b.id_rpjmd
+                INNER JOIN trx_rpjmd_misi AS c ON b.id_visi_rpjmd = c.id_visi_rpjmd
+                WHERE c.id_misi_rpjmd ='.$id);
+        return $cek;
     }
 
-    public function getPelaksanaProgramRPJMD($id_urbid_rpjmd)
-    {
-      $rpjmdpelaksana = DB::Select('SELECT CONCAT(f.no_urut,".",e.no_urut,".",d.no_urut,".",c.no_urut,".",a.no_urut) AS kd_program,
-                        CONCAT(h.kd_urusan,".",h.kd_bidang,".",i.kd_unit) AS kd_unit,i.nm_unit,j.thn_id, j.no_urut, j.id_urbid_rpjmd,
-                        j.id_pelaksana_rpjmd,j.id_unit,j.id_perubahan,j.pagu_tahun1,j.pagu_tahun2,j.pagu_tahun3,j.pagu_tahun4,j.pagu_tahun5
-                        FROM trx_rpjmd_program AS a
-                        INNER JOIN trx_rpjmd_sasaran AS c ON a.id_sasaran_rpjmd = c.id_sasaran_rpjmd
-                        INNER JOIN trx_rpjmd_tujuan AS d ON c.id_tujuan_rpjmd = d.id_tujuan_rpjmd
-                        INNER JOIN trx_rpjmd_misi AS e ON d.id_misi_rpjmd = e.id_misi_rpjmd
-                        INNER JOIN trx_rpjmd_visi AS f ON e.id_visi_rpjmd = f.id_visi_rpjmd
-                        INNER JOIN trx_rpjmd_program_urusan AS g ON g.id_program_rpjmd = a.id_program_rpjmd
-                        INNER JOIN trx_rpjmd_program_pelaksana AS j ON j.id_urbid_rpjmd = g.id_urbid_rpjmd
-                        INNER JOIN ref_unit AS i ON i.id_unit = j.id_unit
-                        INNER JOIN ref_bidang AS h ON h.id_bidang = i.id_bidang
-                        WHERE g.id_urbid_rpjmd = '.$id_urbid_rpjmd.' ORDER BY i.id_unit DESC');
-
-      return DataTables::of($rpjmdpelaksana)
-            ->addColumn('action', function ($rpjmdpelaksana) {
-            return '<div class="btn-group">
-                    <button type="button" class="btn btn-info dropdown-toggle btn-labeled" aria-haspopup="true" aria-expanded="false" data-toggle="dropdown"><span class="btn-label"><i class="fa fa-wrench fa-fw fa-lg"></i></span>Aksi <span class="caret"></span></button>
-                    </button>
-                        <ul class="dropdown-menu dropdown-menu-right">
-                            <li>                                
-                                <a class="del-pelaksanaprog dropdown-item"><i class="fa fa-trash fa-fw fa-lg text-danger"></i> Hapus Pelaksana</a>
-                            </li>
-                        </ul>
-                    </div>';})
-            ->make(true);
+    public function checkSasaran($id)
+    {       
+        $cek = DB::SELECT('SELECT a.id_status_dokumen FROM trx_rpjmd_dokumen AS a
+                INNER JOIN trx_rpjmd_visi AS b ON a.id_rpjmd = b.id_rpjmd
+                INNER JOIN trx_rpjmd_misi AS c ON b.id_visi_rpjmd = c.id_visi_rpjmd
+                INNER JOIN trx_rpjmd_tujuan AS d ON c.id_misi_rpjmd = d.id_misi_rpjmd
+                WHERE d.id_tujuan_rpjmd ='.$id);
+        return $cek;
     }
 
-    public function getUnitPelaksana($id_program_rpjmd,$id_bidang)
-    {
-      $rpjmdpelaksana = DB::Select('SELECT DISTINCT f.id_unit, f.id_bidang, f.kd_unit, f.nm_unit
-                        FROM trx_renstra_visi AS a
-                        INNER JOIN trx_renstra_misi AS b ON b.id_visi_renstra = a.id_visi_renstra
-                        INNER JOIN trx_renstra_tujuan AS c ON c.id_misi_renstra = b.id_misi_renstra
-                        INNER JOIN trx_renstra_sasaran AS d ON d.id_tujuan_renstra = c.id_tujuan_renstra
-                        INNER JOIN trx_renstra_program AS e ON e.id_sasaran_renstra = d.id_sasaran_renstra
-                        INNER JOIN ref_unit AS f ON a.id_unit = f.id_unit
-                        INNER JOIN ref_program AS g ON e.id_program_ref = g.id_program
-                        WHERE e.id_program_rpjmd = '.$id_program_rpjmd.' AND g.id_bidang = '.$id_bidang.' ORDER BY f.id_bidang ASC');
-
-      return DataTables::of($rpjmdpelaksana)
-            ->addColumn('action', function ($rpjmdpelaksana) {
-            return '<a class="add-unitpelaksana btn btn-success btn-labeled"><span class="btn-label"><i class="fa fa-plus fa-fw fa-lg"></i></span>Tambahkan</a>';})
-            ->make(true);
+    public function checkProgram($id)
+    {       
+        $cek = DB::SELECT('SELECT a.id_status_dokumen FROM trx_rpjmd_dokumen AS a
+                INNER JOIN trx_rpjmd_visi AS b ON a.id_rpjmd = b.id_rpjmd
+                INNER JOIN trx_rpjmd_misi AS c ON b.id_visi_rpjmd = c.id_visi_rpjmd
+                INNER JOIN trx_rpjmd_tujuan AS d ON c.id_misi_rpjmd = d.id_misi_rpjmd
+                INNER JOIN trx_rpjmd_sasaran AS e ON d.id_tujuan_rpjmd = e.id_tujuan_rpjmd 
+                WHERE e.id_sasaran_rpjmd ='.$id);
+        return $cek;
     }
 
-    public function addPelaksana(Request $req)
-    {
-        $xData=DB::select('SELECT * FROM trx_rpjmd_program_pelaksana WHERE thn_id ='.$req->thn_id.' AND id_urbid_rpjmd = '.$req->id_urbid_rpjmd.' AND id_unit ='.$req->id_unit);
-
-        if ($xData != null){
-            return response ()->json (['pesan'=>'Data Gagal Disimpan (Unit Pelaksana sudah dipakai)','status_pesan'=>'0']);
-        } else {
-            $data = new TrxRpjmdProgramPelaksana();
-            $data->thn_id= $req->thn_id;
-            $data->id_urbid_rpjmd= $req->id_urbid_rpjmd;
-            $data->no_urut= $req->no_urut;
-            $data->id_unit= $req->id_unit;
-            try{
-                $data->save (['timestamps' => true]);
-                return response ()->json (['pesan'=>'Data Berhasil Disimpan','status_pesan'=>'1']);
-            }
-              catch(QueryException $e){
-                 $error_code = $e->errorInfo[1] ;
-                 return response ()->json (['pesan'=>'Data Gagal Disimpan ('.$error_code.')','status_pesan'=>'0']);
-            }
-        }
-        
+    public function checkUrusan($id)
+    {       
+        $cek = DB::SELECT('SELECT a.id_status_dokumen FROM trx_rpjmd_dokumen AS a
+                INNER JOIN trx_rpjmd_visi AS b ON a.id_rpjmd = b.id_rpjmd
+                INNER JOIN trx_rpjmd_misi AS c ON b.id_visi_rpjmd = c.id_visi_rpjmd
+                INNER JOIN trx_rpjmd_tujuan AS d ON c.id_misi_rpjmd = d.id_misi_rpjmd
+                INNER JOIN trx_rpjmd_sasaran AS e ON d.id_tujuan_rpjmd = e.id_tujuan_rpjmd 
+                INNER JOIN trx_rpjmd_program AS f ON e.id_sasaran_rpjmd = f.id_sasaran_rpjmd 
+                WHERE f.id_program_rpjmd ='.$id);
+        return $cek;
     }
 
-    public function delPelaksana(Request $req){
-
-        $xData=DB::select('SELECT * FROM trx_rpjmd_program_pelaksana WHERE id_pelaksana_rpjmd ='.$req->id_pelaksana_rpjmd.' AND no_urut > 50');
-
-        if ($xData != null){
-            $data = TrxRpjmdProgramPelaksana::where('id_pelaksana_rpjmd',$req->id_pelaksana_rpjmd)->delete();
-            if($data != 0){
-              return response ()->json (['pesan'=>'Data Berhasil Dihapus','status_pesan'=>'1']);
-            } else {
-              return response ()->json (['pesan'=>'Data Gagal Dihapus','status_pesan'=>'0']);
-            }
-        } else {
-            return response ()->json (['pesan'=>'Data Gagal Dihapus (Data Hasil Import Aplikasi 5 tahunan)','status_pesan'=>'0']);
-        }       
-    }
-    
-    public function getCheckSum2()
-    {
-    	$tahun=2017;
-    	$sumtahun=substr($tahun,0,1)+substr($tahun,1,1)+substr($tahun,2,1)+substr($tahun,3,1);
-    	$tahap=2;
-    	$no_urut=1;
-    	$pagu=15098324900.89;
-    	
-    	$nilai=$sumtahun.substr($pagu,2,1).$no_urut.substr($pagu,1,1).$tahap.substr($pagu,-1,1);
-    	return $nilai;
-    }
-    public function getCheckSum($tahun,$tahap,$no_urut,$pagu)
-    {
-    	
-    	$sumtahun=substr($tahun,0,1)+substr($tahun,1,1)+substr($tahun,2,1)+substr($tahun,3,1);
-    	
-    	$nilai=$sumtahun.substr($pagu,2,1).$no_urut.substr($pagu,1,1).$tahap.substr($pagu,-1,1);
-    	return $nilai;
+    public function checkPelaksana($id)
+    {       
+        $cek = DB::SELECT('SELECT a.id_status_dokumen FROM trx_rpjmd_dokumen AS a
+                INNER JOIN trx_rpjmd_visi AS b ON a.id_rpjmd = b.id_rpjmd
+                INNER JOIN trx_rpjmd_misi AS c ON b.id_visi_rpjmd = c.id_visi_rpjmd
+                INNER JOIN trx_rpjmd_tujuan AS d ON c.id_misi_rpjmd = d.id_misi_rpjmd
+                INNER JOIN trx_rpjmd_sasaran AS e ON d.id_tujuan_rpjmd = e.id_tujuan_rpjmd 
+                INNER JOIN trx_rpjmd_program AS f ON e.id_sasaran_rpjmd = f.id_sasaran_rpjmd 
+                INNER JOIN trx_rpjmd_program_urusan AS g ON f.id_urbid_rpjmd = g.id_urbid_rpjmd 
+                WHERE g.id_urbid_rpjmd ='.$id);
+        return $cek;
     }
     
 

@@ -1306,7 +1306,7 @@ var x
 
 $.ajax({
           type: "GET",
-          url: 'blang/getSatuanPublik/'+ x,
+          url: 'renja/blang/getSatuanPublik/'+ x,
           dataType: "json",
           success: function(data) {
 
@@ -1328,7 +1328,7 @@ $.ajax({
 
 $.ajax({
     type: "GET",
-    url: './blang/getUnitRenja',
+    url: 'renja/blang/getUnitRenja',
     dataType: "json",
 
     success: function(data) {
@@ -1349,7 +1349,7 @@ $.ajax({
 
 $.ajax({
           type: "GET",
-          url: './blang/getSumberDana',
+          url: 'renja/blang/getSumberDana',
           dataType: "json",
           success: function(data) {
 
@@ -1368,7 +1368,7 @@ $.ajax({
 
 $.ajax({
           type: "GET",
-          url: './blang/getZonaSSH',
+          url: 'renja/blang/getZonaSSH',
           dataType: "json",
           success: function(data) {
 
@@ -1387,7 +1387,7 @@ $.ajax({
 
 $.ajax({
           type: "GET",
-          url: '../asb/getRefSatuan',
+          url: './asb/getRefSatuan',
           dataType: "json",
           success: function(data) {
 
@@ -1423,7 +1423,7 @@ $(document).on('click', '#btnparam_cari', function() {
         serverSide: true,
         dom: 'BFrtIp',
         "autoWidth": false,
-        "ajax": {"url": "blang/getItemSSH/"+zona_temp+"/"+param.toLowerCase()},
+        "ajax": {"url": "renja/renja/blang/getItemSSH/"+zona_temp+"/"+param.toLowerCase()},
         "columns": [
               { data: 'no_urut', sClass: "dt-center",width:"10px"},
               { data: 'uraian_sub_kelompok_ssh'},
@@ -1471,7 +1471,7 @@ function loadTblProgRenja(tahun,unit){
                   serverSide: true,
                   dom : 'BFRtIp',
                   autoWidth : false,
-                  "ajax": {"url": "./blang/getProgramRenja/"+tahun+"/"+unit},
+                  "ajax": {"url": "./renja/blang/getProgramRenja/"+tahun+"/"+unit},
                   "language": {
                       "decimal": ",",
                       "thousands": "."},
@@ -1557,7 +1557,7 @@ function loadTblKegiatanRenja(id_program){
                   serverSide: true,
                   dom : 'BFRtIp',
                   autoWidth : false,
-                  "ajax": {"url": "./blang/getKegiatanRenja/"+id_program},
+                  "ajax": {"url": "./renja/blang/getKegiatanRenja/"+id_program},
                   "language": {
                       "decimal": ",",
                       "thousands": "."},
@@ -1591,7 +1591,7 @@ function loadTblAktivitas(id_renja){
                   serverSide: true,
                   dom : 'BFRtIp',
                   autoWidth : false,
-                  "ajax": {"url": "./blang/getAktivitas/"+id_renja},
+                  "ajax": {"url": "./renja/blang/getAktivitas/"+id_renja},
                   "language": {
                       "decimal": ",",
                       "thousands": "."},
@@ -1633,7 +1633,7 @@ function loadTblPelaksana(id_aktivitas){
                   serverSide: true,
                   dom : 'BFRtIp',
                   autoWidth : false,
-                  "ajax": {"url": "./blang/getPelaksanaAktivitas/"+id_aktivitas},
+                  "ajax": {"url": "./renja/blang/getPelaksanaAktivitas/"+id_aktivitas},
                   "language": {
                       "decimal": ",",
                       "thousands": "."},
@@ -1668,7 +1668,7 @@ function loadTblLokasi(id_pelaksana){
                   serverSide: true,
                   dom : 'BFRtIp',
                   autoWidth : false,
-                  "ajax": {"url": "./blang/getLokasiAktivitas/"+id_pelaksana},
+                  "ajax": {"url": "./renja/blang/getLokasiAktivitas/"+id_pelaksana},
                   "language": {
                       "decimal": ",",
                       "thousands": "."},
@@ -1695,7 +1695,7 @@ function loadTblBelanja(lokasi){
                   serverSide: true,
                   dom : 'BFRtIp',
                   autoWidth : false,
-                  "ajax": {"url": "./blang/getBelanja/"+lokasi},
+                  "ajax": {"url": "./renja/blang/getBelanja/"+lokasi},
                   "language": {
                       "decimal": ",",
                       "thousands": "."},
@@ -1727,7 +1727,7 @@ $(document).on('click', '#btnCopyBelanja', function() {
         serverSide: true,
         autoWidth : false,
         dom: 'bfrtIp',
-        "ajax": {"url": "./blang/getLokasiCopy/"+id_aktivitas_temp+"/"+id_pelaksana_temp+"/"+id_lokasi_temp},
+        "ajax": {"url": "./renja/blang/getLokasiCopy/"+id_aktivitas_temp+"/"+id_pelaksana_temp+"/"+id_lokasi_temp},
         "columns": [
               { data: 'no_urut', sClass: "dt-center"},
               { data: 'uraian_aktivitas_kegiatan'},
@@ -1753,7 +1753,7 @@ $(document).on('click', '#btnProsesCopyBelanja', function() {
 
     $.ajax({
       type: 'post',
-      url: './blang/getBelanjaCopy',
+      url: './renja/blang/getBelanjaCopy',
       data: {
         '_token': $('input[name=_token]').val(),
         'id_lokasi': data.id_lokasi_renja,
@@ -1776,7 +1776,7 @@ $(document).on('click', '.btnCariASB', function() {
         serverSide: true,
         autoWidth : false,
         dom: 'bfrtIp',
-        "ajax": {"url": "./blang/getAktivitasASB/"+tahun_temp},
+        "ajax": {"url": "./renja/blang/getAktivitasASB/"+tahun_temp},
         "columns": [
               { data: 'no_urut', sClass: "dt-center"},
               { data: 'nm_aktivitas_asb'}
@@ -1796,7 +1796,7 @@ $(document).on('click', '.btnCariSubUnit', function() {
         serverSide: true,
         autoWidth : false,
         dom: 'bfrtIp',
-        "ajax": {"url": "./blang/getSubUnit/"+unit_temp},
+        "ajax": {"url": "./renja/blang/getSubUnit/"+unit_temp},
         "columns": [
               { data: 'no_urut', sClass: "dt-center"},
               { data: 'nm_sub'}
@@ -1816,7 +1816,7 @@ $( "#kecamatan" ).change(function() {
         serverSide: true,
         autoWidth : false,
         dom: 'bfrtIp',
-        "ajax": {"url": "./blang/getLokasiDesa/"+$('#kecamatan').val()},
+        "ajax": {"url": "./renja/blang/getLokasiDesa/"+$('#kecamatan').val()},
         "columns": [
               { data: 'no_urut', sClass: "dt-center"},
               { data: 'nama_lokasi'}
@@ -1831,7 +1831,7 @@ $(document).on('click', '.btnCariLokasi', function() {
 
   $.ajax({
     type: "GET",
-    url: './blang/getKecamatan',
+    url: './renja/blang/getKecamatan',
     dataType: "json",
 
     success: function(data) {
@@ -1855,7 +1855,7 @@ $(document).on('click', '.btnCariLokasi', function() {
         serverSide: true,
         dom: 'bfrtIp',
         autoWidth : false,
-        "ajax": {"url": "./blang/getLokasiDesa/0"},
+        "ajax": {"url": "./renja/blang/getLokasiDesa/0"},
         "columns": [
               { data: 'no_urut', sClass: "dt-center"},
               { data: 'nama_lokasi'}
@@ -1869,7 +1869,7 @@ $(document).on('click', '.btnCariLokasi', function() {
         serverSide: true,
         dom: 'bfrtIp',
         autoWidth : false,
-        "ajax": {"url": "./blang/getLokasiTeknis"},
+        "ajax": {"url": "./renja/blang/getLokasiTeknis"},
         "columns": [
               { data: 'no_urut', sClass: "dt-center"},
               { data: 'nama_lokasi'}
@@ -1883,7 +1883,7 @@ $(document).on('click', '.btnCariLokasi', function() {
         serverSide: true,
         dom: 'bfrtIp',
         autoWidth : false,
-        "ajax": {"url": "./blang/getLokasiLuarDaerah"},
+        "ajax": {"url": "./renja/blang/getLokasiLuarDaerah"},
         "columns": [
               { data: 'no_urut', sClass: "dt-center"},
               { data: 'nama_lokasi'}
@@ -2334,7 +2334,7 @@ $('.modal-footer').on('click', '.editKegiatanRenja', function() {
 
                     $.ajax({
                       type: 'post',
-                      url: 'blang/editKegiatanRenja',
+                      url: 'renja/blang/editKegiatanRenja',
                       data: {
                           '_token': $('input[name=_token]').val(),
                           'id_renja': $('#id_renja_kegiatan').val(),
@@ -2481,7 +2481,7 @@ $(document).on('click', '.add-aktivitas', function() {
 
       $.ajax({
           type: 'post',
-          url: 'blang/addAktivitas',
+          url: 'renja/blang/addAktivitas',
           data: {
               '_token': $('input[name=_token]').val(),
               'no_urut': $('#no_urut_aktivitas').val(),
@@ -2608,7 +2608,7 @@ $(document).on('click', '.edit-aktivitas', function() {
       });
           $.ajax({
               type: 'post',
-              url: 'blang/editAktivitas',
+              url: 'renja/blang/editAktivitas',
               data: {
                   '_token': $('input[name=_token]').val(),
                   'id_aktivitas_renja': $('#id_aktivitas').val(),
@@ -2652,7 +2652,7 @@ $(document).on('click', '.btnHapusAktivitas', function() {
 
     $.ajax({
       type: 'post',
-      url: 'blang/hapusAktivitas',
+      url: 'renja/blang/hapusAktivitas',
       data: {
         '_token': $('input[name=_token]').val(),
         'id_aktivitas_renja': $('#id_aktivitas').val()
@@ -2700,7 +2700,7 @@ $(document).on('click', '.add-pelaksana', function() {
 
       $.ajax({
           type: 'post',
-          url: 'blang/addPelaksana',
+          url: 'renja/blang/addPelaksana',
           data: {
               '_token': $('input[name=_token]').val(),
               'no_urut': $('#no_urut_pelaksana').val(),
@@ -2769,7 +2769,7 @@ $(document).on('click', '.edit-pelaksana', function() {
 
       $.ajax({
           type: 'post',
-          url: 'blang/editPelaksana',
+          url: 'renja/blang/editPelaksana',
           data: {
               '_token': $('input[name=_token]').val(),
               'no_urut': $('#no_urut_pelaksana').val(),
@@ -2803,7 +2803,7 @@ $(document).on('click', '.btnHapusPelaksana', function() {
 
     $.ajax({
       type: 'post',
-      url: 'blang/hapusPelaksana',
+      url: 'renja/blang/hapusPelaksana',
       data: {
         '_token': $('input[name=_token]').val(),
         'id_pelaksana_renja': $('#id_pelaksana_renja').val()
@@ -2872,7 +2872,7 @@ $('.modal-footer').on('click', '.addLokasi', function() {
       if($('#volume_2').val()>0){
       $.ajax({
           type: 'post',
-          url: 'blang/addLokasi',
+          url: 'renja/blang/addLokasi',
           data: {
               '_token': $('input[name=_token]').val(),
               'no_urut': $('#no_urut_lokasi').val(),
@@ -2945,7 +2945,7 @@ $('.modal-footer').on('click', '.editLokasi', function() {
       if($('#volume_2').val()>0){
       $.ajax({
           type: 'post',
-          url: 'blang/editLokasi',
+          url: 'renja/blang/editLokasi',
           data: {
               '_token': $('input[name=_token]').val(),
               'no_urut': $('#no_urut_lokasi').val(),
@@ -2989,7 +2989,7 @@ $(document).on('click', '.btnHapusLokasi', function() {
 
     $.ajax({
       type: 'post',
-      url: 'blang/hapusLokasi',
+      url: 'renja/blang/hapusLokasi',
       data: {
         '_token': $('input[name=_token]').val(),
         'id_lokasi_renja': $('#id_lokasi_renja').val()
@@ -3013,7 +3013,7 @@ $(document).on('click', '.btnCariSSH', function() {
     zona_temp=$('#zona_ssh').val();
 
       $('#cariItemSSH').modal('show');
-      // $('#tblItemSSH').DataTable().ajax.url("blang/getItemSSH/"+$('#zona_ssh').val()).load();
+      // $('#tblItemSSH').DataTable().ajax.url("renja/blang/getItemSSH/"+$('#zona_ssh').val()).load();
 
   });
 
@@ -3023,7 +3023,7 @@ function LoadTblRekening(x,y){
         serverSide: true,
         dom: 'BfrtIp',
         autoWidth : false,
-        "ajax": {"url": "blang/getRekening/"+ x +"/"+y},
+        "ajax": {"url": "renja/blang/getRekening/"+ x +"/"+y},
         "columns": [
               { data: 'no_urut'},
               { data: 'kd_rekening'},
@@ -3048,7 +3048,7 @@ $(document).on('click', '.btnCariRekening', function() {
 
       LoadTblRekening(x,$('#id_item_ssh').val());
       $('#cariRekening').modal('show');
-      // $('#tblRekening').DataTable().ajax.url("blang/getRekening/"+ x +"/"+$('#id_item_ssh').val()).load();
+      // $('#tblRekening').DataTable().ajax.url("renja/blang/getRekening/"+ x +"/"+$('#id_item_ssh').val()).load();
 
   });
 
@@ -3147,7 +3147,7 @@ $('.modal-footer').on('click', '.addBelanja', function() {
 
       $.ajax({
           type: 'post',
-          url: 'blang/addBelanja',
+          url: 'renja/blang/addBelanja',
           data: {
               '_token': $('input[name=_token]').val(),
               'tahun_renja' : $('#tahun_renja_belanja').val(),
@@ -3241,7 +3241,7 @@ $('.modal-footer').on('click', '.editBelanja', function() {
 
       $.ajax({
           type: 'post',
-          url: 'blang/editBelanja',
+          url: 'renja/blang/editBelanja',
           data: {
               '_token': $('input[name=_token]').val(),
               'id_belanja_renja' : $('#id_belanja').val(),
@@ -3289,7 +3289,7 @@ $(document).on('click', '.btnHapusBelanja', function() {
 
     $.ajax({
       type: 'post',
-      url: 'blang/hapusBelanja',
+      url: 'renja/blang/hapusBelanja',
       data: {
         '_token': $('input[name=_token]').val(),
         'id_belanja_renja': $('#id_belanja').val()
@@ -3333,7 +3333,7 @@ $(document).on('click', '.add-belanjaASB', function() {
 
       $.ajax({
           type: "GET",
-          url: './blang/getZonaSSH',
+          url: './renja/blang/getZonaSSH',
           dataType: "json",
           success: function(data) {
 
@@ -3357,7 +3357,7 @@ $(document).on('click', '.btnUnLoadAsb', function() {
 
   $.ajax({
           type: 'post',
-          url: './blang/unloadASB',
+          url: './renja/blang/unloadASB',
           data: {
             '_token': $('input[name=_token]').val(),
             'id_aktivitas_asb': id_asb_temp,
@@ -3392,7 +3392,7 @@ $(document).on('click', '.btnLoadAsb', function() {
 
             $.ajax({
                   type: 'post',
-                  url: 'blang/getHitungASB',
+                  url: 'renja/blang/getHitungASB',
                   data: {
                       '_token': $('input[name=_token]').val(),
                       'tahun_renja' : tahun_temp,

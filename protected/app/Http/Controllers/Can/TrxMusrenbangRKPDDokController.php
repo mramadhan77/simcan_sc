@@ -1,8 +1,9 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Can;
 
 use Illuminate\Http\Request;
+use App\Http\Controllers\Controller;
 
 use App\Http\Requests;
 use DB;
@@ -17,7 +18,7 @@ use App\Models\TrxRkpdRancanganDokumen;
 use App\Models\TrxRkpdRancangan;
 
 
-class TrxRancangRKPDDokController extends Controller
+class TrxMusrenbangRKPDDokController extends Controller
 {
     public function __construct()
     {

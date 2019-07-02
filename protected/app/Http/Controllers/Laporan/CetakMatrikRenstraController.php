@@ -8,14 +8,21 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Input;
+use App\Http\Controllers\Laporan\TemplateReport AS Template;
+use App\Fungsi as Fungsi;
+use CekAkses;
+use Validator;
 use Response;
 use Session;
 use PDF;
-use App\Http\Controllers\Laporan\TemplateReport As Template;
-
+use Auth;
 
 class CetakMatrikRenstraController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware('auth');
+    }
 
   public function printRenstra($unit, $id_renstra)
   {

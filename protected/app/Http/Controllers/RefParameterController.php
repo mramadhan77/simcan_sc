@@ -444,4 +444,18 @@ public function getRekeningSsh($id,$tarif)
             }
         }
 
+      public function getUnitPelaksana()
+    {
+      
+      $rpjmdpelaksana=DB::SELECT('SELECT (@id:=@id+1) as no_urut, b.id_unit, b.kd_unit, b.nm_unit, b.id_bidang, 
+        CONCAT(RIGHT(CONCAT("0",c.kd_urusan),2),".",RIGHT(CONCAT("0",c.kd_bidang),2),".",RIGHT(CONCAT("0",b.kd_unit),2)," -- ",b.nm_unit) AS nama_display
+        FROM ref_unit AS b 
+        INNER JOIN ref_bidang AS c ON b.id_bidang = c.id_bidang, (SELECT @id:=0) x');
+
+      return DataTables::of($rpjmdpelaksana)
+            ->addColumn('action', function ($rpjmdpelaksana) {
+            return '<a class="add-unitpelaksana btn btn-success btn-labeled"><span class="btn-label"><i class="fa fa-plus fa-fw fa-lg"></i></span>Tambahkan</a>';})
+            ->make(true);
+    }
+
 }

@@ -6,16 +6,24 @@ use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 
 use App\Http\Requests;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Input;
-use App\Http\Controllers\Laporan\TemplateReport As Template;
+use App\Http\Controllers\Laporan\TemplateReport AS Template;
+use App\Fungsi as Fungsi;
+use CekAkses;
+use Validator;
 use Response;
 use Session;
 use PDF;
-use DB;
-
+use Auth;
 
 class CetakRpjmdHtmlController extends Controller
 {
+
+  public function __construct()
+    {
+        $this->middleware('auth');
+    }
 
 	public function index()
   {

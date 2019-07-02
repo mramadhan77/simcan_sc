@@ -32,11 +32,7 @@ Route::group(['prefix' => 'rpjmd', 'middleware' => ['auth', 'menu:20']], functio
         Route::get('/getJnsDokumen', 'TrxRpjmdController@getJnsDokumen');
         Route::get('/getDokumen', 'TrxRpjmdController@getDokumen');
         Route::get('/getDokumenRef', 'TrxRpjmdController@getDokumenRef');
-
-        Route::get('/misi/{id_visi_rpjmd}','TrxRpjmdController@getMisiRPJMD');
-        Route::post('/editMisi', ['uses'=>'TrxRpjmdController@editMisi','as'=>'EditMisi']);
-        Route::get('/tujuan/{id_misi_rpjmd}','TrxRpjmdController@getTujuanRPJMD');
-        Route::post('/edittujuan', ['uses'=>'TrxRpjmdController@editTujuan','as'=>'Edittujuan']);
+        
         Route::any('/getRpjmdChart/{id_rpjmd}', 'TrxRpjmdController@indexChart');
         Route::get('/pdtRpjmd/{id_visi_rpjmd}','TrxRpjmdController@getPendapatanRPJMD');
         Route::get('/btlRpjmd/{id_visi_rpjmd}','TrxRpjmdController@getBtlRPJMD');
@@ -51,17 +47,36 @@ Route::group(['prefix' => 'rpjmd', 'middleware' => ['auth', 'menu:20']], functio
         Route::post('/addVisi', ['uses'=>'TrxRpjmdController@addVisi','as'=>'AddVisi']);
         Route::post('/editVisi', ['uses'=>'TrxRpjmdController@editVisi','as'=>'EditVisi']);
         Route::post('/deleteVisi', ['uses'=>'TrxRpjmdController@deleteVisi','as'=>'DeleteVisi']);
-
+    //RPJMD Misi
+        Route::get('/misi/{id_visi_rpjmd}','TrxRpjmdController@getMisiRPJMD');
+        Route::post('/addMisi', ['uses'=>'TrxRpjmdController@addMisi','as'=>'AddMisi']);
+        Route::post('/editMisi', ['uses'=>'TrxRpjmdController@editMisi','as'=>'EditMisi']);
+        Route::post('/deleteMisi', ['uses'=>'TrxRpjmdController@deleteMisi','as'=>'DeleteMisi']);
+    //RPJMD Tujuan        
+        Route::get('/tujuan/{id_misi_rpjmd}','TrxRpjmdController@getTujuanRPJMD');
+        Route::post('/addTujuan', ['uses'=>'TrxRpjmdController@addTujuan','as'=>'AddTujuan']);
+        Route::post('/editTujuan', ['uses'=>'TrxRpjmdController@editTujuan','as'=>'EditTujuan']);
+        Route::post('/deleteTujuan', ['uses'=>'TrxRpjmdController@deleteTujuan','as'=>'DeleteTujuan']);
     //RPJMD Sasaran
         Route::get('/sasaran/{id_tujuan_rpjmd}','TrxRpjmdController@getSasaranRPJMD');
-        Route::post('/editsasaran', ['uses'=>'TrxRpjmdController@editSasaran','as'=>'EditSasaran']);
+        Route::post('/addSasaran', ['uses'=>'TrxRpjmdController@addSasaran','as'=>'AddSasaran']);
+        Route::post('/editSasaran', ['uses'=>'TrxRpjmdController@editSasaran','as'=>'EditSasaran']);
+        Route::post('/deleteSasaran', ['uses'=>'TrxRpjmdController@deleteSasaran','as'=>'DeleteSasaran']);
+    //RPJMD Kebijakan
         Route::get('/kebijakan/{id_sasaran_rpjmd}','TrxRpjmdController@getKebijakanRPJMD');
-        Route::post('/editkebijakan', ['uses'=>'TrxRpjmdController@editKebijakan','as'=>'EditKebijakan']);
+        Route::post('/addKebijakan', ['uses'=>'TrxRpjmdController@addKebijakan','as'=>'AddKebijakan']);
+        Route::post('/editKebijakan', ['uses'=>'TrxRpjmdController@editKebijakan','as'=>'EditKebijakan']);
+        Route::post('/deleteKebijakan', ['uses'=>'TrxRpjmdController@deleteKebijakan','as'=>'DeleteKebijakan']);
+    //RPJMD Strategi
         Route::get('/strategi/{id_sasaran_rpjmd}','TrxRpjmdController@getStrategiRPJMD');
-        Route::post('/editstrategi', ['uses'=>'TrxRpjmdController@editStrategi','as'=>'EditStrategi']);
+        Route::post('/addStrategi', ['uses'=>'TrxRpjmdController@addStrategi','as'=>'AddStrategi']);
+        Route::post('/editStrategi', ['uses'=>'TrxRpjmdController@editStrategi','as'=>'EditStrategi']);
+        Route::post('/deleteStrategi', ['uses'=>'TrxRpjmdController@deleteStrategi','as'=>'DeleteStrategi']);
     //RPJMD Program
         Route::get('/program/{id_sasaran_rpjmd}','TrxRpjmdController@getProgramRPJMD');
-        Route::post('/editprogram', ['uses'=>'TrxRpjmdController@editProgram','as'=>'EditProgram']);
+        Route::post('/addProgram', ['uses'=>'TrxRpjmdController@addProgram','as'=>'AddProgram']);
+        Route::post('/editProgram', ['uses'=>'TrxRpjmdController@editProgram','as'=>'EditProgram']);
+        Route::post('/deleteProgram', ['uses'=>'TrxRpjmdController@deleteProgram','as'=>'DeleteProgram']);
         Route::get('/programindikator/{id_program_rpjmd}','TrxRpjmdController@getIndikatorProgramRPJMD');
         Route::get('/programurusan/{id_program_rpjmd}','TrxRpjmdController@getUrusanProgramRPJMD');
     //RPJMD Urusan    
@@ -82,7 +97,6 @@ Route::group(['prefix' => 'rpjmd', 'middleware' => ['auth', 'menu:20']], functio
         Route::post('/addIndikatorTujuan','TrxRpjmdTujuanIndikatorController@addIndikator');
         Route::post('/editIndikatorTujuan','TrxRpjmdTujuanIndikatorController@editIndikator');
         Route::post('/delIndikatorTujuan','TrxRpjmdTujuanIndikatorController@delIndikator');
-
      //RPJMD Sasaran Indikator
         Route::get('/getIndikatorSasaran/{id_sasaran_rpjmd}','TrxRpjmdSasaranIndikatorController@getIndikatorSasaran');
         Route::post('/addIndikatorSasaran','TrxRpjmdSasaranIndikatorController@addIndikator');

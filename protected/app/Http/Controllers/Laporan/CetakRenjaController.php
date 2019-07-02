@@ -369,8 +369,7 @@ WHERE c.id_unit='. $row->id_unit .' AND a.id_renja_program='. $row2->id_renja_pr
         INNER JOIN trx_rpjmd_tujuan c ON b.id_tujuan_rpjmd=c.id_tujuan_rpjmd
         INNER JOIN trx_rpjmd_misi d ON c.id_misi_rpjmd=d.id_misi_rpjmd
         WHERE d.no_urut in (98,99)) AND a.tahun_renja='.$tahun.' 
-        group by g.kd_urusan, g.kd_bidang, c.kd_unit, c.nm_unit,d.uraian_program_renstra,d.id_renja_program, f.kd_urusan, f.kd_bidang, e.kd_program,a.status_data
-        ');
+        GROUP BY g.kd_urusan, g.kd_bidang, c.kd_unit, c.nm_unit,d.uraian_program_renstra,d.id_renja_program, f.kd_urusan, f.kd_bidang, e.kd_program,a.status_data, e.uraian_program');
   		foreach($program AS $row2) {
           $height1=ceil((PDF::GetStringWidth($row2->ur_pro.'.'.$row2->bid_pro.'  '.$row2->ur_unit.'.'.$row2->bid_unit.'.'.$row2->kd_unit.'.'.$row2->kd_program)/$w1[0]))*3;
           $height2=ceil((PDF::GetStringWidth($row2->uraian_program_renstra)/$w1[1]))*3;
@@ -474,7 +473,7 @@ WHERE c.id_unit='. $row->id_unit .' AND a.id_renja_program='. $row2->id_renja_pr
             INNER JOIN trx_renja_rancangan b ON a.id_renja_program=b.id_renja_program
             left outer join ref_kegiatan c ON b.id_kegiatan_ref=c.id_kegiatan
             WHERE b.id_unit='. $row->id_unit .' AND a.id_renja_program='. $row2->id_renja_program.' group by 
-            a.id_renja_program,b.id_renja,a.uraian_program_renstra,b.uraian_kegiatan_renstra,b.status_data, kd_kegiatan');
+            a.id_renja_program,b.id_renja,a.uraian_program_renstra,b.uraian_kegiatan_renstra,b.status_data, kd_kegiatan,c.nm_kegiatan');
               			
   			foreach($kegiatan AS $row3) {
   				PDF::SetFont('helvetica', '', 6);
@@ -1230,7 +1229,7 @@ WHERE c.id_unit='. $row->id_unit .' AND a.id_renja_program='. $row2->id_renja_pr
                                 }
                                 else
                                 {
-                                    PDF::MultiCell('25', $height, $lenght, 'LB', 'L',0, 0);
+                                    PDF::MultiCell('25', $height, '', 'LB', 'L',0, 0);
                                     PDF::MultiCell('18', $height, '', 'LB', 'L',0, 0);
                                     PDF::MultiCell('52', $height, '- '.$row7->uraian_tarif_ssh, 'B', 'L',0, 0);
                                     PDF::MultiCell('20', $height, number_format($row7->volume_1*$row7->volume_2,2,',','.'), 'LB', 'L',0, 0);
@@ -1784,22 +1783,15 @@ WHERE c.id_unit='. $row->id_unit .' AND a.id_renja_program='. $row2->id_renja_pr
       PDF::SetFont('helvetica', '', 10);
       
       // Header
-      $sub = DB::select('select a.tahun_renja,g.kd_urusan,f.kd_bidang,e.kd_unit,d.kd_sub,
- d.nm_sub, e.nm_unit,g.nm_urusan,f.nm_bidang
-from trx_renja_rancangan a
-inner join trx_renja_rancangan_program b
-on a.id_renja_program=b.id_renja_program
-inner join trx_renja_rancangan_pelaksana c
-on a.id_renja=c.id_renja
-inner join ref_sub_unit d
-on c.id_sub_unit=d.id_sub_unit
-INNER JOIN ref_unit e
-on d.id_unit=e.id_unit
-inner join ref_bidang f
-on e.id_bidang=f.id_bidang
-INNER JOIN ref_urusan g
-on f.kd_urusan=g.kd_urusan
-where c.id_sub_unit=' . $sub_unit . ' and b.tahun_renja=' . $tahun . ' limit 1');
+      $sub = DB::select('SELECT a.tahun_renja,g.kd_urusan,f.kd_bidang,e.kd_unit,d.kd_sub, d.nm_sub, e.nm_unit,g.nm_urusan,f.nm_bidang
+          from trx_renja_rancangan a
+          inner join trx_renja_rancangan_program b on a.id_renja_program=b.id_renja_program
+          inner join trx_renja_rancangan_pelaksana c on a.id_renja=c.id_renja
+          inner join ref_sub_unit d on c.id_sub_unit=d.id_sub_unit
+          INNER JOIN ref_unit e on d.id_unit=e.id_unit
+          inner join ref_bidang f on e.id_bidang=f.id_bidang
+          INNER JOIN ref_urusan g on f.kd_urusan=g.kd_urusan
+          where c.id_sub_unit=' . $sub_unit . ' and b.tahun_renja=' . $tahun . ' limit 1');
       foreach ($sub as $row) {
           $countrow ++;
           // $nama_keg=$row->uraian_kegiatan_renstra;
@@ -1898,7 +1890,7 @@ where c.id_sub_unit=' . $sub_unit . ' and b.tahun_renja=' . $tahun . ' limit 1')
       
       // End Header Column/////////////////////////////////////////////////////////////////////////////////////////////////////
       $tahunn1 = $tahun + 1;
-      $prog = DB::select('select a.id_renja_program,a.kode,a.kd_program, a.uraian_program_renstra,sum(a.blj_peg) as blj_peg,sum(a.blj_bj) as blj_bj,
+      $prog = DB::select('SELECT a.id_renja_program,a.kode,a.kd_program, a.uraian_program_renstra,sum(a.blj_peg) as blj_peg,sum(a.blj_bj) as blj_bj,
 sum(a.blj_modal) as blj_modal, b.pagu_tahun_ranwal, a.pagu_tahun_program
  from
 (select a.id_renja_program,CONCAT(o.kd_urusan,".",o.kd_bidang,"  ",g.kd_urusan,".",f.kd_bidang,".",e.kd_unit,".",d.kd_sub," ") as kode, n.kd_program, a.uraian_program_renstra,
@@ -1907,38 +1899,23 @@ case m.kd_rek_3 when 2 then (i.jml_belanja) else 0 end as blj_bj,
 case m.kd_rek_3 when 3 then (i.jml_belanja) else 0 end as blj_modal,
 m.kd_rek_3, p.pagu_tahun_program
 from trx_renja_rancangan_program a
-inner join trx_renja_rancangan b
-on a.id_renja_program=b.id_renja_program
-inner join trx_renja_rancangan_pelaksana c
-on b.id_renja=c.id_renja
-LEFT OUTER JOIN ref_sub_unit d
-on c.id_sub_unit=d.id_sub_unit
-LEFT OUTER JOIN ref_unit e
-on d.id_unit=e.id_unit
-LEFT OUTER JOIN ref_bidang f
-on e.id_bidang=f.id_bidang
-LEFT OUTER JOIN ref_urusan g
-on f.kd_urusan=g.kd_urusan
-inner join trx_renja_rancangan_aktivitas h
-on c.id_pelaksana_renja=h.id_renja
-inner join trx_renja_rancangan_belanja i
-on h.id_aktivitas_renja=i.id_lokasi_renja
-inner join ref_ssh_tarif j
-on i.id_tarif_ssh=j.id_tarif_ssh
-LEFT OUTER  join ref_rek_5 k
-on i.id_rekening_ssh=k.id_rekening
- LEFT OUTER JOIN ref_rek_4 l
- on k.kd_rek_4=l.kd_rek_4 and k.kd_rek_3=l.kd_rek_3 and k.kd_rek_2=l.kd_rek_2 and k.kd_rek_1=l.kd_rek_1
- LEFT OUTER JOIN ref_rek_3 m
- on  l.kd_rek_3=m.kd_rek_3 and l.kd_rek_2=m.kd_rek_2 and l.kd_rek_1=m.kd_rek_1
+inner join trx_renja_rancangan b on a.id_renja_program=b.id_renja_program
+inner join trx_renja_rancangan_pelaksana c on b.id_renja=c.id_renja
+LEFT OUTER JOIN ref_sub_unit d on c.id_sub_unit=d.id_sub_unit
+LEFT OUTER JOIN ref_unit e on d.id_unit=e.id_unit
+LEFT OUTER JOIN ref_bidang f on e.id_bidang=f.id_bidang
+LEFT OUTER JOIN ref_urusan g on f.kd_urusan=g.kd_urusan
+inner join trx_renja_rancangan_aktivitas h on c.id_pelaksana_renja=h.id_renja
+inner join trx_renja_rancangan_belanja i on h.id_aktivitas_renja=i.id_lokasi_renja
+inner join ref_ssh_tarif j on i.id_tarif_ssh=j.id_tarif_ssh
+LEFT OUTER  join ref_rek_5 k on i.id_rekening_ssh=k.id_rekening
+LEFT OUTER JOIN ref_rek_4 l on k.kd_rek_4=l.kd_rek_4 and k.kd_rek_3=l.kd_rek_3 and k.kd_rek_2=l.kd_rek_2 and k.kd_rek_1=l.kd_rek_1
+LEFT OUTER JOIN ref_rek_3 m on  l.kd_rek_3=m.kd_rek_3 and l.kd_rek_2=m.kd_rek_2 and l.kd_rek_1=m.kd_rek_1
 INNER join ref_program n on a.id_program_ref=n.id_program
 inner JOIN ref_bidang o on o.id_bidang = n.id_bidang
-LEFT OUTER JOIN  (select id_program_renstra, pagu_tahun_program from trx_rkpd_renstra where tahun_rkpd=' . $tahunn1 . ' group by id_program_renstra, pagu_tahun_program) p on a.id_program_renstra=p.id_program_renstra
-          
-where  c.id_sub_unit=' . $sub_unit . ' and a.jenis_belanja=0 and a.tahun_renja=' . $tahun . '
- )a
-inner join trx_renja_rancangan_program b
-on a.id_renja_program=b.id_renja_program
+LEFT OUTER JOIN  (select id_program_renstra, pagu_tahun_program from trx_rkpd_renstra where tahun_rkpd=' . $tahunn1 . ' group by id_program_renstra, pagu_tahun_program) p on a.id_program_renstra=p.id_program_renstra         
+where  c.id_sub_unit=' . $sub_unit . ' and a.jenis_belanja=0 and a.tahun_renja=' . $tahun . ' )a
+inner join trx_renja_rancangan_program b on a.id_renja_program=b.id_renja_program
 GROUP BY a.id_renja_program,a.kode,a.kd_program, a.uraian_program_renstra, b.pagu_tahun_ranwal, a.pagu_tahun_program
 ');
       foreach ($prog as $row) {
@@ -2013,17 +1990,14 @@ GROUP BY a.id_renja_program,a.kode,a.kd_program, a.uraian_program_renstra, b.pag
           PDF::MultiCell('28', $height, number_format($row->blj_peg + $row->blj_bj + $row->blj_modal, 2, ',', '.'), 'LBT', 'R', 0, 0);
           PDF::MultiCell('28', $height, number_format($row->pagu_tahun_program, 2, ',', '.'), 1, 'R', 0, 0);
           PDF::Ln();
-          $indikatorprog = DB::select('select  distinct d.uraian_program_renstra,b.uraian_indikator_program_renja,
+          $indikatorprog = DB::select('SELECT  distinct d.uraian_program_renstra,b.uraian_indikator_program_renja,
 b.tolok_ukur_indikator,b.target_renstra,b.target_renja,f.singkatan_satuan
 from  trx_renja_rancangan_program d
-inner JOIN trx_renja_rancangan_program_indikator b
-on d.id_renja_program=b.id_renja_program
+inner JOIN trx_renja_rancangan_program_indikator b on d.id_renja_program=b.id_renja_program
 inner JOIN trx_renja_rancangan g on d.id_renja_program=g.id_renja_program
 inner join trx_renja_rancangan_pelaksana h on g.id_renja=h.id_renja
-left outer join ref_indikator e
-on b.kd_indikator=e.id_indikator
-left outer join ref_satuan f
-on e.id_satuan_output=f.id_satuan
+left outer join ref_indikator e on b.kd_indikator=e.id_indikator
+left outer join ref_satuan f on e.id_satuan_output=f.id_satuan
 where h.id_sub_unit=' . $sub_unit . ' and d.id_renja_program=' . $row->id_renja_program);
           
           foreach ($indikatorprog as $row3) {
@@ -2095,43 +2069,30 @@ where h.id_sub_unit=' . $sub_unit . ' and d.id_renja_program=' . $row->id_renja_
               PDF::MultiCell('28',$height, '', 1, 'R', 0, 0);
               PDF::Ln();
           }
-          $keg = DB::select('select a.id_renja,a.kd_kegiatan, a.uraian_kegiatan_renstra,coalesce(c.gablok,"belum ada") as gablok,sum(a.blj_peg) as blj_peg,sum(a.blj_bj) as blj_bj,
-sum(a.blj_modal) as blj_modal, b.pagu_tahun_kegiatan,a.pagu_tahun_kegiatan
- from
+          $keg = DB::select('SELECT a.id_renja,a.kd_kegiatan, a.uraian_kegiatan_renstra,coalesce(c.gablok,"belum ada") as gablok,sum(a.blj_peg) as blj_peg,sum(a.blj_bj) as blj_bj, sum(a.blj_modal) as blj_modal, b.pagu_tahun_kegiatan,a.pagu_tahun_kegiatan
+FROM
 (select b.id_renja,n.kd_kegiatan, b.uraian_kegiatan_renstra,
 case m.kd_rek_3 when 1 then (i.jml_belanja) else 0 end as blj_peg,
 case m.kd_rek_3 when 2 then (i.jml_belanja) else 0 end as blj_bj,
 case m.kd_rek_3 when 3 then (i.jml_belanja) else 0 end as blj_modal,
 m.kd_rek_3,q.pagu_tahun_kegiatan
  from trx_renja_rancangan b
-inner join trx_renja_rancangan_pelaksana c
-on b.id_renja=c.id_renja
-LEFT OUTER JOIN ref_sub_unit d
-on c.id_sub_unit=d.id_sub_unit
-LEFT OUTER JOIN ref_unit e
-on d.id_unit=e.id_unit
-LEFT OUTER JOIN ref_bidang f
-on e.id_bidang=f.id_bidang
-LEFT OUTER JOIN ref_urusan g
-on f.kd_urusan=g.kd_urusan
-inner join trx_renja_rancangan_aktivitas h
-on c.id_pelaksana_renja=h.id_renja
-inner join trx_renja_rancangan_belanja i
-on h.id_aktivitas_renja=i.id_lokasi_renja
-inner join ref_ssh_tarif j
-on i.id_tarif_ssh=j.id_tarif_ssh
-LEFT OUTER  join ref_rek_5 k
-on i.id_rekening_ssh=k.id_rekening
- LEFT OUTER JOIN ref_rek_4 l
- on k.kd_rek_4=l.kd_rek_4 and k.kd_rek_3=l.kd_rek_3 and k.kd_rek_2=l.kd_rek_2 and k.kd_rek_1=l.kd_rek_1
- LEFT OUTER JOIN ref_rek_3 m
- on  l.kd_rek_3=m.kd_rek_3 and l.kd_rek_2=m.kd_rek_2 and l.kd_rek_1=m.kd_rek_1
+inner join trx_renja_rancangan_pelaksana c on b.id_renja=c.id_renja
+LEFT OUTER JOIN ref_sub_unit d on c.id_sub_unit=d.id_sub_unit
+LEFT OUTER JOIN ref_unit e on d.id_unit=e.id_unit
+LEFT OUTER JOIN ref_bidang f on e.id_bidang=f.id_bidang
+LEFT OUTER JOIN ref_urusan g on f.kd_urusan=g.kd_urusan
+inner join trx_renja_rancangan_aktivitas h on c.id_pelaksana_renja=h.id_renja
+inner join trx_renja_rancangan_belanja i on h.id_aktivitas_renja=i.id_lokasi_renja
+inner join ref_ssh_tarif j on i.id_tarif_ssh=j.id_tarif_ssh
+LEFT OUTER  join ref_rek_5 k on i.id_rekening_ssh=k.id_rekening
+LEFT OUTER JOIN ref_rek_4 l on k.kd_rek_4=l.kd_rek_4 and k.kd_rek_3=l.kd_rek_3 and k.kd_rek_2=l.kd_rek_2 and k.kd_rek_1=l.kd_rek_1
+LEFT OUTER JOIN ref_rek_3 m on  l.kd_rek_3=m.kd_rek_3 and l.kd_rek_2=m.kd_rek_2 and l.kd_rek_1=m.kd_rek_1
 INNER join ref_kegiatan n on b.id_kegiatan_ref=n.id_kegiatan
 inner JOIN ref_program o on o.id_program = n.id_program
 inner JOIN ref_bidang p on o.id_bidang = p.id_bidang
-left outer JOIN  (select id_kegiatan_renstra, pagu_tahun_kegiatan from trx_rkpd_renstra where tahun_rkpd=' . $tahunn1 . '  group by id_kegiatan_renstra, pagu_tahun_kegiatan) q on b.id_kegiatan_renstra=q.id_kegiatan_renstra
-where b.id_renja_program=' . $row->id_renja_program . '
- )a
+left outer JOIN  (SELECT id_kegiatan_renstra, pagu_tahun_kegiatan from trx_rkpd_renstra where tahun_rkpd=' . $tahunn1 . '  group by id_kegiatan_renstra, pagu_tahun_kegiatan) q on b.id_kegiatan_renstra=q.id_kegiatan_renstra
+where b.id_renja_program=' . $row->id_renja_program . ' )a
 inner join trx_renja_rancangan b
 on a.id_renja=b.id_renja
 left outer join (select GROUP_CONCAT(c.nama_lokasi) as gablok, d.id_renja FROM
@@ -2141,9 +2102,8 @@ inner join trx_renja_rancangan_aktivitas b on a.id_pelaksana_renja=b.id_renja
 LEFT OUTER JOIN trx_renja_rancangan_lokasi e on b.id_aktivitas_renja=e.id_pelaksana_renja
 inner join ref_lokasi c on e.id_lokasi=c.id_lokasi
 GROUP BY d.id_renja) c
-on b.id_renja=c.id_renja
-              
-GROUP BY a.id_renja, a.uraian_kegiatan_renstra, b.pagu_tahun_kegiatan,a.pagu_tahun_kegiatan');
+on b.id_renja=c.id_renja              
+GROUP BY a.id_renja, a.kd_kegiatan, a.uraian_kegiatan_renstra, c.gablok,b.pagu_tahun_kegiatan,a.pagu_tahun_kegiatan');
           foreach ($keg as $row2) {
               $height1 = ceil((strlen($row2->uraian_kegiatan_renstra) / 54)) * 4;
               $height2= ceil((strlen($row2->gablok) / 15)) * 4;
@@ -2214,7 +2174,7 @@ GROUP BY a.id_renja, a.uraian_kegiatan_renstra, b.pagu_tahun_kegiatan,a.pagu_tah
               PDF::MultiCell('28', $height, number_format($row2->blj_peg + $row2->blj_bj + $row2->blj_modal, 2, ',', '.'), 'L', 'R', 0, 0);
               PDF::MultiCell('28', $height, number_format($row2->pagu_tahun_kegiatan, 2, ',', '.'), 'LR', 'R', 0, 0);
               PDF::Ln();
-              $indikator = DB::select('select  distinct d.uraian_kegiatan_renstra,b.uraian_indikator_kegiatan_renja,
+              $indikator = DB::select('SELECT  distinct d.uraian_kegiatan_renstra,b.uraian_indikator_kegiatan_renja,
 b.tolok_ukur_indikator,b.angka_renstra,b.angka_tahun,f.singkatan_satuan,
 case b.status_data when 1 then "Telah direview" else "Belum direview" end as status_indikator
 from  trx_renja_rancangan d
@@ -3386,7 +3346,7 @@ where h.id_sub_unit=' . $sub_unit . ' and d.id_renja_program=' . $row->id_renja_
           LEFT OUTER JOIN ref_rek_3 m ON  l.kd_rek_3=m.kd_rek_3 AND l.kd_rek_2=m.kd_rek_2 AND l.kd_rek_1=m.kd_rek_1
           LEFT OUTER JOIN ref_rek_2 n ON   m.kd_rek_2=n.kd_rek_2 AND m.kd_rek_1=n.kd_rek_1
           LEFT OUTER JOIN ref_rek_1 o ON    n.kd_rek_1=o.kd_rek_1
-          WHERE a.tahun_renja='.$tahun.' ) a GROUP BY a.kd_urusan,a.kd_bidang,a.id_unit,a.nm_unit  ');
+          WHERE a.tahun_renja='.$tahun.' ) a GROUP BY a.kd_urusan,a.kd_bidang,a.kd_unit,a.id_unit,a.nm_unit  ');
       
       // header
       PDF::SetFont('helvetica', 'B', 8);
@@ -3811,7 +3771,7 @@ where h.id_sub_unit=' . $sub_unit . ' and d.id_renja_program=' . $row->id_renja_
                     LEFT OUTER JOIN ref_rek_3 m ON l.kd_rek_3=m.kd_rek_3 AND l.kd_rek_2=m.kd_rek_2 AND l.kd_rek_1=m.kd_rek_1
                     LEFT OUTER JOIN ref_rek_2 n ON m.kd_rek_2=n.kd_rek_2 AND m.kd_rek_1=n.kd_rek_1
                     LEFT OUTER JOIN ref_rek_1 o ON n.kd_rek_1=o.kd_rek_1
-                    WHERE a.tahun_renja='.$tahun.' AND a.id_bidang='.$row->id_bidang.'  ) a GROUP BY a.kd_urusan,a.kd_bidang,a.id_unit,a.nm_unit  ');
+                    WHERE a.tahun_renja='.$tahun.' AND a.id_bidang='.$row->id_bidang.'  ) a GROUP BY a.kd_urusan,a.kd_bidang,a.kd_unit,a.id_unit,a.nm_unit  ');
               
               
               foreach ($apbd AS $row2)
@@ -4605,7 +4565,7 @@ where h.id_sub_unit=' . $row->id_sub_unit . ' and d.id_renja_program=' . $row2->
             LEFT OUTER JOIN ref_rek_3 m ON l.kd_rek_3=m.kd_rek_3 AND l.kd_rek_2=m.kd_rek_2 AND l.kd_rek_1=m.kd_rek_1
             LEFT OUTER JOIN ref_rek_2 n ON m.kd_rek_2=n.kd_rek_2 AND m.kd_rek_1=n.kd_rek_1
             LEFT OUTER JOIN ref_rek_1 o ON n.kd_rek_1=o.kd_rek_1
-            WHERE a.tahun_renja='.$tahun.' ) a GROUP BY a.kd_urusan,a.kd_bidang,a.id_unit,a.nm_unit  ');
+            WHERE a.tahun_renja='.$tahun.' ) a GROUP BY a.kd_urusan,a.kd_bidang,a.id_unit,a.nm_unit,a.kd_unit  ');
       
       // header
       $html .='<tbody>';

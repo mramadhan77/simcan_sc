@@ -78,8 +78,7 @@ class CetakAPBDController extends Controller
         
         // column titles
         $header = array('INDIKATOR');
-        $header2 = array('SKPD/Program/Kegiatan','Uraian Indikator','Tolak Ukur', 'Target Renstra',
-            'Target Renja', 'Status Indikator','Pagu Renstra Program/Kegiatan','Pagu Program/Kegiatan','Status Program/Kegiatan');
+        $header2 = array('SKPD/Program/Kegiatan','Uraian Indikator','Tolak Ukur', 'Target Renstra','Target Renja', 'Status Indikator','Pagu Renstra Program/Kegiatan','Pagu Program/Kegiatan','Status Program/Kegiatan');
         
         // Colors, line width AND bold font
         PDF::SetFillColor(200, 200, 200);
@@ -141,16 +140,7 @@ class CetakAPBDController extends Controller
             PDF::Cell('225', 5, $row->nm_sub, 'R', 0, 'L', 0);
             PDF::Ln();
             $countrow ++;
-            // PDF::Cell('30', 5, 'Program', 'L', 0, 'L', 0);
-            // PDF::Cell('5', 5, ':', 0, 0, 'L', 0);
-            // PDF::Cell('15', 5,$row->kd_urusan.'.'.$row->kd_unit.'.'.$row->kd_sub.'.'.$row->no_urut_pro, 0, 0, 'L', 0);
-            // PDF::Cell('135', 5,$row->uraian_program_renstra, 'R', 0, 'L', 0);
-            // PDF::Ln();
-            // PDF::Cell('30', 5, 'Kegiatan', 'LB', 0, 'L', 0);
-            // PDF::Cell('5', 5, ':', 'B', 0, 'L', 0);
-            // PDF::Cell('15', 5,$row->kd_urusan.'.'.$row->kd_unit.'.'.$row->kd_sub.'.'.$row->no_urut_pro.'.'.$row->no_urut_keg, 'B', 0, 'L', 0);
-            // PDF::Cell('135', 5,$row->uraian_kegiatan_renstra, 'RB', 0, 'L', 0);
-            // PDF::Ln();
+           
             $nama_sub = $nama_sub . $row->nm_sub;
         }
 

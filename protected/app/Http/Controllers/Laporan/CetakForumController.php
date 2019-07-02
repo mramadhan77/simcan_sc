@@ -3186,6 +3186,7 @@ WHERE h.id_sub_unit=' . $sub_unit . ' and d.id_forum_program=' . $row->id_forum_
         $tahunn1 = $tahun + 1;
         $nm_unit = "";
         $hitung = 0;
+
         if ($sub_unit < 1) {
             $Unit = DB::SELECT('SELECT g.kd_urusan, f.kd_bidang,e.kd_unit,d.id_sub_unit,d.kd_sub, g.nm_urusan, f.nm_bidang, e.nm_unit, d.nm_sub
                 FROM trx_forum_skpd a
@@ -3193,7 +3194,7 @@ WHERE h.id_sub_unit=' . $sub_unit . ' and d.id_forum_program=' . $row->id_forum_
                 INNER JOIN trx_forum_skpd_pelaksana c ON a.id_forum_skpd=c.id_aktivitas_forum
                 INNER JOIN ref_sub_unit d ON c.id_sub_unit=d.id_sub_unit
                 INNER JOIN ref_unit e ON d.id_unit=e.id_unit
-                INNER JOIN 	ref_bidang f ON e.id_bidang=f.id_bidang
+                INNER JOIN ref_bidang f ON e.id_bidang=f.id_bidang
                 INNER JOIN ref_urusan g ON f.kd_urusan=g.kd_urusan
                 GROUP BY g.kd_urusan, f.kd_bidang,e.kd_unit,d.id_sub_unit,d.kd_sub, g.nm_urusan, f.nm_bidang, e.nm_unit, d.nm_sub  ');
         } else {
@@ -3203,7 +3204,7 @@ WHERE h.id_sub_unit=' . $sub_unit . ' and d.id_forum_program=' . $row->id_forum_
                 INNER JOIN trx_forum_skpd_pelaksana c ON a.id_forum_skpd=c.id_aktivitas_forum
                 INNER JOIN ref_sub_unit d ON c.id_sub_unit=d.id_sub_unit
                 INNER JOIN ref_unit e ON d.id_unit=e.id_unit
-                INNER JOIN 	ref_bidang f ON e.id_bidang=f.id_bidang
+                INNER JOIN ref_bidang f ON e.id_bidang=f.id_bidang
                 INNER JOIN ref_urusan g ON f.kd_urusan=g.kd_urusan
                 WHERE c.id_sub_unit=' . $sub_unit . '
                 GROUP BY g.kd_urusan, f.kd_bidang,e.kd_unit,d.id_sub_unit,d.kd_sub, g.nm_urusan, f.nm_bidang, e.nm_unit, d.nm_sub');
@@ -3686,6 +3687,407 @@ WHERE h.id_sub_unit=' . $sub_unit . ' and d.id_forum_program=' . $row->id_forum_
         PDF::Output('PrakiraanMaju-' . $sub_unit . '.pdf', 'I');
     }
 
+    public function PrakiraanMajuHtml(Request $request)  
+    {
+      Template::settingPageLandscape();
+      Template::headerLandscape();
+      $pemda=Session::get('xPemda');
+      $tahun =$request->tahun;
+      $unit = $request->unit;
+      
+      PDF::SetFont('helvetica', '', 6);
+      
+      $html = '';
+      $html .= '<html>';
+      $html .= '<head>';
+      $html .= '<style>
+                    td, th {
+                    }
+                </style>';
+      $html .= '</head>';
+      $html .= '<body>';
+      $tahun1 = $tahun + 1;
+      PDF::SetFont('helvetica', 'B', 10);
+      $html .= '<div style="text-align: center; font-size:12px; font-weight: bold;">Tabel T-C.33.</div>';
+      $html .= '<div style="text-align: center; font-size:12px; font-weight: bold;"> Rumusan Rencana Program dan Kegiatan Perangkat Daerah Tahun '.$tahun.'</div>';
+      $html .= '<div style="text-align: center; font-size:12px; font-weight: bold;"> dan Prakiraan Maju Tahun '.$tahun1.'</div>';
+      $html .= '<div style="text-align: center; font-size:12px; font-weight: bold;"> ' . $pemda . '</div>';
+      // $html .= '<div style="text-align: center; font-size:12px; font-weight: bold;"> ' . $tahun . '</div>';
+      $html .= '<br>';
+      $nm_unit = DB::SELECT('SELECT CONCAT(b.kd_urusan,".",b.kd_bidang,".",a.kd_unit) AS kode_bidang, nm_unit from ref_unit AS a
+            INNER JOIN ref_bidang b ON a.id_bidang=b.id_bidang WHERE a.id_unit=' . $unit);
+
+      foreach ($nm_unit as $nm_units) {
+          PDF::SetFont('helvetica', '', 6);
+          $html .= '<div style="text-align: left; font-size:8px; font-weight: bold;"> Nama Perangkat Daerah : '.$nm_units->kode_bidang. '  '. $nm_units->nm_unit . '</div>';
+          $html .= '<br>';
+          $html .= '<table border="0.5" cellpadding="4" cellspacing="0">
+            <thead>
+                <tr height=19>
+                        <td rowspan="2" width="5%" style="padding: 50px; text-align: center; font-weight: bold;" >Kode</td>
+                        <td rowspan="2" width="20%" style="padding: 50px; text-align: center; font-weight: bold;" >Urusan / Bidang Urusan Pemerintah Daerah dan Program / Kegiatan</td>
+                        <td rowspan="2" width="17%" style="padding: 50px; text-align: center; font-weight: bold;" >Indikator Kinerja Program / Kegiatan</td>
+                        <td colspan="4" width="29%"  style="padding: 50px; text-align: center; font-weight: bold;" >Rencana Tahun ' . $tahun . ' (tahun rencana)</td>
+                        <td rowspan="2" width="10%" style="padding: 50px; text-align: center; font-weight: bold;" >Catatan Penting</td>
+                        <td colspan="2" width="19%"  style="padding: 50px; text-align: center; font-weight: bold;" >Prakiraan Maju Rencana Tahun ' . $tahun1 . '</td>
+                </tr>
+                <tr height=19>
+                        <td width="6%"  style="padding: 50px; text-align: center; font-weight: bold;">Lokasi</td>
+                        <td width="7%" style="padding: 50px; text-align: center; font-weight: bold;">Target Capaian Kinerja</td>
+                        <td width="11%" style="padding: 50px; text-align: center; font-weight: bold;">Kebutuhan Dana / pagu indikatif</td>
+                        <td width="5%" style="padding: 50px; text-align: center; font-weight: bold;">Sumber Dana</td>
+                        <td width="7%" style="padding: 50px; text-align: center; font-weight: bold;">Target Capaian Kinerja</td>
+                        <td width="12%" style="padding: 50px; text-align: center; font-weight: bold;">Kebutuhan Dana / pagu indikatif</td>
+                </tr>
+                <tr height=19 >
+                        <td  style="padding: 50px; text-align: center; font-weight: bold;">(1)</td>
+                        <td  style="padding: 50px; text-align: center; font-weight: bold;">(2)</td>
+                        <td  style="padding: 50px; text-align: center; font-weight: bold;">(3)</td>
+                        <td  style="padding: 50px; text-align: center; font-weight: bold;">(4)</td>
+                        <td  style="padding: 50px; text-align: center; font-weight: bold;">(5)</td>
+                        <td  style="padding: 50px; text-align: center; font-weight: bold;">(6)</td>
+                        <td  style="padding: 50px; text-align: center; font-weight: bold;">(7)</td>
+                        <td  style="padding: 50px; text-align: center; font-weight: bold;">(8)</td>
+                        <td  style="padding: 50px; text-align: center; font-weight: bold;">(9)</td>
+                        <td  style="padding: 50px; text-align: center; font-weight: bold;">(10)</td>
+                            
+                </tr>
+            </thead>';
+          $html .= '<tbody>';
+
+          $sumunit = DB::SELECT('SELECT  SUM(c.pagu_aktivitas) AS pagu_tahun_current, SUM(b.pagu_plus1_forum) AS pagu_tahun_next
+                FROM (SELECT * FROM trx_forum_skpd_program WHERE status_pelaksanaan <> 2 AND status_pelaksanaan <> 3) AS a
+                INNER JOIN (SELECT * FROM trx_forum_skpd WHERE status_pelaksanaan <> 2 AND status_pelaksanaan <> 3) AS b 
+                ON a.id_forum_program = b.id_forum_program
+                INNER JOIN (SELECT c.id_aktivitas_forum AS id_forum_skpd, SUM(d.pagu_aktivitas_forum) AS pagu_aktivitas
+                FROM (SELECT * FROM trx_forum_skpd_pelaksana WHERE status_pelaksanaan <> 2 AND status_pelaksanaan <> 3) AS c 
+                INNER JOIN (SELECT * FROM trx_forum_skpd_aktivitas WHERE status_pelaksanaan <> 2 AND status_pelaksanaan <> 3) AS d 
+                ON c.id_pelaksana_forum=d.id_forum_skpd
+                GROUP BY c.id_aktivitas_forum) AS c  ON b.id_forum_skpd = c.id_forum_skpd
+                WHERE  a.tahun_forum='.$tahun.' AND a.id_unit='.$unit.' AND a.jenis_belanja=0 
+                GROUP BY a.tahun_forum, a.id_unit, a.jenis_belanja');
+
+          foreach ($sumunit as $units) {
+              PDF::SetFont('helvetica', 'B', 10);
+              $html .= '<tr nobr="true">';
+              $html .= '<td width="5%"  style="padding: 50px; text-align: justify;  font-weight: bold;"><div></div></td>';
+              $html .= '<td width="50%"  style="padding: 50px; text-align: justify;  font-weight: bold;"><div>TOTAL BELANJA LANGSUNG</div></td>';
+              $html .= '<td width="11%"  style="padding: 50px; text-align: right;  font-weight: bold;"><div>' . number_format($units->pagu_tahun_current, 2, ',', '.') . '</div></td>';
+              $html .= '<td width="22%"  style="padding: 50px; text-align: justify;  font-weight: bold;"><div></div></td>';
+              $html .= '<td width="12%"  style="padding: 50px; text-align: right;  font-weight: bold;"><div>' . number_format($units->pagu_tahun_next, 2, ',', '.') . '</div></td>';
+              $html .= '</tr>';
+
+          $urusan = DB::SELECT('SELECT g.kd_urusan,g.nm_urusan 
+            FROM (SELECT * FROM trx_forum_skpd_program WHERE status_pelaksanaan <> 2 AND status_pelaksanaan <> 3) a
+            INNER JOIN ref_program e ON a.id_program_ref=e.id_program
+            INNER JOIN ref_bidang f ON e.id_bidang = f.id_bidang
+            INNER JOIN ref_urusan g ON f.kd_urusan=g.kd_urusan
+            WHERE a.tahun_forum='.$tahun.' AND a.id_unit='.$unit.'  AND a.jenis_belanja=0 
+            GROUP BY g.kd_urusan,g.nm_urusan, a.tahun_forum, a.id_unit, a.jenis_belanja');
+
+          foreach ($urusan as $urusans) {
+              PDF::SetFont('helvetica', 'B', 8);
+              $html .= '<tr nobr="true">';
+              $html .= '<td width="5%"  style="padding: 50px; text-align: justify;  font-weight: bold;"><div>' . $urusans->kd_urusan . '</div></td>';
+              $html .= '<td width="95%"  style="padding: 50px; text-align: justify;  font-weight: bold;"><div>' . $urusans->nm_urusan . '</div></td>';
+              $html .= '</tr>';
+
+              $bidang = DB::SELECT('SELECT f.kd_bidang,f.nm_bidang, SUM(c.pagu_aktivitas) AS pagu_tahun_current, 
+                SUM(b.pagu_plus1_forum) AS pagu_tahun_next
+                FROM (SELECT * FROM trx_forum_skpd_program WHERE status_pelaksanaan <> 2 AND status_pelaksanaan <> 3) AS a
+                INNER JOIN (SELECT * FROM trx_forum_skpd WHERE status_pelaksanaan <> 2 AND status_pelaksanaan <> 3) AS b 
+                ON a.id_forum_program = b.id_forum_program
+                INNER JOIN (SELECT c.id_aktivitas_forum AS id_forum_skpd, SUM(d.pagu_aktivitas_forum) AS pagu_aktivitas
+                FROM (SELECT * FROM trx_forum_skpd_pelaksana WHERE status_pelaksanaan <> 2 AND status_pelaksanaan <> 3) AS c 
+                INNER JOIN (SELECT * FROM trx_forum_skpd_aktivitas WHERE status_pelaksanaan <> 2 AND status_pelaksanaan <> 3) AS d 
+                ON c.id_pelaksana_forum=d.id_forum_skpd
+                GROUP BY c.id_aktivitas_forum) AS c  ON b.id_forum_skpd = c.id_forum_skpd
+                INNER JOIN ref_program e ON a.id_program_ref=e.id_program
+                INNER JOIN ref_bidang f ON e.id_bidang = f.id_bidang
+                INNER JOIN ref_urusan g ON f.kd_urusan=g.kd_urusan
+                WHERE g.kd_urusan=' . $urusans->kd_urusan . ' AND a.tahun_forum='.$tahun.' AND a.id_unit='.$unit.'  AND a.jenis_belanja=0
+                GROUP BY f.kd_bidang,f.nm_bidang, g.kd_urusan,a.tahun_forum, a.id_unit,a.jenis_belanja');
+
+              foreach ($bidang as $bidangs) {
+                  PDF::SetFont('helvetica', 'B', 8);
+                  $html .= '<tr nobr="true">';
+                  $html .= '<td width="5%"  style="padding: 50px; text-align: justify;  font-weight: bold;"><div>' . $urusans->kd_urusan . '.' . $bidangs->kd_bidang . '</div></td>';
+                  $html .= '<td width="50%"  style="padding: 50px; text-align: justify;  font-weight: bold;"><div>'.$bidangs->nm_bidang .'</div></td>';
+                  $html .= '<td width="11%"  style="padding: 50px; text-align: right;  font-weight: bold;"><div>' . number_format($bidangs->pagu_tahun_current, 2, ',', '.') . '</div></td>';
+                  $html .= '<td width="22%"  style="padding: 50px; text-align: justify;  font-weight: bold;"><div></div></td>';
+                  $html .= '<td width="12%"  style="padding: 50px; text-align: right;  font-weight: bold;"><div>' . number_format($bidangs->pagu_tahun_next, 2, ',', '.') . '</div></td>';
+                  $html .= '</tr>';
+
+                  $program = DB::SELECT('SELECT e.kd_program,a.id_forum_program, XML_Encode(e.uraian_program) AS uraian_program, 
+                    CONCAT(g.kd_urusan,".",f.kd_bidang,".",e.kd_program) AS kode_program,
+                    SUM(c.pagu_aktivitas) AS pagu_tahun_current, 
+                    SUM(b.pagu_plus1_forum) AS pagu_tahun_next
+                    FROM (SELECT * FROM trx_forum_skpd_program WHERE status_pelaksanaan <> 2 AND status_pelaksanaan <> 3) AS a
+                    INNER JOIN (SELECT * FROM trx_forum_skpd WHERE status_pelaksanaan <> 2 AND status_pelaksanaan <> 3) AS b 
+                    ON a.id_forum_program = b.id_forum_program
+                    INNER JOIN (SELECT c.id_aktivitas_forum AS id_forum_skpd, SUM(d.pagu_aktivitas_forum) AS pagu_aktivitas
+                    FROM (SELECT * FROM trx_forum_skpd_pelaksana WHERE status_pelaksanaan <> 2 AND status_pelaksanaan <> 3) AS c 
+                    INNER JOIN (SELECT * FROM trx_forum_skpd_aktivitas WHERE status_pelaksanaan <> 2 AND status_pelaksanaan <> 3) AS d 
+                    ON c.id_pelaksana_forum=d.id_forum_skpd
+                    GROUP BY c.id_aktivitas_forum) AS c  ON b.id_forum_skpd = c.id_forum_skpd
+                    INNER JOIN ref_program e ON a.id_program_ref=e.id_program
+                    INNER JOIN ref_bidang f ON e.id_bidang = f.id_bidang
+                    INNER JOIN ref_urusan g ON f.kd_urusan=g.kd_urusan                   
+                    WHERE g.kd_urusan=' . $urusans->kd_urusan . ' AND f.kd_bidang=' . $bidangs->kd_bidang . ' AND a.tahun_forum='.$tahun.' 
+                    AND a.id_unit='.$unit.'  AND a.jenis_belanja=0
+                    GROUP BY e.kd_program,a.id_forum_program,e.uraian_program,g.kd_urusan,f.kd_bidang,a.tahun_forum, a.id_unit,a.jenis_belanja');
+
+                  foreach ($program as $programs) {
+                      $program_ind = DB::SELECT('SELECT DISTINCT e.kd_program, XML_Encode(e.uraian_program) AS uraian_program,  XML_Encode( i.nm_indikator) AS nm_indikator, j.singkatan_satuan, h.target_renja, 
+                        CASE m.tahun_5-'.$tahun.' 
+                          WHEN 0 THEN 0  
+                          WHEN 1 THEN l.angka_tahun5 
+                          WHEN 2 THEN l.angka_tahun4 
+                          WHEN 3 THEN l.angka_tahun3 
+                          ELSE l.angka_tahun2
+                        END AS target_n1
+                        FROM (SELECT * FROM trx_forum_skpd_program WHERE status_pelaksanaan <> 2 AND status_pelaksanaan <> 3) a
+                        INNER JOIN ref_program e ON a.id_program_ref=e.id_program
+                        INNER JOIN ref_bidang f ON e.id_bidang = f.id_bidang
+                        INNER JOIN ref_urusan g ON f.kd_urusan=g.kd_urusan
+                        INNER JOIN (SELECT * FROM trx_forum_skpd_program_indikator WHERE target_renja > 0 ) h ON a.id_forum_program=h.id_forum_program
+                        LEFT OUTER JOIN ref_indikator i ON h.kd_indikator=i.id_indikator
+                        LEFT OUTER JOIN ref_satuan j ON i.id_satuan_output=j.id_satuan
+                        INNER  JOIN trx_renstra_program k ON a.id_program_renstra=k.id_program_renstra
+                        LEFT OUTER  JOIN trx_renstra_program_indikator l ON k.id_program_renstra=l.id_program_renstra  AND h.kd_indikator=l.kd_indikator   
+                        INNER  JOIN ref_tahun m ON l.thn_id=m.id_tahun                          
+                        WHERE g.kd_urusan=' . $urusans->kd_urusan . ' AND f.kd_bidang=' . $bidangs->kd_bidang .  ' 
+                        AND a.id_forum_program=' . $programs->id_forum_program . ' AND a.tahun_forum='.$tahun.' AND a.id_unit='.$unit);                       
+
+                      $a=1;
+
+                      foreach ($program_ind as $programs_ind) {
+                          PDF::SetFont('helvetica', 'B', 7);
+                          if($a==1)
+                          {
+                              $html .= '<tr nobr="true">';
+                              $html .= '<td width="5%"  style="padding: 50px; text-align: justify;  font-weight: bold; "><div>' . $programs->kode_program . '</div></td>';
+                              $html .= '<td width="20%"  style="padding: 50px; text-align: justify;  font-weight: bold; "><div>' . $programs->uraian_program . '</div></td>';
+                              $html .= '<td width="17%"  style="padding: 50px; text-align: justify;  font-weight: bold; "><div>' . $programs_ind->nm_indikator . '</div></td>';
+                              $html .= '<td width="6%"  style="padding: 50px; text-align: justify;  font-weight: bold; "><div></div></td>';
+                              $html .= '<td width="7%"  style="padding: 50px; text-align: justify;  font-weight: bold; "><div>'.$programs_ind->target_renja.' '.$programs_ind->singkatan_satuan.'</div></td>';
+                              $html .= '<td width="11%"  style="padding: 50px; text-align: right; "><div>'.number_format($programs->pagu_tahun_current, 2, ',', '.').'</div></td>';
+                              $html .= '<td width="5%"  style="padding: 50px; text-align: right; "><div></div></td>';
+                              $html .= '<td width="10%"  style="padding: 50px; text-align: justify;  font-weight: bold; "><div></div></td>';
+                              $html .= '<td width="7%"  style="padding: 50px; text-align: justify;  font-weight: bold; "><div>'.$programs_ind->target_n1.' '.$programs_ind->singkatan_satuan.'</div></td>';
+                              $html .= '<td width="12%"  style="padding: 50px; text-align: right; "><div>'.number_format($programs->pagu_tahun_next, 2, ',', '.').'</div></td>';
+                              $html .= '</tr>';
+                          }
+                          else {
+                              $html .= '<tr nobr="true">';
+                              $html .= '<td width="5%"  style="padding: 50px; text-align: justify;  font-weight: bold; "><div></div></td>';
+                              $html .= '<td width="20%"  style="padding: 50px; text-align: justify;  font-weight: bold; "><div></div></td>';
+                              $html .= '<td width="17%"  style="padding: 50px; text-align: justify;  font-weight: bold; "><div>' . $programs_ind->nm_indikator . '</div></td>';
+                              $html .= '<td width="6%"  style="padding: 50px; text-align: justify;  font-weight: bold; "><div></div></td>';
+                              $html .= '<td width="7%"  style="padding: 50px; text-align: justify;  font-weight: bold; "><div>'.$programs_ind->target_renja.'</div></td>';
+                              $html .= '<td width="11%"  style="padding: 50px; text-align: justify;  font-weight: bold; "><div></div></td>';
+                              $html .= '<td width="5%"  style="padding: 50px; text-align: right; "><div></div></td>';
+                              $html .= '<td width="10%"  style="padding: 50px; text-align: justify;  font-weight: bold; "><div></div></td>';
+                              $html .= '<td width="7%"  style="padding: 50px; text-align: justify;  font-weight: bold; "><div>'.$programs_ind->target_n1.'</div></td>';
+                              $html .= '<td width="12%"  style="padding: 50px; text-align: justify;  font-weight: bold; "><div></div></td>';
+                              $html .= '</tr>';
+                              
+                          }
+                          $a=$a+1;
+                      }
+                          $kegiatan = DB::SELECT('SELECT a.id_forum_program, d.id_forum_skpd,  h.nm_kegiatan AS uraian_kegiatan_renstra, 
+                            CONCAT(g.kd_urusan,".",f.kd_bidang,".",e.kd_program,".",h.kd_kegiatan) AS kode_kegiatan,
+                            h.kd_kegiatan, d.pagu_plus1_forum, p.pagu_aktivitas AS pagu_tahun_kegiatan, q.sumber_dana,  r.lokasi AS lokasi
+                            FROM  (SELECT * FROM trx_forum_skpd_program WHERE status_pelaksanaan <> 2 AND status_pelaksanaan <> 3)  a
+                            INNER JOIN (SELECT * FROM trx_forum_skpd WHERE status_pelaksanaan <> 2 AND status_pelaksanaan <> 3) d 
+                                    ON a.id_forum_program = d.id_forum_program
+                            LEFT OUTER JOIN (SELECT DISTINCT c.id_aktivitas_forum AS id_forum_skpd, SUM(d.pagu_aktivitas_forum) AS pagu_aktivitas
+                                    FROM (SELECT * FROM trx_forum_skpd_pelaksana WHERE status_pelaksanaan <> 2 AND status_pelaksanaan <> 3) AS c 
+                                    INNER JOIN (SELECT * FROM trx_forum_skpd_aktivitas WHERE status_pelaksanaan <> 2 AND status_pelaksanaan <> 3) AS d 
+                                    ON c.id_pelaksana_forum=d.id_forum_skpd
+                                    GROUP BY c.id_aktivitas_forum ) p ON d.id_forum_skpd = p.id_forum_skpd                                                      
+                            LEFT OUTER JOIN (SELECT DISTINCT GROUP_CONCAT(" ",q.uraian_sumber_dana) AS sumber_dana,p.id_aktivitas_forum AS id_forum_skpd
+                                    FROM (SELECT * FROM trx_forum_skpd_pelaksana WHERE status_pelaksanaan <> 2 AND status_pelaksanaan <> 3) AS p
+                                    INNER JOIN (SELECT b.uraian_sumber_dana, a.id_forum_skpd AS id_pelaksana_forum FROM 
+                                    (SELECT * FROM trx_forum_skpd_aktivitas WHERE status_pelaksanaan <> 2 AND status_pelaksanaan <> 3)  a
+                                    LEFT OUTER JOIN ref_sumber_dana b ON a.sumber_dana=b.id_sumber_dana
+                                    GROUP BY a.id_forum_skpd,b.uraian_sumber_dana)  AS q ON p.id_pelaksana_forum=q.id_pelaksana_forum 
+                                    GROUP BY p.id_aktivitas_forum) q ON d.id_forum_skpd=q.id_forum_skpd                                                     
+                            LEFT OUTER JOIN (SELECT DISTINCT p.id_aktivitas_forum AS id_forum_skpd, q.lokasi
+                                    FROM (SELECT * FROM trx_forum_skpd_pelaksana WHERE status_pelaksanaan <> 2 AND status_pelaksanaan <> 3) AS p
+                                    INNER JOIN  (SELECT  DISTINCT a.id_forum_skpd AS id_pelaksana_forum, COALESCE(group_concat(c.nama_lokasi),"Kosong") AS lokasi 
+                                    FROM (SELECT * FROM trx_forum_skpd_aktivitas WHERE status_pelaksanaan <> 2 AND status_pelaksanaan <> 3) AS a
+                                    LEFT OUTER JOIN (SELECT p.* FROM  (SELECT id_pelaksana_forum, id_lokasi FROM trx_forum_skpd_lokasi 
+                                    WHERE status_pelaksanaan <> 2 AND status_pelaksanaan <> 3) AS p
+                                    GROUP BY p.id_pelaksana_forum, p.id_lokasi) AS b ON a.id_aktivitas_forum=b.id_pelaksana_forum
+                                    LEFT OUTER JOIN ref_lokasi c ON b.id_lokasi=c.id_lokasi 
+                                    GROUP BY a.id_forum_skpd) AS q ON p.id_pelaksana_forum=q.id_pelaksana_forum) r ON d.id_forum_skpd=r.id_forum_skpd
+                            INNER JOIN ref_program e ON a.id_program_ref = e.id_program
+                            INNER JOIN ref_bidang f ON e.id_bidang = f.id_bidang
+                            INNER JOIN ref_urusan g ON f.kd_urusan = g.kd_urusan
+                            LEFT OUTER JOIN ref_kegiatan h ON d.id_kegiatan_ref = h.id_kegiatan                            
+                            WHERE g.kd_urusan=' . $urusans->kd_urusan . ' AND f.kd_bidang= ' . $bidangs->kd_bidang . '
+                            AND a.tahun_forum='.$tahun.' AND a.id_unit='.$unit.' AND a.id_forum_program=' . $programs->id_forum_program . '  AND a.jenis_belanja=0 
+                            ORDER BY  h.kd_kegiatan asc');
+
+                          foreach ($kegiatan as $kegiatans) {
+                              $kegiatan_ind = DB::SELECT('SELECT  DISTINCT d.id_forum_skpd, XML_Encode(b.uraian_indikator_kegiatan) AS nm_indikator,b.tolok_ukur_indikator,b.target_renja,m.singkatan_satuan,
+                                  CASE b.status_data 
+                                      WHEN 1 THEN "Telah direview"
+                                      ELSE "Belum direview" 
+                                  END AS status_indikator , 
+                                  CASE k.tahun_5-2019 
+                                      WHEN 0 THEN 0 
+                                      WHEN 1 THEN j.angka_tahun5 
+                                      WHEN 2 THEN j.angka_tahun4 
+                                      WHEN 3 THEN j.angka_tahun3 
+                                      ELSE j.angka_tahun2
+                                  END AS target_n1
+                                  FROM  (SELECT * FROM trx_forum_skpd WHERE status_pelaksanaan <> 2 AND status_pelaksanaan <> 3) d
+                                  INNER JOIN (SELECT * FROM trx_forum_skpd_kegiatan_indikator WHERE target_renja > 0) b ON d.id_forum_skpd = b.id_forum_skpd
+                                  LEFT OUTER JOIN trx_renstra_kegiatan_indikator j ON d.id_kegiatan_renstra = j.id_kegiatan_renstra AND j.kd_indikator = b.kd_indikator
+                                  LEFT OUTER  JOIN ref_tahun k ON d.tahun_forum = k.id_tahun
+                                  LEFT OUTER JOIN ref_indikator l ON b.kd_indikator = l.id_indikator
+                                  LEFT OUTER JOIN ref_satuan m ON l.id_satuan_output = m.id_satuan
+                                  WHERE d.id_forum_skpd=' . $kegiatans->id_forum_skpd );
+                              $b=1;
+
+                              foreach ($kegiatan_ind as $kegiatans_ind) {
+                                  PDF::SetFont('helvetica', '', 7);
+                                  if($b==1)
+                                  {
+                                      $html .= '<tr nobr="true">';
+                                      $html .= '<td width="5%"  style="padding: 50px; text-align: justify; "><div>' . $kegiatans->kode_kegiatan . '</div></td>';
+                                      $html .= '<td width="20%"  style="padding: 50px; text-align: justify; "><div>' . $kegiatans->uraian_kegiatan_renstra . '</div></td>';
+                                      $html .= '<td width="17%"  style="padding: 50px; text-align: justify; "><div>' . $kegiatans_ind->nm_indikator . '</div></td>';
+                                      $html .= '<td width="6%"  style="padding: 50px; text-align: justify; "><div>' . $kegiatans->lokasi . '</div></td>';
+                                      $html .= '<td width="7%"  style="padding: 50px; text-align: justify; "><div>'.$kegiatans_ind->target_renja.' '.$kegiatans_ind->singkatan_satuan.'</div></td>';
+                                      $html .= '<td width="11%"  style="padding: 50px; text-align: right; "><div>'.number_format($kegiatans->pagu_tahun_kegiatan, 2, ',', '.').'</div></td>';
+                                      $html .= '<td width="5%"  style="padding: 50px; text-align: right; "><div></div>'.$kegiatans->sumber_dana.'</td>';
+                                      $html .= '<td width="10%"  style="padding: 50px; text-align: justify; "><div></div></td>';
+                                      $html .= '<td width="7%"  style="padding: 50px; text-align: justify; "><div>'.$kegiatans_ind->target_n1.' '.$kegiatans_ind->singkatan_satuan.'</div></td>';
+                                      $html .= '<td width="12%"  style="padding: 50px; text-align: right; "><div>'.number_format($kegiatans->pagu_plus1_forum, 2, ',', '.').'</div></td>';
+                                      $html .= '</tr>';
+                                  }
+                                  else {
+                                      PDF::SetFont('helvetica', '', 7);
+                                      $html .= '<tr nobr="true">';
+                                      
+                                      $html .= '<td width="5%"  style="padding: 50px; text-align: justify; "><div></div></td>';
+                                      $html .= '<td width="20%"  style="padding: 50px; text-align: justify; "><div></div></td>';
+                                      $html .= '<td width="17%"  style="padding: 50px; text-align: justify;"><div>' . $kegiatans_ind->nm_indikator . '</div></td>';
+                                      $html .= '<td width="6%"  style="padding: 50px; text-align: justify; "><div>Belum Ada</div></td>';
+                                      $html .= '<td width="7%"  style="padding: 50px; text-align: justify; "><div>'.$kegiatans_ind->target_renja.' '.$kegiatans_ind->singkatan_satuan.'</div></td>';
+                                      $html .= '<td width="11%"  style="padding: 50px; text-align: right; "><div></div></td>';
+                                      $html .= '<td width="5%"  style="padding: 50px; text-align: right; "><div></div></td>';
+                                      $html .= '<td width="10%"  style="padding: 50px; text-align: justify; "><div></div></td>';
+                                      $html .= '<td width="7%"  style="padding: 50px; text-align: justify; "><div>'.$kegiatans_ind->target_n1.' '.$kegiatans_ind->singkatan_satuan.'</div></td>';
+                                      $html .= '<td width="12%"  style="padding: 50px; text-align: right; "><div></div></td>';
+                                      
+                                      $html .= '</tr>';                                      
+                                  }
+                                  $b=$b+1;
+                              }
+                          }
+                  }
+              }
+          }
+      }
+      }
+     
+          
+      $html .= '</tbody>';
+      $html .= '</table>';
+      $html .= '<table border="0" cellpadding="4" cellspacing="0">';
+      $pimp=DB::SELECT('SELECT DISTINCT c.nm_unit,a.nama_jabatan_pimpinan_skpd,a.nama_pimpinan_skpd,a.nip_pimpinan_skpd,a.kota_sub_unit 
+        FROM ref_data_sub_unit a
+        INNER JOIN ref_sub_unit b ON a.id_sub_unit=b.id_sub_unit
+        INNER JOIN ref_unit c ON b.id_unit=c.id_unit
+        WHERE c.id_unit='.$unit.' and a.tahun='.$tahun);      
+
+        $pagu=DB::SELECT('SELECT sum(p.jml_unit) as total, sum(p.jml_langsung) as langsung, sum(p.jml_tidak_langsung) as tdk_langsung
+                FROM (SELECT a.id_unit, a.jenis_belanja, c.pagu_aktivitas AS jml_unit, 
+                CASE a.jenis_belanja WHEN 0 THEN c.pagu_aktivitas ELSE 0 END AS jml_langsung, 
+                CASE a.jenis_belanja WHEN 1 THEN c.pagu_aktivitas ELSE 0 END AS jml_pendapatan, 
+                CASE a.jenis_belanja WHEN 2 THEN c.pagu_aktivitas ELSE 0 END AS jml_tidak_langsung 
+                FROM (SELECT * FROM trx_forum_skpd_program WHERE status_pelaksanaan <> 2 AND status_pelaksanaan <> 3) AS a
+                INNER JOIN (SELECT * FROM trx_forum_skpd WHERE status_pelaksanaan <> 2 AND status_pelaksanaan <> 3) AS b ON a.id_forum_program = b.id_forum_program
+                INNER JOIN (SELECT DISTINCT c.id_aktivitas_forum AS id_forum_skpd, SUM(d.pagu_aktivitas_forum) AS pagu_aktivitas
+                                FROM (SELECT * FROM trx_forum_skpd_pelaksana WHERE status_pelaksanaan <> 2 AND status_pelaksanaan <> 3) AS c 
+                                INNER JOIN (SELECT * FROM trx_forum_skpd_aktivitas WHERE status_pelaksanaan <> 2 AND status_pelaksanaan <> 3) AS d ON c.id_pelaksana_forum=d.id_forum_skpd
+                                GROUP BY c.id_aktivitas_forum) AS c ON b.id_forum_skpd = c.id_forum_skpd
+                INNER JOIN ref_unit AS s ON a.id_unit = s.id_unit
+                WHERE a.jenis_belanja <> 1 AND a.id_unit ='.$unit.'    AND a.tahun_forum='.$tahun.'
+                GROUP BY a.tahun_forum, a.id_unit, a.jenis_belanja, c.pagu_aktivitas) AS p
+                GROUP BY p.id_unit');
+        foreach ($pagu as $pagus)
+          {   
+              $html .= '<tr>';
+              $html .= '<td width="70%"  style="padding: 50px; text-align: right; "><div></div></td>';
+              $html .= '<td width="30%"  style="padding: 50px; text-align: center; "><div></div></td>';
+              $html .= '</tr>';  
+              $html .= '<tr>';
+              $html .= '<td width="15%"  style="padding: 50px; text-align: left; "><div>Jumlah Belanja Langsung</div></td>';
+              $html .= '<td width="5%"  style="padding: 50px; text-align: center; "><div> : </div></td>';
+              $html .= '<td width="15%"  style="padding: 50px; text-align: right; "><div>'.number_format($pagus->langsung, 2, ',', '.').'</div></td>';
+              $html .= '<td width="35%"  style="padding: 50px; text-align: center; "><div></div></td>';
+              $html .= '<td width="30%"  style="padding: 50px; text-align: center; "><div></div></td>';
+              $html .= '</tr>';
+              $html .= '<tr>';
+              $html .= '<td width="15%"  style="padding: 50px; text-align: left; "><div>Jumlah Belanja Tidak Langsung</div></td>';
+              $html .= '<td width="5%"  style="padding: 50px; text-align: center; "><div> : </div></td>';
+              $html .= '<td width="15%"  style="padding: 50px; text-align: right; "><div>'.number_format($pagus->tdk_langsung, 2, ',', '.').'</div></td>';
+              $html .= '<td width="35%"  style="padding: 50px; text-align: center; "><div></div></td>';
+              $html .= '<td width="30%"  style="padding: 50px; text-align: center; "><div></div></td>';
+              $html .= '</tr>';
+              $html .= '<tr>';
+              $html .= '<td width="15%"  style="padding: 50px; text-align: left; "><div>Jumlah Pagu Belanja</div></td>';
+              $html .= '<td width="5%"  style="padding: 50px; text-align: center; "><div> : </div></td>';
+              $html .= '<td width="15%"  style="padding: 50px; text-align: right; "><div>'.number_format($pagus->total, 2, ',', '.').'</div></td>';
+              $html .= '<td width="35%"  style="padding: 50px; text-align: center; "><div></div></td>';
+              $html .= '<td width="30%"  style="padding: 50px; text-align: center; "><div></div></td>';
+              $html .= '</tr>';
+              
+          foreach ($pimp as $pimps)
+          { 
+              $html .= '<tr>';
+              $html .= '<td width="70%"  style="padding: 50px; text-align: center; "><div></div></td>';
+              $html .= '<td width="30%"  style="padding: 50px; text-align: center; "><div>'.$pimps->kota_sub_unit.', ...............</div></td>';
+              $html .= '</tr>';
+              $html .= '<tr>';
+              $html .= '<td width="70%"  style="padding: 50px; text-align: right; "><div></div></td>';
+              $html .= '<td width="30%"  style="padding: 50px; text-align: center; "><div>'.$pimps->nama_jabatan_pimpinan_skpd.' '.$pimps->nm_unit.'</div></td>';
+              $html .= '</tr>';
+              $html .= '<tr>';
+              $html .= '<td width="70%"  style="padding: 50px; text-align: right; "><div></div></td>';
+              $html .= '<td width="30%"  style="padding: 50px; text-align: center; "><div></div></td>';
+              $html .= '</tr>';
+              $html .= '<tr>';
+              $html .= '<td width="70%"  style="padding: 50px; text-align: right; "><div></div></td>';
+              $html .= '<td width="30%"  style="padding: 50px; text-align: center; "><div></div></td>';
+              $html .= '</tr>';
+              $html .= '<tr>';
+              $html .= '<td width="70%"  style="padding: 50px; text-align: right; "><div></div></td>';
+              $html .= '<td width="30%"  style="padding: 50px; text-align: center; "><div></div></td>';
+              $html .= '</tr>';
+              $html .= '<tr>';
+              $html .= '<td width="70%"  style="padding: 50px; text-align: right; "><div></div></td>';
+              $html .= '<td width="30%"  style="padding: 50px; text-align: center; "><div>'.$pimps->nama_pimpinan_skpd.'</div></td>';
+              $html .= '</tr>';
+              $html .= '<tr>';
+              $html .= '<td width="70%"  style="padding: 50px; text-align: right; "><div></div></td>';
+              $html .= '<td width="30%"  style="padding: 50px; text-align: center; "><div>NIP. '.$pimps->nip_pimpinan_skpd.'</div></td>';
+              $html .= '</tr>';
+          }
+      }
+
+      $html .= '</table>';
+      $html .= '</body> </html>';
+       PDF::writeHTML($html, true, false, true, false, '');
+      Template::footerLandscape();
+      PDF::Output('TC33_ranwal_renja.pdf', 'I');
+  }
+
 /////////////////////////////////////   PR 17 Oktober 2018 /////////////////////////////////////////////////////////////////////////////////////////////////
     public function KompilasiKegiatandanPaguForum($id_unit,$tahun)
     {
@@ -3731,17 +4133,6 @@ WHERE h.id_sub_unit=' . $sub_unit . ' and d.id_forum_program=' . $row->id_forum_
         
         // set auto page breaks
         PDF::SetAutoPageBreak(false, PDF_MARGIN_BOTTOM);
-        
-        // set image scale factor
-        // PDF::setImageScale(PDF_IMAGE_SCALE_RATIO);
-        
-        // set some language-dependent strings (optional)
-        // if (@file_exists(dirname(__FILE__).'/lang/eng.php')) {
-        //     require_once(dirname(__FILE__).'/lang/eng.php');
-        //     $pdf->setLanguageArray($l);
-        // }
-        
-        // ---------------------------------------------------------
         
         // set font
         PDF::SetFont('helvetica', '', 6);
@@ -4037,55 +4428,9 @@ WHERE h.id_sub_unit=' . $sub_unit . ' and d.id_forum_program=' . $row->id_forum_
         }
         PDF::Cell(array_sum($w), 0, '', 'T');
         
-        // ---------------------------------------------------------
-        
-        // close AND output PDF document
-        
         $template = new TemplateReport();
         $template->footerLandscape();
         PDF::Output('PPAS-'.$nm_unit.'.pdf', 'I');
     }
     
-}
-
-/*
- * route
- * Route::get('/PrintKompilasiProgramdanPaguforum_skpd/{id_unit}','Laporan\Cetakforum_skpdController@KompilasiProgramdanPaguforum_skpd');
-Route::get('/PrintKompilasiKegiatandanPaguforum_skpd/{id_unit}','Laporan\Cetakforum_skpdController@KompilasiKegiatandanPaguforum_skpd');
-
- *  * 
- * JS
- * $(document).on('click', '.btnPrintKompilasiProgramdanPagu', function() {
-
-    location.replace('../PrintKompilasiProgramdanPaguforum_skpd/'+ $('#id_unit').val());
-    
-  });
-$(document).on('click', '.btnPrintKompilasiKegiatandanPaguforum_skpd', function() {
-
-    location.replace('../PrintKompilasiKegiatandanPaguforum_skpd/'+ $('#id_unit').val());
-    
-  });
-
- *
- *
- *
- *VIEW
- *  <div class="form-group">
-                    <label class="control-label col-sm-3 text-left" for="id_unit">Unit Penyusun forum :</label>
-                        <div class="col-sm-5">
-                            <SELECT class="form-control id_Unit" name="id_unit" id="id_unit"></SELECT>
-                        </div>
-                </div>
-                <div class="printPrintKompilasiProgramdanPagu">
-              <p><a class="btnPrintKompilasiProgramdanPagu btn btn-sm btn-success" ><i class="glyphicon glyphicon-print"></i> Cetak Kompilasi Program dan Pagu</a></p>
-            </div>
-            <div class="PrintKompilasiKegiatandanPaguforum_skpd">
-              <p><a class="btnPrintKompilasiKegiatandanPaguforum_skpd btn btn-sm btn-success" ><i class="glyphicon glyphicon-print"></i> Cetak Kompilasi Kegiatan dan Pagu</a></p>
-            </div>
-            
-                </form>
- 
- 
- * /
- */
-
+} // End File

@@ -37,6 +37,7 @@ Route::group(['prefix' => '/admin/parameter', 'middleware' => ['auth']], functio
     Route::any('/getBidang2', 'RefParameterController@getBidang2');
 
     Route::any('/getUnit', 'RefParameterController@getUnit');
+    Route::any('/getUnitPelaksana', 'RefParameterController@getUnitPelaksana');
     Route::any('/getSubUnit/{id_unit}', 'RefParameterController@getSubUnit');
     Route::any('/getKegRef/{id_program}', 'RefParameterController@getKegRef');
     Route::any('/getProgRef/{id_bidang}', 'RefParameterController@getProgRef');

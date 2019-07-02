@@ -220,13 +220,42 @@ class TrxRanwalRenjaDokController extends Controller
 
     public function hapusDokumen(Request $req)
     {
-        $result = TrxRenjaRanwalDokumen::destroy($req->id_dokumen_rkpd);
-    
-        if($result != 0){
-            return response ()->json (['pesan'=>'Data Berhasil dihapus','status_pesan'=>'1']);
+        
+        $cek = DB::SELECT('SELECT a.tahun_renja, a.id_unit, (COALESCE(a.jml_rancangan,0) + COALESCE(b.jml_musren_rw,0) + COALESCE(c.jml_musrendes,0) + COALESCE(d.jml_musrencam,0)) as jml_cek FROM 
+                (SELECT a.tahun_renja, a.id_unit, count(b.id_renja_ranwal) as jml_rancangan
+                FROM trx_renja_ranwal_program AS a 
+                INNER JOIN trx_renja_rancangan_program AS b ON a.id_renja_program = b.id_renja_ranwal
+                GROUP BY a.tahun_renja, a.id_unit) AS a
+                LEFT OUTER JOIN (SELECT a.tahun_renja, a.id_unit, count(d.id_renja) as jml_musren_rw
+                FROM trx_renja_ranwal_program AS a 
+                INNER JOIN trx_renja_ranwal_program AS b ON a.id_renja_program = b.id_renja_ranwal
+                INNER JOIN trx_renja_ranwal_kegiatan AS c ON b.id_renja_program = c.id_renja_program
+                INNER JOIN trx_musrendes_rw AS d ON c.id_renja = d.id_renja
+                GROUP BY a.tahun_renja, a.id_unit) AS b ON a.tahun_renja = b.tahun_renja AND a.id_unit = b.id_unit
+                LEFT OUTER JOIN (SELECT a.tahun_renja, a.id_unit, count(d.id_renja) as jml_musrendes
+                FROM trx_renja_ranwal_program AS a 
+                INNER JOIN trx_renja_ranwal_program AS b ON a.id_renja_program = b.id_renja_ranwal
+                INNER JOIN trx_renja_ranwal_kegiatan AS c ON b.id_renja_program = c.id_renja_program
+                INNER JOIN trx_musrendes AS d ON c.id_renja = d.id_renja
+                GROUP BY a.tahun_renja, a.id_unit) AS c ON a.tahun_renja = c.tahun_renja AND a.id_unit = c.id_unit
+                LEFT OUTER JOIN (SELECT a.tahun_renja, a.id_unit, count(d.id_renja) as jml_musrencam
+                FROM trx_renja_ranwal_program AS a 
+                INNER JOIN trx_renja_ranwal_program AS b ON a.id_renja_program = b.id_renja_ranwal
+                INNER JOIN trx_renja_ranwal_kegiatan AS c ON b.id_renja_program = c.id_renja_program
+                INNER JOIN trx_musrencam AS d ON c.id_renja = d.id_renja
+                GROUP BY a.tahun_renja, a.id_unit) AS d ON a.tahun_renja = d.tahun_renja AND a.id_unit = d.id_unit
+                WHERE a.tahun_renja = '.$req->tahun_rkpd.' AND a.id_unit='.$req->id_unit);
+
+        if($cek == null || $cek[0]->jml_cek==0){     
+                    $result = TrxRenjaRanwalDokumen::destroy($req->id_dokumen_rkpd);
+                    if($result != 0){
+                        return response ()->json (['pesan'=>'Data Berhasil dihapus','status_pesan'=>'1']);
+                    } else {
+                        return response ()->json (['pesan'=>'Data Gagal dihapus','status_pesan'=>'0']);
+                    }
         } else {
-            return response ()->json (['pesan'=>'Data Gagal dihapus','status_pesan'=>'0']);
-        }
+                return response ()->json (['pesan'=>'Data Gagal Proses, Dokumen sudah dipakai di - Rancangan Renja dan atau Musrenbang (0cdrPD)','status_pesan'=>'0']);
+         }
     }
 
     public function checkPosting($tahun, $id_unit)

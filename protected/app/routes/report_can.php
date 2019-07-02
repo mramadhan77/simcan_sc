@@ -79,6 +79,8 @@ Route::group(['prefix' => 'cetak'], function () {
     Route::any('/jenis_musrenbang',['uses'=> 'RefCetakController@jenis_musrenbang']);
     Route::any('/jenis_forum',['uses'=> 'RefCetakController@jenis_forum']);
     Route::any('/jenis_rkpd_final',['uses'=> 'RefCetakController@jenis_rpkd_final']);
+    Route::any('/jenis_rkpd_ranwal',['uses'=> 'RefCetakController@jenis_rkpd_ranwal']);
+    Route::any('/jenis_pokir',['uses'=> 'RefCetakController@jenis_pokir']);
     
     Route::any('/getProgramRanwalRenja/{unit}/{tahun}', 'RefCetakController@getProgram_RanwalRenja');
     Route::any('/getKegiatanRanwalRenja/{program}', 'RefCetakController@getKegiatan_RanwalRenja');
@@ -119,6 +121,7 @@ Route::any('/PrintKompilasiKegiatanRanwalRenja','Laporan\CetakRanwalRenjaControl
 Route::any('/CekRanwalRenja','Laporan\CetakRanwalRenjaController@CekProgressRanwalRenja');
 Route::get('/PrintMatrikSasProgRenjaRanwal','Laporan\CetakRanwalRenjaController@SasaranProgramRenjaRanwal');
 Route::get('/PrintMusrenRanwal/{tahun}','Laporan\CetakMusrenController@MusrenRanwalRenja');
+Route::any('/PrakiraanMajuRanwalRenja','Laporan\CetakRanwalRenjaController@PrakiraanMaju');
 
 //Report Forum
 Route::get('/PrintKompilasiKegiatandanPaguF/{id_unit}/{tahun}', 'Laporan\CetakForumController@KompilasiKegiatandanPaguForum');
@@ -127,6 +130,7 @@ Route::get('/PrintPraRKAF/{id_renja}/{sub}', 'Laporan\CetakForumController@PraRK
 Route::get('/PrintPraRKA2F/{id_sub}/{tahun}', 'Laporan\CetakForumController@PraRKA2');
 Route::get('/PrintRingkasAPBDF/{tahun}', 'Laporan\CetakForumController@RingkasApbd');
 Route::get('/PrintPrakiraanMajuF/{id_sub}/{tahun}', 'Laporan\CetakForumController@PrakiraanMaju');
+Route::get('/PrintPrakiraanMajuHtml', 'Laporan\CetakForumController@PrakiraanMajuHtml');
 
 //Report RKPD Final
 Route::get('/PrintAPBDRF/{tahun}', 'Laporan\CetakRkpdFinalController@Apbd');
@@ -150,14 +154,18 @@ Route::get('/btnPrintSasProg/{tujuan}/{sasaran}','Laporan\CetakRpjmdHtmlControll
 //Report Musrenbang
 Route::get('/PrintCekASBForum/{id_unit}','Laporan\CetakForumController@CekASBforum');
 Route::get('/PrintUsulanRW','Laporan\CetakMusrendesController@printusulanrw');
+Route::get('/PrintUsulanDesa','Laporan\CetakMusrendesController@printusulandesa');
+Route::get('/PrintUsulanKecamatan','Laporan\CetakMusrenController@UsulanPerKecamatan');
 Route::get('/UsulanPerUnit/{id_unit}/{tahun}','Laporan\CetakMusrenController@UsulanPerUnit');
-Route::get('/UsulanPerKecamatan/{id_kecamatan}/{tahun}','Laporan\CetakMusrenController@UsulanPerKecamatan');
+// Route::get('/UsulanPerKecamatan/{id_kecamatan}/{tahun}','Laporan\CetakMusrenController@UsulanPerKecamatan');
 
 //Report Pokir
-Route::get('/printUsulanPokir','Laporan\CetakListUsulanPokirController@printListUsulanPokir');
+Route::get('/printUsulanPokir','Laporan\CetakListUsulanPokirController@printlistusulanpokir');
 Route::get('/printTLPokir','Laporan\CetakListUsulanPokirController@printListTLPokir');
 Route::get('/printTLUnitPokir','Laporan\CetakListUsulanPokirController@printListTLUnitPokir');
+Route::get('/printTB57','Laporan\CetakListUsulanPokirController@TB57');
 
+//Report Lainnya
 Route::get('/PrintPdrb/{tahun}','Laporan\CetakDataDasarController@printPdrb');
 Route::get('/PrintPdrbHb/{tahun}','Laporan\CetakDataDasarController@printPdrbHb');
 Route::get('/PrintAmh/{tahun}','Laporan\CetakDataDasarController@printAmh');

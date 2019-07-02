@@ -210,7 +210,7 @@ Route::group(['prefix' => 'renja', 'middleware' => ['auth', 'menu:50']], functio
     Route::any('/transKegiatanRenja', 'TrxRenjaRancanganController@transKegiatanRenja');
     Route::any('/transKegiatanIndikatorRenja', 'TrxRenjaRancanganController@transKegiatanIndikatorRenja');
     
-    Route::get('/', 'TrxRenjaController@index');
+    Route::get('/', 'TrxRenjaRancanganBLangsungController@index');
     Route::get('/blangsung', 'TrxRenjaController@belanjalangsung');
 
     Route::get('/program/{tahun_renja}/{id_unit}', 'TrxRenjaController@getProgramRenja');

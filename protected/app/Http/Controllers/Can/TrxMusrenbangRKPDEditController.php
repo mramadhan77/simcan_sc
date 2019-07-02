@@ -1,11 +1,12 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Can;
 
 use Illuminate\Http\Request;
 use Illuminate\Database\QueryException;
 
 use App\Http\Requests;
+use App\Http\Controllers\Controller;
 use DB;
 use Datatables;
 use Session;
@@ -26,7 +27,7 @@ use App\Models\TrxRkpdRancanganAktivitasPd;
 use App\Models\TrxRkpdRancanganLokasiPd;
 use App\Models\TrxRkpdRancanganBelanjaPd;
 
-class TrxRancangRKPDEditController extends Controller
+class TrxMusrenbangRkpdEditController extends Controller
 {
     public function __construct()
     {

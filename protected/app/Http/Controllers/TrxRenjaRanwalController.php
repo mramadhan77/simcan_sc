@@ -247,13 +247,13 @@ class TrxRenjaRanwalController extends Controller
 
     public function transProgramRKPD(Request $req)
     {
-        $tahun = DB::SELECT('SELECT a.tahun, a.tahun_ke, a.kolom FROM (
-            SELECT tahun_0 as tahun, 0 as tahun_ke, "tahun_0" as kolom FROM ref_tahun
-            UNION SELECT tahun_1 as tahun, 1 as tahun_ke, "tahun_1" as kolom FROM ref_tahun
-            UNION SELECT tahun_2 as tahun, 2 as tahun_ke, "tahun_2" as kolom FROM ref_tahun
-            UNION SELECT tahun_3 as tahun, 3 as tahun_ke, "tahun_3" as kolom FROM ref_tahun
-            UNION SELECT tahun_4 as tahun, 4 as tahun_ke, "tahun_4" as kolom FROM ref_tahun
-            UNION SELECT tahun_5 as tahun, 5 as tahun_ke, "tahun_5" as kolom FROM ref_tahun) a
+        $tahun = DB::SELECT('SELECT a.tahun, a.tahun_ke, a.tahun_next, a.kolom FROM (
+            SELECT tahun_0 as tahun, 0 as tahun_ke, 1 as tahun_next, "tahun_0" as kolom FROM ref_tahun
+            UNION SELECT tahun_1 as tahun, 1 as tahun_ke, 2 as tahun_next, "tahun_1" as kolom FROM ref_tahun
+            UNION SELECT tahun_2 as tahun, 2 as tahun_ke, 3 as tahun_next, "tahun_2" as kolom FROM ref_tahun
+            UNION SELECT tahun_3 as tahun, 3 as tahun_ke, 4 as tahun_next, "tahun_3" as kolom FROM ref_tahun
+            UNION SELECT tahun_4 as tahun, 4 as tahun_ke, 5 as tahun_next, "tahun_4" as kolom FROM ref_tahun
+            UNION SELECT tahun_5 as tahun, 5 as tahun_ke, 5 as tahun_next, "tahun_5" as kolom FROM ref_tahun) a
             WHERE a.tahun='.$req->tahun_renja.' LIMIT 1');
 
         $progRKPD=DB::INSERT('INSERT INTO trx_renja_ranwal_program_rkpd (tahun_renja, jenis_belanja, id_rkpd_ranwal, id_unit, uraian_program_rpjmd, status_pelaksanaan, sumber_data, jml_data, jml_baru, jml_lama, jml_tepat, jml_maju, jml_tunda, jml_batal)
@@ -336,11 +336,11 @@ class TrxRenjaRanwalController extends Controller
                     SELECT a.tahun_rkpd,(@id:=@id+1) AS no_urut,b.id_renja_program,b.id_program_rpjmd,b.id_rkpd_ranwal,
                     a.id_unit,a.id_visi_renstra,a.id_misi_renstra,a.id_tujuan_renstra,a.id_sasaran_renstra,
                     a.id_program_renstra,b.uraian_program_renstra,a.id_kegiatan_renstra,a.uraian_kegiatan_renstra,
-                    a.pagu_tahun_kegiatan as pagu_tahun_renstra,a.pagu_tahun_kegiatan, 0,b.status_program_rkpd,0,null,0,a.id_kegiatan_ref
+                    a.pagu_tahun_kegiatan as pagu_tahun_renstra,a.pagu_tahun_kegiatan, a.pagu_tahun_selanjutnya ,b.status_program_rkpd,0,null,0,a.id_kegiatan_ref
                     FROM (SELECT DISTINCT e.id_program_rpjmd,a.id_unit,a.id_visi_renstra,b.id_misi_renstra,c.id_tujuan_renstra,d.id_sasaran_renstra,
 					e.id_program_renstra,e.id_program_ref,e.pagu_tahun'.$tahun[0]->tahun_ke.' as pagu_program_renja,f.id_kegiatan_renstra,f.id_kegiatan_ref, 
-					f.uraian_kegiatan_renstra,f.pagu_tahun'.$tahun[0]->tahun_ke.' as pagu_tahun_kegiatan, '.$tahun[0]->tahun.' as tahun_rkpd,
-					g.kd_kegiatan, g.nm_kegiatan
+					f.uraian_kegiatan_renstra,f.pagu_tahun'.$tahun[0]->tahun_ke.' as pagu_tahun_kegiatan, 
+                    f.pagu_tahun'.$tahun[0]->tahun_next.' as pagu_tahun_selanjutnya, '.$tahun[0]->tahun.' as tahun_rkpd, g.kd_kegiatan, g.nm_kegiatan
 					FROM trx_renstra_visi AS a    
 					INNER JOIN trx_renstra_misi AS b ON b.id_visi_renstra = a.id_visi_renstra   
 					INNER JOIN trx_renstra_tujuan AS c ON c.id_misi_renstra = b.id_misi_renstra    

@@ -31,7 +31,12 @@ class SessionTimeout {
             auth()->logout();
             return redirect('/login');
         }
+
         $isLoggedIn ? $this->session->put('lastActivityTime', time()) : $this->session->forget('lastActivityTime');
+        if (!$request->session()->exists('user')) {
+            // user value cannot be found in session
+            return redirect('/home');
+        }
         return $next($request);
     }
 

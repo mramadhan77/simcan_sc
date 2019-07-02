@@ -1746,15 +1746,26 @@ public function getHitungASB(Request $req){
     //     $biaya='b.jenis_biaya in (1,2,3)';
     //   }
     // }
+   if($req->volume_1 == null || $req->volume_1 == 0){
+          $volume_1 = 1;
+      } else {
+          $volume_1 = $req->volume_1;
+      };
+
+      if($req->volume_2 == null || $req->volume_2 == 0){
+          $volume_2 = 1;
+      } else {
+          $volume_2 = $req->volume_2;
+      };
 
     if($req->jns_biaya==1){
         $getHitung=DB::INSERT('INSERT INTO trx_renja_rancangan_belanja(tahun_renja, no_urut, id_lokasi_renja, id_zona_ssh, sumber_aktivitas, id_aktivitas_asb, id_tarif_ssh, id_rekening_ssh, uraian_belanja, volume_1, id_satuan_1, volume_2, id_satuan_2, harga_satuan, jml_belanja, status_data)
-          VALUES('.$req->tahun_renja.',1,'.$req->id_lokasi_renja.',1,2,'.$req->id_aktivitas_asb.',0,0,"'.$req->nama_aktivitas.'",'.$req->volume_1.','.$req->id_satuan_1.','.$req->volume_2.','.$req->id_satuan_2.','.$req->pagu_rata2.','.$req->pagu_asb.',0)');
+          VALUES('.$req->tahun_renja.',1,'.$req->id_lokasi_renja.',1,2,'.$req->id_aktivitas_asb.',0,0,"'.$req->nama_aktivitas.'",'.$volume_1.','.$req->id_satuan_1.','.$volume_2.','.$req->id_satuan_2.','.$req->pagu_rata2.','.$req->pagu_asb.',0)');
       } else {        
         $getHitung=DB::INSERT('INSERT INTO trx_renja_rancangan_belanja(tahun_renja, no_urut, id_lokasi_renja, id_zona_ssh, sumber_aktivitas, id_aktivitas_asb, id_tarif_ssh, id_rekening_ssh, uraian_belanja, volume_1, id_satuan_1, volume_2, id_satuan_2, harga_satuan, jml_belanja, status_data)
-        SELECT '.$req->tahun_renja.',(@id:=@id+1) as no_urut,'.$req->id_lokasi_renja.',1,0,a.id_aktivitas_asb,0,0,a.nm_aktivitas_asb,'.$req->volume_1.',a.id_satuan_1,'.$req->volume_2.',a.id_satuan_2,a.jml_pagu,a.jml_pagu,0 FROM (
+        SELECT '.$req->tahun_renja.',(@id:=@id+1) as no_urut,'.$req->id_lokasi_renja.',1,0,a.id_aktivitas_asb,0,0,a.nm_aktivitas_asb,'.$volume_1.',a.id_satuan_1,'.$volume_2.',a.id_satuan_2,a.jml_pagu,a.jml_pagu,0 FROM (
                 SELECT a.id_aktivitas_asb, b.nm_aktivitas_asb,b.id_satuan_1,b.id_satuan_2,
-                SUM(PaguASB(b.jenis_biaya,b.hub_driver,'.$req->volume_1.','.$req->volume_2.',b.r1,b.r2,b.km1,b.km2,b.kf1,b.kf2,b.kf3,a.harga_satuan)) AS jml_pagu
+                SUM(PaguASB(b.jenis_biaya,b.hub_driver,'.$volume_1.','.$volume_2.',b.r1,b.r2,b.km1,b.km2,b.kf1,b.kf2,b.kf3,a.harga_satuan)) AS jml_pagu
                 FROM trx_asb_perhitungan_rinci a
                 INNER JOIN (SELECT a.id_komponen_asb_rinci,c.id_aktivitas_asb,c.nm_aktivitas_asb,b.id_komponen_asb,a.id_tarif_ssh,a.jenis_biaya,a.hub_driver,a.koefisien1 * a.koefisien2*a.koefisien3 as koef,
                 c.range_max as r1, c.range_max1 as r2,c.id_satuan_1,c.sat_derivatif_1,c.id_satuan_2,c.sat_derivatif_2,

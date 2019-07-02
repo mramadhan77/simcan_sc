@@ -1,10 +1,11 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Can;
 
 use Illuminate\Http\Request;
 
 use App\Http\Requests;
+use App\Http\Controllers\Controller;
 use DB;
 use Datatables;
 use Session;
@@ -30,7 +31,7 @@ use App\Models\TrxRkpdRancanganLokasiPd;
 use App\Models\TrxRkpdRancanganBelanjaPd;
 
 
-class TrxRancangRKPDSesuaiController extends Controller
+class TrxMusrenbangRkpdSesuaiController extends Controller
 {
     public function __construct()
     {
